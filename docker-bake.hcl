@@ -1,9 +1,9 @@
 group "default" {
-  targets = ["go-api", "document-service"]
+  targets = ["go-backend", "documents-service"]
 }
 
-target "go-api" {
-  context = "./ordo_meritum_go_server"
+target "go-backend" {
+  context = "./"
   dockerfile = "Dockerfile"
   args = {
     GOPROXY = "https://proxy.golang.org,direct"
@@ -11,5 +11,5 @@ target "go-api" {
 }
 
 target "document-service" {
-  context = "./document-service"
+  context = "./services"
 }

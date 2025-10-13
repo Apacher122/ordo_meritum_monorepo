@@ -3,7 +3,7 @@ version: "3.9"
 services:
   go-backend:
     build:
-      context: ./ordo_meritum_go_server
+      context: ./
       dockerfile: Dockerfile
     ports:
       - "8080:8080"

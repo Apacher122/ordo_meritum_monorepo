@@ -2,12 +2,12 @@ services:
   go-backend:
     extends:
       file: ./go-server/docker-compose.yml
-      service: go-api
+      service: go-backend
 
-  document-service:
+  documents-service:
     extends:
-      file: ./services/document-service/docker-compose.yml
-      service: document-service
+      file: ./services/documents-service/docker-compose.yml
+      service: documents-service
 
   zookeeper:
     extends:

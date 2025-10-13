@@ -1,7 +1,7 @@
 services:
-  document-service:
+  documents-service:
     build:
-      context: ./document-service
+      context: ./
     volumes:
       - ./shared_pdfs:/usr/src/app/shared_pdfs
       - ./logs:/usr/src/app/logs/microservices/documents
