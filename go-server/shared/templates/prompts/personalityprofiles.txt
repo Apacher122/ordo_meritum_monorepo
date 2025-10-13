@@ -1,0 +1,14 @@
+[QUESTIONNARE_FORM]
+{{.Questionnaire}}
+
+[TASK]
+You must carefully read through the candidate's questionnaire form and assess their responses to each question.
+Always use the OCEAN and DiSC personality trait models when providing feedback about the user's personality.
+
+OCEAN Traits:
+- Score the user's OCEAN traits between 0-100.
+- Provide a reasoning for each score.
+
+DiSC Traits:
+- Provide 2-3 sentences about the user's DiSC traits.
+

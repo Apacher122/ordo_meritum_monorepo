@@ -1,0 +1,85 @@
+.login-container {
+  max-width: 400px;
+  margin: 5% auto;
+  padding: 2rem;
+  background-color: #1c1c1c;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.login-container h2 {
+  color: var(--primary);
+  font-size: 1.75rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.login-container label {
+  font-size: 0.95rem;
+  color: #ccc;
+  margin-bottom: 0.25rem;
+}
+
+.login-container input {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: 8px;
+  border: 1px solid var(--input-border);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.login-container input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(43, 122, 120, 0.4);
+}
+
+.login-button {
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  cursor: pointer;
+  width: 100%;
+}
+
+.login-button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.login-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.login-container a {
+  color: var(--primary);
+  text-decoration: none;
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.login-container a:hover {
+  text-decoration: underline;
+}
+
+.login-status {
+  font-size: 0.9rem;
+  margin-top: 0.5rem;
+}
+
+.login-status.error {
+  color: red;
+}
+
+.login-status.success {
+  color: #2eb872;
+}

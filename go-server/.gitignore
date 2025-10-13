@@ -1,0 +1,61 @@
+
+*key.json
+**/.dockerignore
+
+# ---> Go
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+
+# Build output
+/build/
+bin/
+dist/
+*.log
+
+# Dependency directories (when vendored)
+vendor/
+
+# Go workspace files
+go.work
+go.work.sum
+
+# Coverage and test files
+*.cover
+*.coverprofile
+*.cov
+coverage.out
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.bak
+
+# Local environment files
+.env
+.env.local
+.env.*.local
+
+# Docker-related
+docker-compose.override.yml
+.docker/
+
+# IDEs / Editors
+# VSCode
+.vscode/
+# Goland / JetBrains
+.idea/
+# Sublime
+*.sublime-workspace
+*.sublime-project
+
+# macOS / Windows system files
+.DS_Store
+Thumbs.db
+run.sh

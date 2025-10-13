@@ -1,0 +1,66 @@
+[JOB_POST]
+{{.JobPost}}
+
+[RESUME]
+{{.Resume}}
+
+[ADDITIONAL_INFO]
+{{.AdditionalInfo}}
+
+[WRITING_SAMPLES]
+{{.WritingSamples}}
+
+[TASK]
+Follow these steps to create the cover letter:
+
+<step1>
+Learn about the user:
+  - Learn and assess their background, personality, work styles, work ethics, strengths, weaknesses, and other information relevant for job searches.
+  - Learn about their writing style from the provided samples.
+</step1>
+
+<step2>
+Learn about the job they are applying for:
+  - Carefully assess the role's description and requirements.
+  - Gather information about the company and team (if specified), such as the company values, company core principles, work culture, products, mission statements, or anything important.
+</step2>
+
+<step3>
+Use information about the user and the job to create a cover letter that is:
+  - impactful, meaningful, unique, and true to their tone and personality.
+  - adheres to cover letter best practices.
+  - maintains complete honesty.
+  - presents the user as a unique and strong candidate as much as possible without overexaggeration, fabrication, or lies.
+  - easy and enjoyable to read for a recruiter, while still being able to pass through ATS without any issues.
+</step3>
+
+<step4>
+Create a summary of the revisions you made to the cover letter.
+  - Must be insightful and indicate why the content you included in the resume is good for the candidate's application.
+</step4>
+
+<structure_rules>
+The letter must be divided into three sections:
+* **About**: A short introduction about the user and why they are applying. (Max 400 characters)
+* **Experience**: Highlight the user's most relevant experience and skills. (Max 1000 characters)
+* **What I Bring**: Describe the user's unique qualities and how they align with the company. (Max 800 characters)
+</structure_rules>
+
+<style_rules>
+* Match the user's writing tone.
+* Use a professional tone with personality.
+* Avoid cliches and generic phrases.
+* Vary sentence length and structure.
+* Simplify the position title (e.g., "Software Engineer GenAI (Full Stack)" becomes "Software Engineer").
+</style_rules>
+
+[PAST_MISTAKES_TO_AVOID]
+{{.Corrections}}
+
+[EXAMPLE_OUTPUT]
+```json
+{
+  "about": "A concise introduction about the user, tailored to the job. Maximum 400 characters.",
+  "experience": "Highlights of the user's most relevant skills and experiences, connecting them directly to the job requirements. Maximum 1000 characters.",
+  "what_i_bring": "A compelling closing that describes the user's unique qualities and aligns them with the company's culture, mission, or values. Maximum 800 characters."
+}

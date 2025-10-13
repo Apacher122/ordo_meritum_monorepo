@@ -1,0 +1,38 @@
+.large-textbox-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.large-textbox-textarea {
+  flex-grow: 1;
+  min-height: 0;
+  padding: 1rem;
+  font-size: 0.95rem;
+  font-family: 'Fira Code', 'Courier New', monospace;
+  white-space: pre;
+  resize: none;
+  border: 1px solid #444;
+  border-radius: 6px;
+  box-sizing: border-box;
+  background-color: #1e1e1e;
+  color: #d4d4d4;
+  overflow-y: auto;
+  line-height: 1.4;
+  caret-color: #00ffae;
+  outline: none;
+}
+
+.large-textbox-button {
+  margin-top: 1rem;
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+}

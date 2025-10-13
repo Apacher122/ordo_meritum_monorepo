@@ -1,0 +1,24 @@
+# Context
+
+I am applying for the position of {{position}} at {{company}}.
+Help me prepare for application and interview questions.
+
+---
+
+# Information
+
+<resume>
+{{resume}}
+</resume>
+
+<job_description>
+{{jobPosting}}
+</job_description>
+
+<about_me>
+{{aboutMe}}
+</about_me>
+
+<writing_examples>
+{{examples}}
+</writing_examples>

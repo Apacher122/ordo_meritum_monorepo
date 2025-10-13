@@ -1,0 +1,125 @@
+[RESUME]
+{{.Resume}}
+
+[JOB_DESCRIPTION]
+{{.JobPost}}
+
+[ADDITIONAL_INFO]
+You may use the following information to further understand the user:
+{{.AdditionalInfo}}
+
+[TASK]
+Revise the candidate's resume to align with the provided job description while following the system rules.
+The order of revision for each section is as follow:
+  1. Experience
+  2. Projects
+  3. Technical Skills
+  4. Summary
+
+Follow these instructions for each section, reflecting on revisions made to previous ones:
+
+Experience Instructions:
+- All experiences/roles/positions in the user's original resume must be present in the revisions.
+- Positions held at each company should be unique (No repeated entries with different bullet points).
+- Each position must have 4-6 bullet point and each bullet point must not exceed 136 characters.
+- Align existing skills/technologies to the job description. Substitutions are allowed if there is not an exact match (for example: Job requires MySQL, but user only has experience with PostgreSQL. PostgreSQL can be substituted)
+- Keep bullets clear and concise. Avoid fluff and cliches.
+- Avoid redundancy; combine bullets if it improves clarity.
+- Explain and justify revisions made where applicable.
+
+Projects Instructions:
+- Prioritize projects in active development, then job relevance.
+- Each project should have 4-6 bullet points and each bullet point must not exceed 136 characters.
+- Emphasize technologies used that align with the job description.
+- Project name, roles, and statuses must remain the same.
+- Explain and justify revisions made where applicable.
+
+Technical Skills Instructions:
+- Skills displayed must have already been mentioned in the revised bullet points above.
+- Categorize logically for human readability and order by relevancy then proficiency.
+- Order skills by relevancy then proficiency.
+- Only display 6-10 skills for entry level roles and 8-15 skills for mid-level roles.
+- Do not include the proficiency number in the output.
+- Explain and justify revisions made where applicable.
+
+Summary Instructions:
+- Maximum 3 sentences; Less than 421 characters.
+- Align with the revised experience, projects, and skills sections above.
+- Do not invent titles or experience; you must accurately portray the user.
+- Professional, confident, skimmable, fluff-free, and reflects authentic fit.
+- Present candidate as strong and capable for the role, using only facts presented in the resume.
+- Reflect user's tone as close as possible.
+- Only use standard ASCII keyboard characters; no em-dashes or curly quotes.
+- Explain and justify revisions made where applicable.
+
+[EXAMPLE_OUTPUT]
+
+{
+  "experiences": [
+    {
+      "position": "iOS Engineer",
+      "company": "WEX Health",
+      "start": "2023-01",
+      "end": "Present",
+      "description": [
+        {
+          "text": "Developed iOS features using Swift and Xcode for secure trading functionalities.",
+          "justification_for_change": "Consolidated multiple bullets, emphasized relevant skills.",
+          "is_new_suggestion": false
+        },
+        {
+          "text": "Migrated legacy Objective-C code to Swift, ensuring app stability and seamless feature integration.",
+          "justification_for_change": "Demonstrates expertise in both Objective-C and Swift, highlighting adaptability and code maintenance skills.",
+          "is_new_suggestion": false
+        },
+      ]
+    }
+  ],
+  "projects": [
+    {
+      "name": "Ordo Meritum",
+      "role": "Full-Stack Developer",
+      "status": "Active",
+      "description": [
+        {
+          "text": "Built a resume/job-matching platform using Node.js and PostgreSQL for backend.",
+          "justification_for_change": "Added tech stack highlighting skills used in project.",
+          "is_new_suggestion": false
+        },
+        {
+          "text": "Integrated REST APIs to sync mobile app data with backend services, improving performance and reliability.",
+          "justification_for_change": "Aligns with job requirements for REST API exposure.",
+          "is_new_suggestion": false
+        },
+        {
+          "text": "Participated in Agile teams across 20+ sprints",
+          "justification_for_change": "Aligns with job requirements for Agile exposure.",
+          "is_new_suggestion": false
+        }
+      ]
+    }
+  ],
+  "skills": [
+    {
+      "category": "Programming & Tools",
+      "skill": ["Swift",  "Objective-C", "Xcode"],
+      "justification_for_changes": "Selected only relevant skills that appear in experience/project bullets."
+    },
+    {
+      "category": "Database & Backend",
+      "skill": ["PostgreSQL",  "REST APIs"],
+      "justification_for_changes": "Included backend skills that are used in projects and experience bullets."
+    },
+    {
+      "category": "Practices",
+      "skill": ["Agile Methodology"],
+      "justification_for_changes": "User has required prior agile knowledge, as stated in the resume."
+    }
+  ],
+  "summary" [
+    {
+      "sentence": "Software Engineer with a military background and expertise in iOS development.",
+      "justification_for_change": "Condensed original summary to focus on core strengths and role alignment."
+    }
+  ]
+}

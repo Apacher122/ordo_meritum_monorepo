@@ -1,0 +1,23 @@
+version: "3.9"
+
+services:
+  go-backend:
+    build:
+      context: ./ordo_meritum_go_server
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./shared_pdfs:/usr/src/app/shared_pdfs
+      - ./logs:/usr/src/app/logs
+      - go-mod-cache:/go/pkg/mod
+      - go-build-cache:/root/.cache/go-build
+    depends_on:
+      kafka:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:8080/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

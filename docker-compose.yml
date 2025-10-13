@@ -1,0 +1,24 @@
+services:
+  go-backend:
+    extends:
+      file: ./go-server/docker-compose.yml
+      service: go-api
+
+  document-service:
+    extends:
+      file: ./services/document-service/docker-compose.yml
+      service: document-service
+
+  zookeeper:
+    extends:
+      file: ./zookeeper.yml
+      service: zookeeper
+
+  kafka:
+    extends:
+      file: ./kafka.yml
+      service: kafka
+
+volumes:
+  go-mod-cache:
+  go-build-cache:

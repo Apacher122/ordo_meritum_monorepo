@@ -1,0 +1,94 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ResumePayload",
+  "type": "object",
+  "properties": {
+    "resume": {
+      "type": "object",
+      "properties": {
+        "id": { "type": "integer" },
+        "name": { "type": "string" },
+        "title": { "type": "string" },
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["id", "name"]
+    },
+    "experiences": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "position": { "type": "string" },
+          "company": { "type": "string" },
+          "start": { "type": "string", "format": "date-time" },
+          "end": { "type": "string", "format": "date-time" },
+          "description": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": { "type": "string" },
+                "is_new_suggestion": { "type": "boolean" },
+                "justification_for_change": { "type": "string" }
+              },
+              "required": ["text"]
+            }
+          }
+        },
+        "required": ["position", "company", "start", "end", "description"]
+      }
+    },
+    "projects": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": { "type": "string" },
+          "role": { "type": "string" },
+          "description": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "text": { "type": "string" },
+                "is_new_suggestion": { "type": "boolean" },
+                "justification_for_change": { "type": "string" }
+              },
+              "required": ["text"]
+            }
+          }
+        },
+        "required": ["name", "role", "description"]
+      }
+    },
+    "skills": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "category": { "type": "string" },
+          "justification_for_changes": { "type": "string" },
+          "skill": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": ["category", "skill"]
+      }
+    },
+    "summary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "sentence": { "type": "string" },
+          "justification_for_change": { "type": "string" }
+        }
+      },
+      "required": ["sentence", "justification_for_change"]
+    }
+  },
+  "required": ["resume", "experiences", "projects", "skills"]
+}

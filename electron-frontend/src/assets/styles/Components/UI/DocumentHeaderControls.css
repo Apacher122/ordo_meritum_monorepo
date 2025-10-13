@@ -1,0 +1,78 @@
+.document-header-controls {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.doc-type-tabs {
+  margin-left: auto;
+}
+
+.doc-type-tabs,
+.header-action-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.tab-button {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  color: var(--text-secondary-color);
+  font-weight: 500;
+  border-radius: 6px;
+  transition: background-color 0.2s ease, color 0.2s ease,
+    border-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.tab-button:hover {
+  background-color: var(--hover-background-color);
+  border-color: var(--primary-accent-color);
+}
+
+.tab-button.active {
+  background-color: var(--primary-accent-color);
+  color: #fff;
+  font-weight: bold;
+  border-color: var(--primary-accent-color);
+}
+
+.button {
+  background-color: var(--primary-accent-color);
+  color: white;
+  border: none;
+  padding: 0.6rem 1.2rem;
+  font-size: 0.9rem;
+  font-weight: bold;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.button:hover:not(:disabled) {
+  background-color: var(--primary-accent-hover-color);
+}
+
+.button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.button.secondary {
+  background-color: var(--secondary-button-background);
+  color: var(--text-primary-color);
+  border: 1px solid var(--border-color);
+}
+
+.button.secondary:hover:not(:disabled) {
+  background-color: var(--hover-background-color);
+  border-color: var(--primary-accent-color);
+}

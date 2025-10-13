@@ -1,0 +1,102 @@
+# =====================================
+# OS / System
+# =====================================
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+*.tmp
+*.bak
+*.orig
+
+# =====================================
+# Node / Electron / TypeScript
+# =====================================
+node_modules/
+dist/
+build/
+out/
+*.tsbuildinfo
+.vscode/
+.idea/
+*.log
+yarn-error.log
+package-lock.json
+pnpm-lock.yaml
+.env
+.env.*    
+*.local
+
+# =====================================
+# Go / Backend
+# =====================================
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+bin/
+vendor/
+*.coverprofile
+coverage.out
+*.prof
+go.sum   
+/go.work   
+
+# =====================================
+# Docker / Deployment
+# =====================================
+docker-compose.override.yml
+docker-compose.backup.yml
+.docker/
+*.dockerfile
+*.tar
+*.img
+*.pid
+*.pid.lock
+
+# =====================================
+# Secrets / Keys / Configs
+# =====================================
+*.pem
+*.key
+*.crt
+*.pfx
+*.jwk
+api-keys.json
+rsa_private.pem
+rsa_public.pem
+secret*.json
+*key.json
+*.pem
+
+# =====================================
+# Logs / Temp
+# =====================================
+logs/
+*.log
+tmp/
+temp/
+*.cache
+*.pid
+*.seed
+
+# =====================================
+# IDE / Editors
+# =====================================
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# =====================================
+# Misc
+# =====================================
+coverage/
+*.tgz
+*.zip
+*.tar.gz
+.npm
+.cache

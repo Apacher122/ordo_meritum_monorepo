@@ -1,0 +1,106 @@
+.pdf-view-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--background-color-dark);
+}
+
+.centered-feedback {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--text-secondary-color);
+}
+
+.centered-feedback p {
+  margin-top: 1rem;
+}
+
+.pdf-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--background-color-light);
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid var(--border-color);
+  flex-shrink: 0;
+  z-index: 10;
+}
+
+.pagination-controls,
+.zoom-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--text-secondary-color);
+}
+
+.zoom-controls .zoom-level {
+  min-width: 50px;
+  text-align: center;
+  font-weight: bold;
+  cursor: pointer;
+  user-select: none;
+}
+
+.pdf-document-container {
+  flex-grow: 1;
+  overflow: auto;
+  padding: 2rem;
+  display: flex;
+  justify-content: center;
+
+  background-color: #1a1a1a;
+}
+
+.pdf-page-wrapper {
+  overflow: auto;
+  width: fit-content;
+  height: fit-content;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+
+  background-color: #ffffff;
+}
+
+.pdf-toolbar button {
+  background-color: var(--secondary-button-background);
+  color: var(--text-primary-color);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
+}
+
+.pdf-toolbar button:hover:not(:disabled) {
+  background-color: var(--hover-background-color);
+  border-color: var(--primary-accent-color);
+}
+
+.pdf-toolbar button:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.pdf-toolbar button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.zoom-controls button {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  font-size: 1.4rem;
+  font-weight: bold;
+  line-height: 1;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

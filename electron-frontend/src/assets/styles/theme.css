@@ -1,0 +1,144 @@
+:root {
+  --sidebar-bg: #1f1f1f;
+  --border-color: #333;
+  --text-color: #eee;
+  --hover-bg: #2a2a2a;
+  --primary: #2b7a78;
+  --primary-text: #fff;
+
+  --bg-color: #121212;
+  --button-bg: #2b7a78;
+  --button-text: #ffffff;
+  --input-border: #444;
+  --input-bg: #1e1e1e;
+}
+
+body,
+html,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  font-family: sans-serif;
+  overflow: hidden;
+}
+
+* {
+  scrollbar-color: var(--primary) var(--bg-color);
+  scrollbar-width: thin;
+}
+
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary);
+  margin: 0;
+  margin-bottom: 0.25rem;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--text-color);
+  margin: 0;
+  margin-bottom: 1rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #aaa;
+}
+
+.button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border-radius: 8px;
+  border: none;
+  background-color: var(--button-bg);
+  color: var(--button-text);
+  cursor: pointer;
+  user-select: none;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+.button:focus {
+  outline: 2px solid var(--primary);
+  outline-offset: 2px;
+}
+
+.textarea {
+  flex-grow: 1;
+  padding: 1rem;
+  font-size: 1rem;
+  font-family: monospace;
+  white-space: pre-wrap;
+  resize: none;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  box-sizing: border-box;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.input {
+  padding: 0.75rem;
+  border: 1px solid var(--input-border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text-color);
+  font-size: 1rem;
+}
+
+.input:focus {
+  border-color: var(--primary);
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(43, 122, 120, 0.4);
+}
+
+.status-message {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+}
+
+.status-message.error {
+  color: red;
+}
+
+.status-message.success {
+  color: green;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--primary);
+  border-radius: 4px;
+}
+
+.card {
+  background: #1c1c1c;
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
+}

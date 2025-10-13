@@ -1,0 +1,42 @@
+.settings-page {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  gap: 1.5rem;
+}
+
+.settings-page .page-title {
+  color: var(--primary);
+}
+
+.settings-page .page-subtitle {
+  color: #aaa;
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.settings-page .info-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.settings-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.settings-grid label {
+  display: block;
+  font-weight: 500;
+  color: #ccc;
+  margin-bottom: 0.5rem;
+}
+
+.settings-page .submit-button {
+  align-self: flex-start;
+  width: auto;
+  min-width: 150px;
+}

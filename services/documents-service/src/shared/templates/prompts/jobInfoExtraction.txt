@@ -1,0 +1,7 @@
+<request> 
+    Extract information from the following job posting. 
+</request>
+
+<job_posting>
+    {{jobContent}}
+</job_posting>
