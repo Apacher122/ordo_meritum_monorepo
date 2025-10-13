@@ -13,6 +13,8 @@ import (
 	"go.uber.org/fx"
 )
 
+const serviceName = "kafka-consumer"
+
 type DocumentCompletionEvent struct {
 	UserID       string `json:"user_id"`
 	JobID        int    `json:"job_id"`
@@ -30,21 +32,22 @@ func RegisterCompletionConsumer(lc fx.Lifecycle, hub *websocket.Hub) {
 	}
 
 	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:  []string{broker},
-		Topic:    "latex-compilation-results",
-		GroupID:  "go-server-completion-consumers",
-		MinBytes: 1,
-		MaxBytes: 10e6,
-		MaxWait:  10 * time.Second, ReadLagInterval: -1,
+		Brokers:         []string{broker},
+		Topic:           "latex-compilation-results",
+		GroupID:         "go-server-completion-consumers",
+		MinBytes:        1,
+		MaxBytes:        10e6,
+		MaxWait:         10 * time.Second,
+		ReadLagInterval: -1,
 	})
 
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			log.Info().Str("service", "kafka-consumer").Msg("Starting Kafka completion consumer...")
+			log.Info().Str("service", serviceName).Msg("Starting Kafka completion consumer...")
 			go func() {
 				defer func() {
 					_ = reader.Close()
-					log.Info().Str("service", "kafka-consumer").Msg("Kafka consumer stopped.")
+					log.Info().Str("service", serviceName).Msg("Kafka consumer stopped.")
 				}()
 				ctx := context.Background()
 				for {
@@ -73,18 +76,28 @@ func RegisterCompletionConsumer(lc fx.Lifecycle, hub *websocket.Hub) {
 						Str("job_id", strconv.Itoa(event.JobID)).
 						Msg("Received completion event")
 
-					if client, ok := hub.UserClients[event.UserID]; ok {
-						client.Send <- msg.Value
-						log.Info().Str("user_id", event.UserID).Msg("Sent notification to connected client")
+					if userClients, ok := hub.UserClients[event.UserID]; ok {
+						log.Info().
+							Str("user_id", event.UserID).
+							Int("client_count", len(userClients)).
+							Msg("Broadcasting notification to connected clients")
+						for client := range userClients {
+							select {
+							case client.Send <- msg.Value:
+							default:
+								close(client.Send)
+								delete(userClients, client)
+							}
+						}
 					} else {
-						log.Warn().Str("user_id", event.UserID).Msg("Client not connected, cannot send notification")
+						log.Warn().Str("user_id", event.UserID).Msg("No clients connected for user, cannot send notification")
 					}
 				}
 			}()
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
-			log.Info().Str("service", "kafka-consumer").Msg("Stopping Kafka completion consumer...")
+			log.Info().Str("service", serviceName).Msg("Stopping Kafka completion consumer...")
 			return reader.Close()
 		},
 	})
