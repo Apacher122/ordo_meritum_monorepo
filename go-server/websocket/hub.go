@@ -23,7 +23,7 @@ type Client struct {
 
 type Hub struct {
 	clients     map[*Client]bool
-	UserClients map[string]*Client
+	UserClients map[string]map[*Client]bool
 	register    chan *Client
 	unregister  chan *Client
 }
@@ -31,7 +31,7 @@ type Hub struct {
 func NewHub() *Hub {
 	return &Hub{
 		clients:     make(map[*Client]bool),
-		UserClients: make(map[string]*Client),
+		UserClients: make(map[string]map[*Client]bool),
 		register:    make(chan *Client),
 		unregister:  make(chan *Client),
 	}
@@ -50,13 +50,19 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.register:
 			h.clients[client] = true
-			h.UserClients[client.UserID] = client
+			if h.UserClients[client.UserID] == nil {
+				h.UserClients[client.UserID] = make(map[*Client]bool)
+			}
+			h.UserClients[client.UserID][client] = true
 			log.Printf("Client registered for user %s", client.UserID)
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
-				if h.UserClients[client.UserID] == client {
-					delete(h.UserClients, client.UserID)
+				if userClients, userOk := h.UserClients[client.UserID]; userOk {
+					delete(userClients, client)
+					if len(userClients) == 0 {
+						delete(h.UserClients, client.UserID)
+					}
 				}
 				close(client.Send)
 				log.Printf("Client unregistered for user %s", client.UserID)
