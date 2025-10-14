@@ -4,11 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/ordo_meritum/database/models"
 	"github.com/ordo_meritum/features/documents/models/domain"
 )
+
+const dateFormat = "Jan. 2006"
 
 type Repository interface {
 	UpsertResume(ctx context.Context, firebaseUID string, roleID int, resume *domain.Resume) error
@@ -111,9 +114,11 @@ func (r *postgresRepository) UpsertResume(ctx context.Context, firebaseUID strin
 	}
 
 	for _, e := range resume.Experiences {
+		start, _ := time.Parse(dateFormat, e.Start)
+		end, _ := time.Parse(dateFormat, e.End)
 		var expID int
 		expQuery := "INSERT INTO experiences (resume_id, position, company, start_date, end_date) VALUES ($1, $2, $3, $4, $5) RETURNING id"
-		err := tx.GetContext(ctx, &expID, expQuery, resumeID, e.Position, e.Company, e.Start, e.End)
+		err := tx.GetContext(ctx, &expID, expQuery, resumeID, e.Position, e.Company, start, end)
 		if err != nil {
 			return err
 		}
@@ -239,12 +244,11 @@ func (r *postgresRepository) GetFullResume(ctx context.Context, firebaseUID stri
 		expMap[d.ExpID] = append(expMap[d.ExpID], d)
 	}
 	for _, e := range experiences {
-		layout := "Jan. 2006"
-		startDateStr := e.StartDate.Format(layout)
+		startDateStr := e.StartDate.Format(dateFormat)
 
 		var endDateStr string
 		if e.EndDate != nil {
-			endDateStr = e.EndDate.Format(layout)
+			endDateStr = e.EndDate.Format(dateFormat)
 		} else {
 			endDateStr = "Present"
 		}

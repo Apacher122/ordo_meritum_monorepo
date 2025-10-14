@@ -153,7 +153,7 @@ func (r *postgresRepository) UpsertQuestionnaire(
 		RETURNING id`
 
 	placeholderTitle := "Candidate Questionnaire"
-	err = tx.QueryRowxContext(ctx, upsertQuestionnaireQuery, firebaseUID, req.BriefHistory, placeholderTitle).Scan(&questionnaireID)
+	err = tx.QueryRowxContext(ctx, upsertQuestionnaireQuery, firebaseUID, req.Payload.BriefHistory, placeholderTitle).Scan(&questionnaireID)
 	if err != nil {
 		return nil, fmt.Errorf("could not upsert questionnaire: %w", err)
 	}
@@ -167,7 +167,7 @@ func (r *postgresRepository) UpsertQuestionnaire(
 		INSERT INTO questions (questionnaire_id, category, question, answer)
 		VALUES ($1, $2, $3, $4)`
 
-	for _, category := range req.QuestionsByCategory {
+	for _, category := range req.Payload.QuestionsByCategory {
 		for _, qa := range category.Questions {
 			_, err = tx.ExecContext(ctx, insertQuestionQuery, questionnaireID, category.Category, qa.Question, qa.Answer)
 			if err != nil {
