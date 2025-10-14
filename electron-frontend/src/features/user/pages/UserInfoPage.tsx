@@ -93,6 +93,12 @@ export const UserInfoPage: React.FC = () => {
       });
     }
   }, [userProfile]);
+
+  useEffect(() => {
+    if (error) {
+      alert(`Error saving profile: ${error}`);
+    }
+  }, [error]);
   
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

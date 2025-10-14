@@ -32,7 +32,9 @@ const cleanLoadedBulletPoints = (bulletPoints: any[] | undefined) => {
     .filter((bp) => bp !== null) as { text: string; id?: string }[];
 };
 
-const cleanLoadedExperiences = (experiences: Experience[] | undefined): Experience[] => {
+const cleanLoadedExperiences = (
+  experiences: Experience[] | undefined
+): Experience[] => {
   if (!experiences) return initialProfileState.resume.experiences || [];
 
   return experiences.map((exp) => {
@@ -60,18 +62,24 @@ const cleanLoadedProjects = (projects: Project[] | undefined): Project[] => {
   }) as Project[];
 };
 
-const wasDataCleaned = (originalArray: Experience[] | Project[] | undefined, cleanedArray: Experience[] | Project[]): boolean => {
-    if (!originalArray) return false;
+const wasDataCleaned = (
+  originalArray: Experience[] | Project[] | undefined,
+  cleanedArray: Experience[] | Project[]
+): boolean => {
+  if (!originalArray) return false;
 
-    const countBulletPoints = (items: Experience[] | Project[]) => {
-        return items.reduce((acc, item) => acc + (item.bulletPoints?.length || 0), 0);
-    };
+  const countBulletPoints = (items: Experience[] | Project[]) => {
+    return items.reduce(
+      (acc, item) => acc + (item.bulletPoints?.length || 0),
+      0
+    );
+  };
 
-    const originalBulletPointCount = countBulletPoints(originalArray);
-    const cleanedBulletPointCount = countBulletPoints(cleanedArray);
+  const originalBulletPointCount = countBulletPoints(originalArray);
+  const cleanedBulletPointCount = countBulletPoints(cleanedArray);
 
-    return originalBulletPointCount !== cleanedBulletPointCount;
-}
+  return originalBulletPointCount !== cleanedBulletPointCount;
+};
 
 /**
  * A hook that provides the user profile and functions to save and load it.
@@ -114,9 +122,13 @@ export const useUserInfo = () => {
             writingSamples: loadedSamples,
           });
         } else {
-         const cleanedExperiences = cleanLoadedExperiences(loadedProfile.resume?.experiences);
-          const cleanedProjects= cleanLoadedProjects(loadedProfile.resume?.projects);
-          
+          const cleanedExperiences = cleanLoadedExperiences(
+            loadedProfile.resume?.experiences
+          );
+          const cleanedProjects = cleanLoadedProjects(
+            loadedProfile.resume?.projects
+          );
+
           const originalExperiences = loadedProfile.resume?.experiences;
           const originalProjects = loadedProfile.resume?.projects;
 
@@ -173,28 +185,31 @@ export const useUserInfo = () => {
     loadData();
   }, []);
 
-  const saveUserProfile = useCallback(async (newProfile: UserProfile) => {
-    setLoading(true);
-    setError(null);
+  const saveUserProfile = useCallback(
+    async (newProfile: UserProfile) => {
+      const previousProfile = userProfile;
 
-    try {
-      const { writingSamples, ...profileToSave } = newProfile;
-      const result = await window.appAPI.user.saveUserInfo(profileToSave);
+      setUserProfile(newProfile);
+      setError(null);
 
-      if (result.success) {
-        setUserProfile(newProfile);
-      } else {
-        setError(result.error ?? "Failed to save profile data on disk.");
+      try {
+        const { writingSamples, ...profileToSave } = newProfile;
+        const result = await window.appAPI.user.saveUserInfo(profileToSave);
+
+        if (!result.success) {
+          setUserProfile(previousProfile);
+          setError(result.error ?? "Failed to save profile data on disk.");
+        }
+      } catch (err: any) {
+        setUserProfile(previousProfile);
+        setError(
+          err.message ?? "An unexpected error occurred during profile save."
+        );
+        console.error("Error saving user profile:", err);
       }
-    } catch (err: any) {
-      setError(
-        err.message ?? "An unexpected error occurred during profile save."
-      );
-      console.error("Error saving user profile:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    [userProfile]
+  );
 
   return { userProfile, setUserProfile, loading, error, saveUserProfile };
 };
