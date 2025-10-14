@@ -96,19 +96,19 @@ func FormatResumePayloadForLLMWithXML(payload domain.Resume) string {
 	}
 
 	if len(payload.Projects) > 0 {
-		sb.WriteString("\t<projects>\n")
+		sb.WriteString("\t<personal_projects>\n")
 		for _, proj := range payload.Projects {
 			sb.WriteString("\t\t<project>\n")
-			sb.WriteString(fmt.Sprintf("\t\t\t<name>%s</name>\n", proj.Name))
-			sb.WriteString(fmt.Sprintf("\t\t\t<role>%s</role>\n", proj.Role))
-			sb.WriteString("\t\t\t<bullet_points>\n")
+			sb.WriteString(fmt.Sprintf("\t\t\t<project_name>%s</project_name>\n", proj.Name))
+			sb.WriteString(fmt.Sprintf("\t\t\t<candidate_role_in_project>%s</candidate_role_in_projec>\n", proj.Role))
+			sb.WriteString("\t\t\t<project_bullet_points>\n")
 			for _, point := range proj.BulletPoints {
-				sb.WriteString(fmt.Sprintf("\t\t\t\t<bullet>%s</bullet>\n", strings.TrimSpace(point.Text)))
+				sb.WriteString(fmt.Sprintf("\t\t\t\t<project_bullet>%s</project_bullet>\n", strings.TrimSpace(point.Text)))
 			}
-			sb.WriteString("\t\t\t</bullet_points>\n")
+			sb.WriteString("\t\t\t</project_bullet_points>\n")
 			sb.WriteString("\t\t</project>\n")
 		}
-		sb.WriteString("\t</projects>\n")
+		sb.WriteString("\t</personal_projects>\n")
 	}
 
 	if len(payload.Skills) > 0 {

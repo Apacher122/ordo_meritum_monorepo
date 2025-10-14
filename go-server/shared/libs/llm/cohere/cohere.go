@@ -2,34 +2,51 @@ package cohere
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 
 	cohere "github.com/cohere-ai/cohere-go/v2"
 	cohereclient "github.com/cohere-ai/cohere-go/v2/client"
-	request "github.com/ordo_meritum/features/application_tracking/models/requests"
 )
 
-type CohereClient struct{}
+type CohereClient struct {
+	model string
+}
 
 func NewClient() *CohereClient {
-	return &CohereClient{}
+	return &CohereClient{
+		model: "command-a-03-2025",
+	}
 }
 
 func (c *CohereClient) Generate(
 	ctx context.Context,
 	instructions string,
 	prompt string,
-	schema cohere.ResponseFormatV2,
+	schema any,
 	apiKey string,
-) (*request.JobPostingEvent, error) {
+) (string, error) {
 	if apiKey == "" {
-		return nil, errors.New("error: Cohere API key not found in request context")
+		return "", errors.New("error: Cohere API key not provided")
 	}
 
+	var response *cohere.ResponseFormatV2
+	if schema != nil {
+		var schemaMap *cohere.JsonResponseFormatV2
+		log.Printf("schema type: %s", schema)
+		switch v := schema.(type) {
+		case *cohere.JsonResponseFormatV2:
+			schemaMap = v
+			response = &cohere.ResponseFormatV2{
+				Type:       "josn_object",
+				JsonObject: schemaMap,
+			}
+		}
+	}
 	requestClient := cohereclient.NewClient(cohereclient.WithToken(apiKey))
-	resp, _ := requestClient.V2.Chat(
+
+	resp, err := requestClient.V2.Chat(
 		ctx,
 		&cohere.V2ChatRequest{
 			Model: "command-a-03-2025",
@@ -47,29 +64,29 @@ func (c *CohereClient) Generate(
 					}},
 				},
 			},
-			ResponseFormat: &schema,
+			ResponseFormat: response,
 		},
 	)
 
-	if resp.Message == nil {
-		return nil, errors.New("no assistant message returned from Cohere")
+	if err != nil {
+		return "", fmt.Errorf("error: Cohere chat generation failed: %w", err)
+	}
+
+	if resp.Message == nil || len(resp.Message.Content) == 0 {
+		return "", errors.New("error: Cohere returned no content")
 	}
 
 	var assistantReply string
 	for _, item := range resp.Message.Content {
-		if item.Type == "text" && item.Text != nil {
+		if item.Text != nil {
 			assistantReply += item.Text.Text
 		}
 	}
 
 	if assistantReply == "" {
-		return nil, errors.New("assistant message empty")
+		return "", errors.New("error: Cohere assistant message was empty")
 	}
 
-	var result request.JobPostingEvent
-	if err := json.Unmarshal([]byte(assistantReply), &result); err != nil {
-		return nil, fmt.Errorf("failed to parse JSON: %w", err)
-	}
-
-	return &result, nil
+	log.Println(assistantReply)
+	return assistantReply, nil
 }

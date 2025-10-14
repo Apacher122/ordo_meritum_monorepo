@@ -3,5 +3,103 @@
 </request>
 
 <job_posting>
-    {{.JobContent}}
+    {{.JobPost}}
 </job_posting>
+
+<output>
+
+{
+  "type": "object",
+  "properties": {
+    "job_title": {
+      "type": "string"
+    },
+    "company_name": {
+      "type": "string"
+    },
+    "years_of_exp": {
+      "type": "string",
+      "default": "Not Specified"
+    },
+    "education_level": {
+      "type": "string",
+      "default": "Not Specified"
+    },
+    "website": {
+      "type": "string"
+    },
+    "applicant_count": {
+      "type": "integer",
+      "default": 0
+    },
+    "post_age": {
+      "type": "string",
+      "default": "Not Specified"
+    },
+    "skills_required": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "skills_nice_to_haves": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "tools_and_technologies": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "programming_languages": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "frameworks_and_libraries": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "databases": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "cloud_technologies": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "industry_keywords": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "soft_skills": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "certifications": {
+      "type": "array",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "company_culture": {
+      "type": "string",
+      "default": ""
+    },
+    "company_values": {
+      "type": "string",
+      "default": ""
+    },
+    "salary_range": {
+      "type": "string",
+      "default": "Not Specified"
+    }
+  },
+  "required": ["job_title", "company_name", "website", "post_age", "salary_range"]
+}
+
+<\output>

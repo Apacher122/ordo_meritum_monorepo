@@ -2,10 +2,11 @@ package llm
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
+	"regexp"
 	"strings"
 
+	"github.com/ordo_meritum/shared/libs/llm/cohere"
 	"github.com/ordo_meritum/shared/libs/llm/gemini"
 )
 
@@ -23,8 +24,8 @@ func GetProvider(llm string) (LLMProvider, error) {
 	// 	host := os.Getenv("OLLAMA_HOST")
 	// 	model := os.Getenv("OLLAMA_MODEL")
 	// 	return ollama.NewClient(host, model)
-	// case "cohere":
-	// 	return cohere.NewClient(), nil
+	case "cohere":
+		return cohere.NewClient(), nil
 	case "anthropic":
 		return nil, fmt.Errorf("unsupported LLM provider: %s", llm)
 	case "gemini":
@@ -36,15 +37,15 @@ func GetProvider(llm string) (LLMProvider, error) {
 
 func FormatLLMResponse(raw string) string {
 	clean := strings.TrimSpace(raw)
-	clean = strings.TrimPrefix(clean, "```json")
-	clean = strings.TrimSuffix(clean, "```")
-	return strings.TrimSpace(clean)
-}
 
-func ParseJSON[T any](rawJSON string) (*T, error) {
-	var out T
-	if err := json.Unmarshal([]byte(rawJSON), &out); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal Gemini JSON: %w", err)
+	re := regexp.MustCompile("(?s)```json\\s*(\\{.*?\\})\\s*```")
+	match := re.FindStringSubmatch(clean)
+	if len(match) > 1 {
+		return strings.TrimSpace(match[1])
 	}
-	return &out, nil
+
+	clean = strings.ReplaceAll(clean, "```json", "")
+	clean = strings.ReplaceAll(clean, "```", "")
+	clean = regexp.MustCompile(`(?i)^here\s+is.*?schema[:\s]*`).ReplaceAllString(clean, "")
+	return strings.TrimSpace(clean)
 }

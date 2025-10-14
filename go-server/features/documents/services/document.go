@@ -144,7 +144,7 @@ func (s *DocumentService) updateResumeWithLLM(
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to generate resume from LLM: %w", err)
+		return nil, err
 	}
 	if err := s.resumeRepo.UpsertResume(ctx, uid, r.Options.JobID, &llmResume); err != nil {
 		return nil, fmt.Errorf("failed to upsert resume: %w", err)

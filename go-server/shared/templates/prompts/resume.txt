@@ -1,10 +1,10 @@
-[RESUME]
+[USER_RESUME_INPUT]
 {{.Resume}}
 
-[JOB_DESCRIPTION]
+[JOB_DESCRIPTION_INPUT]
 {{.JobPost}}
 
-[ADDITIONAL_INFO]
+[ADDITIONAL_INFO_INPUT]
 You may use the following information to further understand the user:
 {{.AdditionalInfo}}
 
@@ -16,12 +16,12 @@ The order of revision for each section is as follow:
   3. Technical Skills
   4. Summary
 
-Follow these instructions for each section, reflecting on revisions made to previous ones:
+[CONSTRAINTS]
+Always keep the original job titles and company names as they appear in the user's original resume.
+Always keep experiences and projects listed on the user's original resume separate.
 
-Experience Instructions:
+[EXPERIENCE SECTION REVISION INSTRUCTIONS]
 - All experiences/roles/positions in the user's original resume must be present in the revisions.
-- Always use the original job title for each experience.
-- Do NOT add a project to the user's experience section.
 - Positions held at each company should be unique (No repeated entries with different bullet points).
 - Each position must have 4-6 bullet point and each bullet point must not exceed 136 characters.
 - Align existing skills/technologies to the job description. Substitutions are allowed if there is not an exact match (for example: Job requires MySQL, but user only has experience with PostgreSQL. PostgreSQL can be substituted)
@@ -29,14 +29,14 @@ Experience Instructions:
 - Avoid redundancy; combine bullets if it improves clarity.
 - Explain and justify revisions made where applicable.
 
-Projects Instructions:
+[PROJECTS SECTION REVISION INSTRUCTIONS]
 - Prioritize projects in active development, then job relevance.
 - Each project should have 4-6 bullet points and each bullet point must not exceed 136 characters.
 - Emphasize technologies used that align with the job description.
 - Project name, roles, and statuses must remain the same.
 - Explain and justify revisions made where applicable.
 
-Technical Skills Instructions:
+[TECHNICAL SKILLS SECTION REVISION INSTRUCTIONS]
 - Skills displayed must have already been mentioned in the revised bullet points above.
 - Categorize logically for human readability and order by relevancy then proficiency.
 - Order skills by relevancy then proficiency.
@@ -44,7 +44,7 @@ Technical Skills Instructions:
 - Do not include the proficiency number in the output.
 - Explain and justify revisions made where applicable.
 
-Summary Instructions:
+[SUMMARY REVISION INSTRUCTIONS]
 - Maximum 3 sentences; Less than 421 characters.
 - Align with the revised experience, projects, and skills sections above.
 - Do not invent titles or experience; you must accurately portray the user.
@@ -53,6 +53,11 @@ Summary Instructions:
 - Reflect user's tone as close as possible.
 - Only use standard ASCII keyboard characters; no em-dashes or curly quotes.
 - Explain and justify revisions made where applicable.
+
+[FINAL_RULES]
+1.  CRITICAL: Under no circumstances should you alter the job titles or company names from the original resume.
+2.  The job title "Software Engineer Intern" MUST remain "Software Engineer Intern".
+3.  All original roles and projects must be included in the final output.
 
 [EXAMPLE_OUTPUT]
 
@@ -125,3 +130,5 @@ Summary Instructions:
     }
   ]
 }
+
+You must only output a JSON as requested by the ResponseFormat
