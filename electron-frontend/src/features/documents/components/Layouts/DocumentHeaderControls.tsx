@@ -1,8 +1,9 @@
-import React from "react";
+import "@/assets/styles/Components/UI/DocumentHeaderControls.css";
+
+import { CircleProgress } from "@/components/UI/loaders/CircleProgress";
 import { DocumentType } from "../../types";
 import { JobSelectorDropdown } from "@/features/applications/components/JobSelectorDropdown";
-import { CircleProgress } from "@/components/UI/loaders/CircleProgress";
-import "@/assets/styles/Components/UI/DocumentHeaderControls.css";
+import React from "react";
 
 interface DocumentHeaderControlsProps {
   selectedDocType: DocumentType;

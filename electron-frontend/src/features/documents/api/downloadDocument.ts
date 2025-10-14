@@ -1,4 +1,5 @@
-import { ResumeChanges, CoverLetterChanges } from "../types";
+import { CoverLetterChanges, ResumeChanges } from "../types";
+
 import { apiRequest } from "@/shared/utils/requests";
 
 const findInUint8Array = (haystack: Uint8Array, needle: Uint8Array): number => {
@@ -41,7 +42,7 @@ export const downloadDocument = async (
   const dataView = new Uint8Array(arrayBuffer);
 
   const firstChunkText = uint8ArrayToString(dataView.subarray(0, 256));
-  const boundaryMatch = firstChunkText.match(/^--(.+)/);
+  const boundaryMatch = RegExp(/^--(.+)/).exec(firstChunkText);
   if (!boundaryMatch) {
     return { pdf: multipartBlob };
   }
@@ -73,7 +74,7 @@ export const downloadDocument = async (
       part.length - 2
     );
 
-    const filenameMatch = headerText.match(/filename="(.+?)"/);
+    const filenameMatch = RegExp(/filename="(.+?)"/).exec(headerText);
     if (!filenameMatch) continue;
     const filename = filenameMatch[1];
 

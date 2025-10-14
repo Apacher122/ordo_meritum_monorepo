@@ -1,20 +1,13 @@
-import { useCallback, useState, useEffect, useMemo } from "react";
-import { LlmProvider } from "@/shared/types";
-
 import { DocumentType, ResumeChanges } from "../types";
-import { generateDocument as generateDocumentApi } from "../api/generateDocument";
-import {
-  useDocumentStatus,
-  DocumentStatus,
-} from "../providers/DocumentStatusProvider";
-import { useAuth } from "../../auth/providers/AuthProvider";
-import { useSettings } from "../../settings/hooks/useSettings";
-import { UserProfile } from "@/features/user/types";
-import { useUserInfo } from "@/features/user/hooks/useUserInfo";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { LlmProvider } from "@/shared/types";
 import { downloadDocument } from "../api/downloadDocument";
-import { set } from "zod";
-import { useDocumentDownload } from "./useDownloadDocument";
-import path from "path";
+import { generateDocument as generateDocumentApi } from "../api/generateDocument";
+import { useAuth } from "../../auth/providers/AuthProvider";
+import { useDocumentStatus } from "../providers/DocumentStatusProvider";
+import { useSettings } from "../../settings/hooks/useSettings";
+import { useUserInfo } from "@/features/user/hooks/useUserInfo";
 
 const getLocalPath = (
   jobId: number,

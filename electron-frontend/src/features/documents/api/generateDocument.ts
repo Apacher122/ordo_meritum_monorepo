@@ -1,9 +1,9 @@
+import { DocumentRequestBody, DocumentType } from '../types';
+
 import { LlmProvider } from '@/shared/types';
-import { DocumentType } from '../types';
+import { Settings } from '@/features/settings/types/types';
 import { apiRequest } from '@/shared/utils/requests';
 import { encryptData } from '@/shared/lib/encryption';
-import { Settings } from '@/features/settings/types/types';
-import { DocumentRequestBody } from '../types';
 
 export interface QueueJobResponse {
   jobId: number;
@@ -31,12 +31,24 @@ export const generateDocument = async (
     'Content-Type': 'application/json',
   };
 
+  const sanitizedResume = {
+    ...documentRequest.resume,
+    experiences: documentRequest.resume.experiences?.map(exp => ({
+        ...exp,
+        bulletPoints: exp.bulletPoints?.map(bp => (bp.text))
+    })),
+    projects: documentRequest.resume.projects?.map(proj => ({
+        ...proj,
+        bulletPoints: proj.bulletPoints?.map(bp => (bp.text))
+    }))
+  };
+
   let payload: any;
   if (docType === "resume") {
     payload = {
       userInfo: documentRequest.userInfo,
       educationInfo: documentRequest.education,
-      resume: documentRequest.resume,
+      resume: sanitizedResume,
       additionalInfo: documentRequest.aboutMe,
     };
   } else if (docType === "cover-letter") {

@@ -1,7 +1,8 @@
-import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+
 import { DocumentType } from '../types';
-import { useAuth } from '../../auth/providers/AuthProvider';
-import { webSocketService } from '../../../shared/api/WebSocketService';
+import { useAuth } from '@/features/auth/providers/AuthProvider';
+import { webSocketService } from '@/shared/api/WebSocketService';
 
 export interface DocumentStatus {
   status: 'PENDING' | 'COMPLETED' | 'FAILED';

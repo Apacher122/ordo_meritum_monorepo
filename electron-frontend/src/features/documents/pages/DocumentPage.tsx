@@ -1,17 +1,18 @@
 import "@/assets/styles/pages/DocumentPage.css";
+
+import { DocumentHeaderControls, PDFView } from "../components";
 import React, { useEffect, useMemo, useState } from "react";
-import { DocumentHeaderControls } from "../components";
+import {
+  useSetHeaderControls,
+  useSetHeaderSubtitle,
+  useSetHeaderTitle,
+} from "@/components/Layouts/providers/HeaderProvider";
+
+import { CircleProgress } from "@/components/UI/loaders/CircleProgress";
 import { DocumentType } from "../types";
-import { PDFView } from "../components";
+import { ViewChangesModal } from "../components/ViewChangesModal";
 import { useApplication } from "../../applications/providers/ApplicationProvider";
 import { useDocumentManager } from "../hooks/useDocumentManager";
-import { CircleProgress } from "@/components/UI/loaders/CircleProgress";
-import {
-  useSetHeaderTitle,
-  useSetHeaderSubtitle,
-  useSetHeaderControls,
-} from "@/components/Layouts/providers/HeaderProvider";
-import { ViewChangesModal } from "../components/ViewChangesModal";
 
 export const DocumentPage: React.FC = () => {
   const { selectedJob, loading: appLoading } = useApplication();

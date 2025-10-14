@@ -75,7 +75,7 @@ export const PDFView: React.FC<PDFViewProps> = ({ file }) => {
             <Page
               pageNumber={pageNumber}
               scale={scale}
-                            renderTextLayer={true} 
+              renderTextLayer={true} 
               className="pdf-page-dark"
             />
           </div>
