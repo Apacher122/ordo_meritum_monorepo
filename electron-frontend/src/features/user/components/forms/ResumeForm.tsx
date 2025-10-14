@@ -19,7 +19,8 @@ export const ResumeForm: React.FC<FormProps> = ({ profile, setProfile }) => {
     setProfile(prev => {
         if (!prev) return null;
         const newExperiences = [...(prev.resume.experiences || [])];
-        newExperiences[index] = { ...newExperiences[index], [field]: value };
+        const updatedValue = field === 'bulletPoints' ? value as { text: string }[] : value;     
+        newExperiences[index] = { ...newExperiences[index], [field]: updatedValue };
         return { ...prev, resume: { ...prev.resume, experiences: newExperiences } };
     });
   };
@@ -38,7 +39,9 @@ export const ResumeForm: React.FC<FormProps> = ({ profile, setProfile }) => {
     setProfile(prev => {
         if (!prev) return null;
         const newProjects = [...(prev.resume.projects || [])];
-        newProjects[index] = { ...newProjects[index], [field]: value };
+        const updatedValue = field === 'bulletPoints' ? value as { text: string }[] : value;
+
+        newProjects[index] = { ...newProjects[index], [field]: updatedValue };
         return { ...prev, resume: { ...prev.resume, projects: newProjects } };
     });
   };
