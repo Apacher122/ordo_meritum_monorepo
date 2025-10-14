@@ -1,7 +1,7 @@
 class WebSocketService {
   private ws: WebSocket | null = null;
   private onMessageCallback: ((data: any) => void) | null = null;
-  private reconnectInterval: number = 5000;
+  private readonly reconnectInterval: number = 5000;
   private userId: string | null = null;
   private token: string | null = null;
 
