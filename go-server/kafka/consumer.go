@@ -15,6 +15,11 @@ import (
 
 const serviceName = "kafka-consumer"
 
+type consumer struct {
+	reader *kafka.Reader
+	hub    *websocket.Hub
+}
+
 type DocumentCompletionEvent struct {
 	UserID       string `json:"user_id"`
 	JobID        int    `json:"job_id"`
@@ -25,7 +30,7 @@ type DocumentCompletionEvent struct {
 	Error        string `json:"error,omitempty"`
 }
 
-func RegisterCompletionConsumer(lc fx.Lifecycle, hub *websocket.Hub) {
+func newConsumer(hub *websocket.Hub) *consumer {
 	broker := os.Getenv("KAFKA_BROKER_URL")
 	if broker == "" {
 		broker = "kafka:29092"
@@ -41,64 +46,76 @@ func RegisterCompletionConsumer(lc fx.Lifecycle, hub *websocket.Hub) {
 		ReadLagInterval: -1,
 	})
 
+	return &consumer{reader: reader, hub: hub}
+}
+
+func (c *consumer) start(ctx context.Context) {
+	log.Info().Str("service", serviceName).Msg("Starting Kafka completion consumer...")
+	defer func() {
+		_ = c.reader.Close()
+		log.Info().Str("service", serviceName).Msg("Kafka consumer stopped.")
+	}()
+
+	for {
+		msg, err := c.reader.ReadMessage(ctx)
+		if err != nil {
+			if err == context.Canceled {
+				log.Info().Msg("Kafka consumer context canceled, shutting down.")
+				return
+			}
+			log.Error().Err(err).Msg("Kafka consumer error, retrying...")
+			time.Sleep(2 * time.Second)
+			continue
+		}
+		c.handleMessage(msg)
+	}
+}
+
+func (c *consumer) handleMessage(msg kafka.Message) {
+	var event DocumentCompletionEvent
+	if err := json.Unmarshal(msg.Value, &event); err != nil {
+		log.Error().Err(err).Msg("Failed to unmarshal completion event")
+		return
+	}
+
+	log.Info().
+		Str("user_id", event.UserID).
+		Str("job_id", strconv.Itoa(event.JobID)).
+		Msg("Received completion event")
+
+	c.broadcastEvent(&event, msg.Value)
+}
+
+func (c *consumer) broadcastEvent(event *DocumentCompletionEvent, rawMsg []byte) {
+	if userClients, ok := c.hub.UserClients[event.UserID]; ok && len(userClients) > 0 {
+		log.Info().
+			Str("user_id", event.UserID).
+			Int("client_count", len(userClients)).
+			Msg("Broadcasting notification to connected clients")
+		for client := range userClients {
+			select {
+			case client.Send <- rawMsg:
+			default:
+				close(client.Send)
+				delete(userClients, client)
+			}
+		}
+	} else {
+		log.Warn().Str("user_id", event.UserID).Msg("No clients connected for user, cannot send notification")
+	}
+}
+
+func RegisterCompletionConsumer(lc fx.Lifecycle, hub *websocket.Hub) {
+	consumer := newConsumer(hub)
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			log.Info().Str("service", serviceName).Msg("Starting Kafka completion consumer...")
-			go func() {
-				defer func() {
-					_ = reader.Close()
-					log.Info().Str("service", serviceName).Msg("Kafka consumer stopped.")
-				}()
-				ctx := context.Background()
-				for {
-					msg, err := reader.ReadMessage(ctx)
-					if err != nil {
-						if err == context.DeadlineExceeded {
-							continue
-						}
-						if err == context.Canceled {
-							log.Info().Msg("Kafka consumer context canceled, shutting down.")
-							return
-						}
-						log.Error().Err(err).Msg("Kafka consumer error, retrying...")
-						time.Sleep(2 * time.Second)
-						continue
-					}
-
-					var event DocumentCompletionEvent
-					if err := json.Unmarshal(msg.Value, &event); err != nil {
-						log.Error().Err(err).Msg("Failed to unmarshal completion event")
-						continue
-					}
-
-					log.Info().
-						Str("user_id", event.UserID).
-						Str("job_id", strconv.Itoa(event.JobID)).
-						Msg("Received completion event")
-
-					if userClients, ok := hub.UserClients[event.UserID]; ok {
-						log.Info().
-							Str("user_id", event.UserID).
-							Int("client_count", len(userClients)).
-							Msg("Broadcasting notification to connected clients")
-						for client := range userClients {
-							select {
-							case client.Send <- msg.Value:
-							default:
-								close(client.Send)
-								delete(userClients, client)
-							}
-						}
-					} else {
-						log.Warn().Str("user_id", event.UserID).Msg("No clients connected for user, cannot send notification")
-					}
-				}
-			}()
+			go consumer.start(context.Background())
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
 			log.Info().Str("service", serviceName).Msg("Stopping Kafka completion consumer...")
-			return reader.Close()
+			return consumer.reader.Close()
 		},
 	})
 }
