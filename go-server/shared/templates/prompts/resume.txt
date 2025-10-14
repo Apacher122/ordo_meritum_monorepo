@@ -20,6 +20,8 @@ Follow these instructions for each section, reflecting on revisions made to prev
 
 Experience Instructions:
 - All experiences/roles/positions in the user's original resume must be present in the revisions.
+- Always use the original job title for each experience.
+- Do NOT add a project to the user's experience section.
 - Positions held at each company should be unique (No repeated entries with different bullet points).
 - Each position must have 4-6 bullet point and each bullet point must not exceed 136 characters.
 - Align existing skills/technologies to the job description. Substitutions are allowed if there is not an exact match (for example: Job requires MySQL, but user only has experience with PostgreSQL. PostgreSQL can be substituted)
