@@ -41,7 +41,7 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
     return jobs.find((job) => job.RoleID === selectedId) || null;
   }, [jobs, selectedId]);
 
-  const value = {
+  const value = useMemo(() => ({
     jobs,
     selectedId,
     setSelectedId,
@@ -52,7 +52,18 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
     metrics,
     loading,
     error,
-  };
+  }), [
+    jobs,
+    selectedId,
+    setSelectedId,
+    selectedJob,
+    updateJobStatus,
+    updateJobDate,
+    removeJob,
+    metrics,
+    loading,
+    error
+  ]);
 
   return (
     <ApplicationContext.Provider value={value}>

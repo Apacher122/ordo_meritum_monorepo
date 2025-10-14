@@ -6,7 +6,7 @@ export interface AppliedJob {
   CompanyName: string;
   CompanyProperName: string;
   Website: string;
-  ApplicationStatus: ApplicationStatus | string;
+  ApplicationStatus: ApplicationStatus;
   UserApplied: boolean;
   InterviewCount: number;
   InitialApplicationDate: Date;

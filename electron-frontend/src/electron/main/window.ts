@@ -1,7 +1,7 @@
 import { BrowserWindow } from "electron";
 import path from "path";
 
-export let mainWindow: BrowserWindow | null = null;
+let mainWindow: BrowserWindow | null = null;
 
 export const createWindow = () => {
   mainWindow = new BrowserWindow({
@@ -22,3 +22,7 @@ export const createWindow = () => {
 
   mainWindow.on("closed", () => (mainWindow = null));
 };
+
+export const getMainWindow = (): BrowserWindow | null => {
+    return mainWindow;
+}

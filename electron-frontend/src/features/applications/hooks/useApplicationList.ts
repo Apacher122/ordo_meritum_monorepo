@@ -19,13 +19,13 @@ export const useApplicationList = () => {
     const correctedDate = new Date(dateFromBackend.getTime() + timezoneOffset);
     return {
       ...job,
-      ApplicationStatus: normalizeStatus(job.ApplicationStatus as string),
+      ApplicationStatus: normalizeStatus(job.ApplicationStatus),
       InitialApplicationDate: correctedDate,
     };
   };
 
   const metrics = useMemo((): ApplicationMetricsData => {
-    const appsSent = jobs.filter((j) => j.ApplicationStatus !== "Not Applied");
+    const appsSent = jobs.filter((j) => j.ApplicationStatus !== "Not applied");
     const applicationsSent = appsSent.length;
     if (applicationsSent === 0) {
       return {
@@ -101,14 +101,14 @@ export const useApplicationList = () => {
     setLoading(true);
     try {
       const data = await api.getApplications();
-      const sortedData = data.sort(
+      const sortedData = [...data].sort(
         (a, b) =>
           new Date(b.InitialApplicationDate).getTime() -
           new Date(a.InitialApplicationDate).getTime()
       );
       setJobs(sortedData.map(transformJobData));
     } catch (err) {
-      setError("Failed to load applications.");
+      setError("Failed to load applications." + err);
     } finally {
       setLoading(false);
     }
@@ -134,7 +134,7 @@ export const useApplicationList = () => {
         });
       } catch (err) {
         setJobs(originalJobs);
-        setError("Failed to update status.");
+        setError("Failed to update status." + err);
       }
     },
     [jobs]
@@ -152,7 +152,7 @@ export const useApplicationList = () => {
         await api.updateApplication(roleId, { status: null, date: newDate });
       } catch (err) {
         setJobs(originalJobs);
-        setError("Failed to update date.");
+        setError("Failed to update date." + err);
       }
     },
     [jobs]
@@ -166,7 +166,7 @@ export const useApplicationList = () => {
         await api.deleteApplication(roleId);
       } catch (err) {
         setJobs(originalJobs);
-        setError("Failed to delete application.");
+        setError("Failed to delete application." + err);
       }
     },
     [jobs]

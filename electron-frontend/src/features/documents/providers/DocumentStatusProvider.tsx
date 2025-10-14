@@ -1,4 +1,4 @@
-import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import { DocumentType } from '../types';
 import { useAuth } from '@/features/auth/providers/AuthProvider';
@@ -84,8 +84,11 @@ export const DocumentStatusProvider = ({ children }: { children: React.ReactNode
     });
   }, []);
 
-  const value = { documentStatuses, addPendingDocument };
-
+  const value = useMemo(() => ({
+    documentStatuses,
+    addPendingDocument,
+  }), [documentStatuses, addPendingDocument]);
+  
   return (
     <DocumentStatusContext.Provider value={value}>
       {children}

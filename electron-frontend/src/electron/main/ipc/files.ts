@@ -1,5 +1,5 @@
-import { ipcMain, app } from "electron";
 import fs from "fs";
+import { ipcMain } from "electron";
 import path from "path";
 import sanitize from "sanitize-filename";
 

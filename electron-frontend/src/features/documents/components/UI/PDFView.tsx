@@ -59,7 +59,13 @@ export const PDFView: React.FC<PDFViewProps> = ({ file }) => {
         </div>
         <div className="zoom-controls">
           <button onClick={zoomOut} disabled={scale <= 0.5}>-</button>
-          <span onClick={resetZoom} title="Reset Zoom" className="zoom-level">{Math.round(scale * 100)}%</span>
+          <button 
+            onClick={resetZoom} 
+            title="Reset Zoom" 
+            className="zoom-level"
+          >
+            {Math.round(scale * 100)}%
+          </button>
           <button onClick={zoomIn} disabled={scale >= 2.0}>+</button>
         </div>
       </div>

@@ -93,7 +93,7 @@ export const InfoPage: React.FC = () => {
         />
 
         <div className="form-grid single-column">
-          <label>LLM Provider</label>
+          <label htmlFor="llmProvider">LLM Provider</label>
           <select
             name="llmProvider"
             value={formState.llmProvider}

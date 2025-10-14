@@ -1,6 +1,5 @@
+import { getMainWindow } from "@/electron/main/";
 import { ipcMain } from "electron";
-import { mainWindow } from "@/electron/main/";
-
 
 let pollingInterval: NodeJS.Timeout | null = null;
 
@@ -10,6 +9,7 @@ async function fetchJobsFromBackend() {
 }
 
 ipcMain.on("start-polling", () => {
+  const mainWindow = getMainWindow();
   if (pollingInterval) clearInterval(pollingInterval);
   pollingInterval = setInterval(async () => {
     if (mainWindow) {

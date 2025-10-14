@@ -1,7 +1,6 @@
 import { DocumentType, ResumeChanges } from "../types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
-import { LlmProvider } from "@/shared/types";
 import { downloadDocument } from "../api/downloadDocument";
 import { generateDocument as generateDocumentApi } from "../api/generateDocument";
 import { useAuth } from "../../auth/providers/AuthProvider";
@@ -142,7 +141,7 @@ export const useDocumentManager = (
       const token = await user.getIdToken();
       const feature =
         docType === "resume" ? "resumeGeneration" : "coverLetterGeneration";
-      const llmProvider = settings.featureAssignments[feature] as LlmProvider;
+      const llmProvider = settings.featureAssignments[feature];
 
       const response = await generateDocumentApi(
         docType,

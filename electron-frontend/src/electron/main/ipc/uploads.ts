@@ -1,7 +1,7 @@
 import { app, dialog, ipcMain } from "electron";
 
 import fs from "fs";
-import { mainWindow } from "../window";
+import { getMainWindow } from "../window";
 import path from "path";
 
 const writingSamplesPath = path.join(
@@ -10,6 +10,7 @@ const writingSamplesPath = path.join(
 );
 
 ipcMain.handle("upload-writing-samples", async () => {
+  const mainWindow = getMainWindow();
   if (!mainWindow) {
     return { success: false, error: "Main window not available." };
   }

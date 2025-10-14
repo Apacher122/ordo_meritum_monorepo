@@ -97,13 +97,13 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ applicat
                             className="date-input"
                         />
                     ) : (
-                        <span 
-                            className="applied-date editable" 
+                        <button
+                            className="applied-date editable text-button" // Add a class like "text-button" to remove default button styles
                             onClick={() => setIsEditingDate(true)}
                             title="Click to edit date"
-                        >
+>
                             <i>Applied On: {formatDate(application.InitialApplicationDate)}</i>
-                        </span>
+                        </button>
                     )}
                 </div>
                 <button 
