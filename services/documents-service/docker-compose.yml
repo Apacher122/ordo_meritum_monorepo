@@ -3,8 +3,8 @@ services:
     build:
       context: ./
     volumes:
-      - ./shared_pdfs:/usr/src/app/shared_pdfs
-      - ./logs:/usr/src/app/logs/microservices/documents
+      - ../../shared_pdfs:/usr/src/app/shared_pdfs
+      - ../../logs:/usr/src/app/logs/microservices/documents
     env_file: [] # no secrets here
     depends_on:
       kafka:
