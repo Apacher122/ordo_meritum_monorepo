@@ -1,0 +1,8 @@
+
+electron-frontend/public/renderer.js linguist-vendored
+electron-frontend/public/renderer.js.map linguist-vendored
+electron-frontend/public/pdf.worker.min.mjs linguist-vendored
+
+*.cls linguist-language=TeX
+
+*.md linguist-documentation
