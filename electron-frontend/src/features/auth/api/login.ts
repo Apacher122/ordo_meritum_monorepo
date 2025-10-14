@@ -1,7 +1,7 @@
 import { apiRequest } from "@/shared/utils/requests";
 
 export const loginToServer = (): Promise<void> => {
-  return apiRequest("api/secure/auth/login", {
+  return apiRequest("/login-or-register", {
     method: "POST",
   });
 };
