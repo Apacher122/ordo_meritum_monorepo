@@ -1,11 +1,23 @@
 package formatters
 
-import "strings"
+import (
+	"regexp"
+	"strings"
+
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+)
 
 func ToPascalCase(s string) string {
-	words := strings.Split(s, " ")
+	re := regexp.MustCompile(`[\s_-]+`)
+	words := re.Split(s, -1)
+
+	caser := cases.Title(language.English)
+
 	for i, word := range words {
-		words[i] = strings.Title(word)
+		if len(word) > 0 {
+			words[i] = caser.String(word)
+		}
 	}
 	return strings.Join(words, "")
 }

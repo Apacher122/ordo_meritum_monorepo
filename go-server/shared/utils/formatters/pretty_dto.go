@@ -10,8 +10,10 @@ import (
 	"github.com/ordo_meritum/features/documents/models/requests"
 )
 
-func FormatResumeForLLMWithXML(payload requests.ResumeRequest) string {
+func FormatResumeForLLMWithXML(request *requests.DocumentPayload) string {
 	var sb strings.Builder
+
+	payload := request.Resume
 
 	sb.WriteString("<resume_content>\n")
 
@@ -19,33 +21,33 @@ func FormatResumeForLLMWithXML(payload requests.ResumeRequest) string {
 		sb.WriteString("\t<experiences>\n")
 		for _, exp := range payload.Experiences {
 			sb.WriteString("\t\t<job>\n")
-			sb.WriteString(fmt.Sprintf("\t\t\t<title>%s</title>\n", exp.Position))
+			sb.WriteString(fmt.Sprintf("\t\t\t<position>%s</position>\n", exp.Position))
 			sb.WriteString(fmt.Sprintf("\t\t\t<company>%s</company>\n", exp.Company))
 			sb.WriteString(fmt.Sprintf("\t\t\t<dates>%s</dates>\n", exp.Years))
-			sb.WriteString("\t\t\t<bullet_points>\n")
+			sb.WriteString("\t\t\t<experience_bullet_points>\n")
 			for _, point := range exp.BulletPoints {
-				sb.WriteString(fmt.Sprintf("\t\t\t\t<bullet>%s</bullet>\n", strings.TrimSpace(point)))
+				sb.WriteString(fmt.Sprintf("\t\t\t\t<experience_bullet>%s</experience_bullet>\n", strings.TrimSpace(point)))
 			}
-			sb.WriteString("\t\t\t</bullet_points>\n")
+			sb.WriteString("\t\t\t</experience_bullet_points>\n")
 			sb.WriteString("\t\t</job>\n")
 		}
 		sb.WriteString("\t</experiences>\n")
 	}
 
 	if len(payload.Projects) > 0 {
-		sb.WriteString("\t<projects>\n")
+		sb.WriteString("\t<personal_projects>\n")
 		for _, proj := range payload.Projects {
 			sb.WriteString("\t\t<project>\n")
-			sb.WriteString(fmt.Sprintf("\t\t\t<name>%s</name>\n", proj.Name))
-			sb.WriteString(fmt.Sprintf("\t\t\t<role>%s</role>\n", proj.Description))
-			sb.WriteString("\t\t\t<bullet_points>\n")
+			sb.WriteString(fmt.Sprintf("\t\t\t<project_name>%s</project_name>\n", proj.Name))
+			sb.WriteString(fmt.Sprintf("\t\t\t<candidate_role_in_project>%s</candidate_role_in_projec>\n", proj.Description))
+			sb.WriteString("\t\t\t<project_bullet_points>\n")
 			for _, point := range proj.BulletPoints {
-				sb.WriteString(fmt.Sprintf("\t\t\t\t<bullet>%s</bullet>\n", strings.TrimSpace(point)))
+				sb.WriteString(fmt.Sprintf("\t\t\t\t<project_bullet>%s</project_bullet>\n", strings.TrimSpace(point)))
 			}
-			sb.WriteString("\t\t\t</bullet_points>\n")
+			sb.WriteString("\t\t\t</project_bullet_points>\n")
 			sb.WriteString("\t\t</project>\n")
 		}
-		sb.WriteString("\t</projects>\n")
+		sb.WriteString("\t</personal_projects>\n")
 	}
 
 	if len(payload.Skills) > 0 {

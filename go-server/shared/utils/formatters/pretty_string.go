@@ -68,7 +68,7 @@ Applicant Count: %d
 	)
 }
 
-func PrettyEducation(e requests.EducationInfoRequest) string {
+func PrettyEducation(e requests.EducationInfoPayload) string {
 	return fmt.Sprintf(`
 School: %s
 Degree: %s

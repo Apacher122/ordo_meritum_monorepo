@@ -16,7 +16,7 @@ func FormatTemplate(fs embed.FS, filename string, data any) (string, error) {
 
 	empl, err := template.New(filename).Parse(string(content))
 	if err != nil {
-		log.Printf("could not parse template %s: %w", filename, err)
+		log.Printf("could not parse template %s: %s", filename, err)
 		return "", nil
 	}
 

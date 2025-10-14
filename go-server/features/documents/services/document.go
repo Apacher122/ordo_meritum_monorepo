@@ -286,7 +286,7 @@ func buildResumePromptData(
 	}
 	return map[string]any{
 		"JobPost":        formatters.PrettyJobPost(*j),
-		"Resume":         formatters.FormatResumeForLLMWithXML(payload.Resume),
+		"Resume":         formatters.FormatResumeForLLMWithXML(payload),
 		"AdditionalInfo": additionalInfo,
 	}, nil
 }
