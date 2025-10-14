@@ -1,4 +1,5 @@
-import { ipcMain, app } from "electron";
+import { app, ipcMain } from "electron";
+
 import fs from "fs";
 import path from "path";
 

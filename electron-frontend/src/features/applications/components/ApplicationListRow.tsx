@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
-import { AppliedJob, ApplicationStatus } from '../types';
 import '@/assets/styles/Components/Layouts/ApplicationListRow.css';
 
+import { ApplicationStatus, AppliedJob } from '../types';
+import React, { useState } from 'react';
 
 interface ApplicationListRowProps {
   application: AppliedJob;

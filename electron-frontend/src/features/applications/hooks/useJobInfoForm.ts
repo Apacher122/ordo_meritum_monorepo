@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { LlmProvider } from "@/shared/types/index.js";
 import { encryptData } from "@/shared/lib/encryption";
 import { useSettings } from "../../settings/hooks/useSettings";
+
 interface FormState extends Omit<NewJobPayload, "apiKey"> {
   llmProvider: LlmProvider;
 }

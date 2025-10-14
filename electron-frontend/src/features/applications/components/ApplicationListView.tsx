@@ -1,6 +1,6 @@
-import { ApplicationListRow } from './ApplicationListRow';
-import { AppliedJob, ApplicationStatus } from '../types';
+import { ApplicationStatus, AppliedJob } from '../types';
 
+import { ApplicationListRow } from './ApplicationListRow';
 
 interface ApplicationListViewProps {
     jobs: AppliedJob[];

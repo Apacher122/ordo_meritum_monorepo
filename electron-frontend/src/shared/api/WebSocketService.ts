@@ -13,6 +13,7 @@ class WebSocketService {
     this.userId = userId;
     this.token = token;
     const url = `${window.env.SERVER_URL}/ws?token=${this.token}`;
+
     this.ws = new WebSocket(url);
 
     this.ws.onopen = () => {

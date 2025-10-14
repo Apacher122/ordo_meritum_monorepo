@@ -1,9 +1,10 @@
 import "@/assets/styles/pages/InfoPage.css";
-import { Link } from "react-router-dom"; 
-import { LlmProvider } from "@/shared/types/index.js";
-import React, { useEffect } from "react";
 
-import { useSetHeaderTitle, useSetHeaderSubtitle, useSetHeaderControls } from "@/components/Layouts/providers/HeaderProvider";
+import React, { useEffect } from "react";
+import { useSetHeaderControls, useSetHeaderSubtitle, useSetHeaderTitle } from "@/components/Layouts/providers/HeaderProvider";
+
+import { Link } from "react-router-dom";
+import { LlmProvider } from "@/shared/types/index.js";
 import { useJobInfoForm } from "../hooks/useJobInfoForm";
 
 const llmProviderOptions: LlmProvider[] = [

@@ -1,6 +1,7 @@
+import '@/assets/styles/Components/UI/JobSelectorDropdown.css';
+
 import React from 'react';
 import { useApplication } from '../providers/ApplicationProvider';
-import '@/assets/styles/Components/UI/JobSelectorDropdown.css';
 
 /**
  * A dropdown component that allows the user to select a job application.

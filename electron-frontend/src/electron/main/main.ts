@@ -1,4 +1,4 @@
-import "./ipc";
+import "./ipc"; // auto-loads all IPC handlers
 
 import { BrowserWindow, app } from "electron";
 

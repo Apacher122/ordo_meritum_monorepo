@@ -1,7 +1,9 @@
 import * as api from "../api";
-import { AppliedJob, ApplicationStatus } from "../types";
+
+import { ApplicationStatus, AppliedJob } from "../types";
 import { denormalizeStatus, normalizeStatus } from "../utils/statusMappings";
 import { useCallback, useEffect, useMemo, useState } from "react";
+
 import { ApplicationMetricsData } from "../components/ApplicationMetrics";
 
 export const useApplicationList = () => {
@@ -50,8 +52,7 @@ export const useApplicationList = () => {
     ).length;
     const stillOpen = appsSent.filter(
       (j) =>
-        j.ApplicationStatus === "Open" ||
-        j.ApplicationStatus === "Interviewing"
+        j.ApplicationStatus === "Open" || j.ApplicationStatus === "Interviewing"
     ).length;
     const interviewing = appsSent.filter(
       (j) => j.ApplicationStatus === "Interviewing"

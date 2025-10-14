@@ -1,6 +1,6 @@
-import React from 'react';
 import '@/assets/styles/Components/Layouts/ApplicationMetrics.css';
 
+import React from 'react';
 
 export interface ApplicationMetricsData {
   applicationsSent: number;

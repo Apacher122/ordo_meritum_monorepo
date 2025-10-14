@@ -17,7 +17,8 @@ interface ApplicationContextType {
   updateJobStatus: (roleId: number, newStatus: ApplicationStatus) => void;
   updateJobDate: (roleId: number, newDate: Date) => void;
   removeJob: (roleId: number) => void;
-  metrics: ApplicationMetricsData;   loading: boolean;
+  metrics: ApplicationMetricsData;
+  loading: boolean;
   error: string | null;
 }
 const ApplicationContext = createContext<ApplicationContextType | undefined>(undefined);
