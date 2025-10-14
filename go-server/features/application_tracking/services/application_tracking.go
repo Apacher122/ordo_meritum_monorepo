@@ -5,7 +5,6 @@ import (
 	"context"
 	_ "embed"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"html/template"
 
@@ -19,7 +18,9 @@ import (
 
 	app_schemas "github.com/ordo_meritum/features/application_tracking/models/schemas"
 	"github.com/ordo_meritum/shared/libs/llm"
+	"github.com/ordo_meritum/shared/templates/instructions"
 	prompts "github.com/ordo_meritum/shared/templates/prompts"
+	"github.com/ordo_meritum/shared/utils/formatters"
 )
 
 type AppTrackerService struct {
@@ -110,38 +111,37 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 	}
 
 	jobPost := pretty.FormatJobPostingRequest(r)
-
 	promptData := map[string]string{
 		"JobPost": jobPost,
 	}
+	prompt, err := formatters.FormatTemplate(prompts.Prompts, "jobInfoExtraction.txt", promptData)
 
-	prompt, err := LoadPrompt("jobInfoExtraction.txt", promptData)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to format prompt template: %w", err)
 	}
 
-	instructions, err := LoadPrompt("jobInfoExtraction.txt", nil)
+	instructionBytes, err := instructions.Instructions.ReadFile("jobInfoExtraction.txt")
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to read instructions file: %w", err)
 	}
 
 	rawResponse, err := llmProvider.Generate(
 		ctx,
-		string(instructions),
+		string(instructionBytes),
 		prompt,
 		app_schemas.JobDescriptionResponseFormat,
 		apiKey,
 	)
 
-	cleanedJSON := llm.FormatLLMResponse(rawResponse)
+	if err != nil {
+		return nil, fmt.Errorf("LLM generation failed: %w", err)
+	}
 
+	cleanedJSON := llm.FormatLLMResponse(rawResponse)
+	log.Info().Msgf("Cleaned JSON: %s", cleanedJSON)
 	var llmResponse dto.JobDescription
 	if err := json.Unmarshal([]byte(cleanedJSON), &llmResponse); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal LLM response for job info: %w. Raw response: %s", err, rawResponse)
-	}
-
-	if err != nil {
-		return nil, errors.New("LLM returned an empty response for job description")
 	}
 
 	return &llmResponse, nil

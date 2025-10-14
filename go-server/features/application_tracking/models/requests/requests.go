@@ -4,7 +4,7 @@ type JobPostingRequest struct {
 	CompanyName    string `json:"company"`
 	JobTitle       string `json:"job_title"`
 	Link           string `json:"website"`
-	ApplicantCount int    `json:"applicant_count"`
+	ApplicantCount string `json:"applicant_count"`
 	TimeAgo        string `json:"time_ago"`
 	JobDescription string `json:"job_description"`
 }
