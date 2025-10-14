@@ -33,3 +33,19 @@ func FormatArray(arr []string) string {
 	}
 	return strings.Join(arr, ", ")
 }
+
+func ToSnakeCase(s string) string {
+	lower := strings.ToLower(s)
+
+	nonAlphanumericRegex := regexp.MustCompile("[^a-z0-9]+")
+	withSpaces := nonAlphanumericRegex.ReplaceAllString(lower, " ")
+
+	multipleSpacesRegex := regexp.MustCompile(`\s+`)
+	consolidatedSpaces := multipleSpacesRegex.ReplaceAllString(withSpaces, " ")
+
+	trimmed := strings.TrimSpace(consolidatedSpaces)
+
+	snakeCase := strings.ReplaceAll(trimmed, " ", "_")
+
+	return snakeCase
+}

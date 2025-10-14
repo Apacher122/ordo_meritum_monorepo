@@ -6,8 +6,10 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/ordo_meritum/database/jobs"
 	"github.com/ordo_meritum/features/documents/models/domain"
 	"github.com/ordo_meritum/features/documents/models/requests"
+	"github.com/ordo_meritum/shared/utils/formatters"
 )
 
 func FormatResumeForLLMWithXML(request *requests.DocumentPayload) string {
@@ -169,4 +171,86 @@ func FormatAboutForLLMWithXML(jsonData []byte) (string, error) {
 	sb.WriteString("</additional_info>")
 
 	return sb.String(), nil
+}
+
+func PrettyJobPost(job jobs.FullJobPosting) string {
+	return fmt.Sprintf(`
+Job Title: %s
+Company: %s
+Salary Range: %s
+Years of Experience: %s
+Education Level: %s
+
+Description:
+%s
+
+Company Culture:
+%s
+
+Company Values:
+%s
+
+Required Tools: %s
+Programming Languages: %s
+Frameworks & Libraries: %s
+Databases: %s
+Cloud Technologies: %s
+Industry Keywords: %s
+Soft Skills: %s
+Certifications: %s
+
+Requirements:
+%s
+
+Nice to Have:
+%s
+
+Applicant Count: %d
+	`,
+		job.JobTitle,
+		job.CompanyName,
+		formatters.PtrString(job.SalaryRange, "Not specified"),
+		formatters.PtrString(job.YearsOfExp, "Not specified"),
+		formatters.PtrString(job.EducationLevel, "Not specified"),
+
+		formatters.PtrString(job.Description, "No description provided"),
+		formatters.PtrString(job.CompanyCulture, "Not specified"),
+		formatters.PtrString(job.CompanyValues, "Not specified"),
+
+		formatters.FormatArray(job.Tools),
+		formatters.FormatArray(job.ProgrammingLanguages),
+		formatters.FormatArray(job.FrameworksAndLibraries),
+		formatters.FormatArray(job.Databases),
+		formatters.FormatArray(job.CloudTechnologies),
+		formatters.FormatArray(job.IndustryKeywords),
+		formatters.FormatArray(job.SoftSkills),
+		formatters.FormatArray(job.Certifications),
+
+		formatters.FormatArray(job.Requirements),
+		formatters.FormatArray(job.NiceToHaves),
+
+		formatters.PtrInt(job.ApplicantCount, 0),
+	)
+}
+
+func PrettyEducation(e requests.EducationInfoPayload) string {
+	return fmt.Sprintf(`
+School: %s
+Degree: %s
+Location: %s
+Dates: %s
+
+Coursework:
+%s
+	`,
+		formatters.PtrString(&e.School, "Not specified"),
+		formatters.PtrString(&e.Degree, "Not specified"),
+		formatters.PtrString(&e.Location, "Not specified"),
+		formatters.PtrString(&e.StartEnd, "Not specified"),
+		formatters.PtrString(&e.CourseWork, "No coursework listed"),
+	)
+}
+
+func JSONListToBulletPoints(list []string) string {
+	return strings.Join(list, "\n- ")
 }

@@ -26,11 +26,11 @@ func NewController(service *services.AppTrackerService) *Controller {
 	return &Controller{service: service}
 }
 
-func (c *Controller) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/apps/track", c.TrackApplication).Methods("POST")
-	router.HandleFunc("/apps/track/list", c.ListApplications).Methods("GET")
-	router.HandleFunc("/track/{id:[0-9]+}", c.GetTrackedApplication).Methods("GET")
-	router.HandleFunc("/track/{id:[0-9]+}/status", c.UpdateStatus).Methods("PUT")
+func (c *Controller) RegisterRoutes(secureRouter *mux.Router, authRouter *mux.Router) {
+	secureRouter.HandleFunc("/apps/track", c.TrackApplication).Methods("POST")
+	authRouter.HandleFunc("/apps/track/list", c.ListApplications).Methods("GET")
+	authRouter.HandleFunc("/track/{id:[0-9]+}", c.GetTrackedApplication).Methods("GET")
+	authRouter.HandleFunc("/track/{id:[0-9]+}/status", c.UpdateStatus).Methods("PUT")
 }
 
 func getUserID(r *http.Request) (string, error) {

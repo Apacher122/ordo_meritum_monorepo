@@ -17,7 +17,8 @@ import (
 	"github.com/ordo_meritum/shared/libs/llm"
 	"github.com/ordo_meritum/shared/templates/instructions"
 	"github.com/ordo_meritum/shared/templates/prompts"
-	"github.com/ordo_meritum/shared/utils/formatters"
+	formatters "github.com/ordo_meritum/shared/utils/formatters/pretty"
+	pretty "github.com/ordo_meritum/shared/utils/formatters/pretty"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
@@ -183,7 +184,7 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	if err != nil {
 		return nil, err
 	}
-	prompt, err := formatters.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
+	prompt, err := pretty.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
 	if err != nil {
 		return nil, err
 	}
@@ -240,7 +241,7 @@ func (s *DocumentService) generateLLMContent(
 		return err
 	}
 
-	prompt, err := formatters.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
+	prompt, err := pretty.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
 	if err != nil {
 		return fmt.Errorf("failed to format prompt template: %w", err)
 	}
@@ -280,25 +281,25 @@ func buildResumePromptData(
 	j *jobs.FullJobPosting,
 	payload *requests.DocumentPayload,
 ) (map[string]any, error) {
-	additionalInfo, err := formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
+	additionalInfo, err := pretty.FormatAboutForLLMWithXML(payload.AdditionalInfo)
 	if err != nil {
 		return nil, err
 	}
 	return map[string]any{
-		"JobPost":        formatters.PrettyJobPost(*j),
-		"Resume":         formatters.FormatResumeForLLMWithXML(payload),
+		"JobPost":        pretty.PrettyJobPost(*j),
+		"Resume":         pretty.FormatResumeForLLMWithXML(payload),
 		"AdditionalInfo": additionalInfo,
 	}, nil
 }
 
 func buildCoverLetterPromptData(j *jobs.FullJobPosting, payload *requests.DocumentPayload, opts requests.DocumentOptions, resume *domain.Resume) (map[string]any, error) {
-	additionalInfo, err := formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
+	additionalInfo, err := pretty.FormatAboutForLLMWithXML(payload.AdditionalInfo)
 	if err != nil {
 		return nil, err
 	}
 	return map[string]any{
-		"JobPost":        formatters.PrettyJobPost(*j),
-		"Education":      formatters.PrettyEducation(payload.EducationInfo),
+		"JobPost":        pretty.PrettyJobPost(*j),
+		"Education":      pretty.PrettyEducation(payload.EducationInfo),
 		"Resume":         formatters.FormatResumePayloadForLLMWithXML(*resume),
 		"AdditionalInfo": additionalInfo,
 		"Corrections":    strings.Join(opts.Corrections, "\n- "),

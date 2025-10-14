@@ -11,6 +11,7 @@ import (
 	"github.com/lib/pq"
 	"github.com/ordo_meritum/database/models"
 	"github.com/ordo_meritum/features/application_tracking/models/dto"
+	"github.com/ordo_meritum/shared/utils/formatters"
 )
 
 type FullJobPosting struct {
@@ -101,14 +102,16 @@ func (r *postgresRepository) InsertFullJobPosting(
 	}
 	defer tx.Rollback()
 
+	companyName := formatters.ToSnakeCase(jobPost.CompanyName)
+
 	var companyID int
 	companyQuery := `
-        INSERT INTO companies (company_name, company_culture, company_values)
-        VALUES ($1, $2, $3)
+        INSERT INTO companies (company_name, proper_name, company_culture, company_values)
+        VALUES ($1, $2, $3, $4)
         ON CONFLICT (company_name) DO UPDATE
         SET company_culture = EXCLUDED.company_culture, company_values = EXCLUDED.company_values
         RETURNING id`
-	err = tx.GetContext(ctx, &companyID, companyQuery, jobPost.CompanyName, jobPost.CompanyCulture, jobPost.CompanyValues)
+	err = tx.GetContext(ctx, &companyID, companyQuery, companyName, jobPost.CompanyName, jobPost.CompanyCulture, jobPost.CompanyValues)
 	if err != nil {
 		return nil, fmt.Errorf("failed to upsert company: %w", err)
 	}

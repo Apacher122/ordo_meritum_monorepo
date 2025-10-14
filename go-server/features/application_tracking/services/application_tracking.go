@@ -20,7 +20,7 @@ import (
 	"github.com/ordo_meritum/shared/libs/llm"
 	"github.com/ordo_meritum/shared/templates/instructions"
 	prompts "github.com/ordo_meritum/shared/templates/prompts"
-	"github.com/ordo_meritum/shared/utils/formatters"
+	formatters "github.com/ordo_meritum/shared/utils/formatters/pretty"
 )
 
 type AppTrackerService struct {
