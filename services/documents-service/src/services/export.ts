@@ -20,8 +20,6 @@ export const exportLatex = async ({
   jobId: number;
   docType: string;
 }): Promise<string> => {
-  (compiledPdfPath);
-  (outputPath);
   validatePath(outputPath);
 
   const latexFilePath = `${compiledPdfPath}/${docType}.tex`;

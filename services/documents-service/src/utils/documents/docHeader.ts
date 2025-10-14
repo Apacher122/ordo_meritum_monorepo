@@ -84,30 +84,10 @@ const replaceVariables = (
   let result = template;
 
   for (const key in data) {
-    if (Object.prototype.hasOwnProperty.call(data, key)) {
+    if (Object.hasOwn(data, key)) {
       const regex = new RegExp(`<<${key}>>`, "g");
       result = result.replace(regex, formatTextForLatex(data[key] as string));
     }
   }
   return result;
 };
-
-// Load the basic information of the user into resume.tex
-// export const loadUserInfoToLatex = async () => {
-//   const resumeTemplate = await fs.promises.readFile(
-//     paths.latex.resume.resumeTemplate,
-//     "utf8"
-//   );
-//   const resumeInfo = Handlebars.compile(resumeTemplate)(infoStore.user_info);
-//   await fs.promises.writeFile(paths.latex.resume.resume, resumeInfo);
-
-//   const educationTemplate = await fs.promises.readFile(
-//     paths.latex.resume.educationTemplate,
-//     "utf8"
-//   );
-
-//   const educationInfo = Handlebars.compile(educationTemplate)(
-//     infoStore.education_info
-//   );
-//   await fs.promises.writeFile(paths.latex.resume.education, educationInfo);
-// };

@@ -13,7 +13,9 @@ dotenv.config();
 export const compileCoverLetter = async (
   docRequest: schemas.CompilationRequest
 ): Promise<schemas.CompilationResult> => {
-  const data = schemas.CoverLetterPayloadSchema.safeParse(docRequest.coverLetter);
+  const data = schemas.CoverLetterPayloadSchema.safeParse(
+    docRequest.coverLetter
+  );
   if (!data.success) {
     logger.error("Malformed cover letter request", data.error);
     return {

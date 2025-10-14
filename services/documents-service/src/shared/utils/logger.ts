@@ -16,7 +16,6 @@ const logConfig = {
             level: "error",
             format: winston.format.combine(
                 winston.format.errors({ stack: true }),
-                winston.format.colorize({ all: true }),
                 winston.format.timestamp(),
                 winston.format.printf(({ timestamp, level, message, stack }) =>
                     `${timestamp} [${level.toUpperCase()}]: ${message} > STACK: ${stack}`

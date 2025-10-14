@@ -5,9 +5,9 @@ import (
 
 	"firebase.google.com/go/v4/auth"
 	"github.com/gorilla/mux"
+	"github.com/ordo_meritum/features/candidate_forms/models/requests"
 	"github.com/ordo_meritum/features/candidate_forms/services"
 	"github.com/ordo_meritum/shared/middleware"
-	"github.com/ordo_meritum/shared/models/requests"
 	"github.com/ordo_meritum/shared/utils/validators"
 )
 
@@ -40,7 +40,7 @@ func (c *Controller) PostQuestionnare(w http.ResponseWriter, r *http.Request) {
 	apiKey := r.Context().Value(middleware.APIKeyContextKey)
 	verifiedToken, _ := r.Context().Value(middleware.VerifiedTokenKey).(*auth.Token)
 
-	requestBody := requests.RequestBody{}
+	requestBody := requests.QuestionnaireRequest{}
 	err := validators.DecodeJSON(w, r, &requestBody)
 	if err != nil {
 		middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})

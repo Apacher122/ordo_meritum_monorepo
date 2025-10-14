@@ -12,7 +12,7 @@ export async function startDocumentWorker() {
   await kafka.consumer.run({
     eachMessage: async ({ message }) => {
       if (!message.value) return;
-
+      console.log("Received Kafka message:", message.value.toString());
       let request;
       try {
         request = CompilationRequestSchema.parse(JSON.parse(message.value.toString()));

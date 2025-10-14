@@ -12,7 +12,7 @@ func GetMockDocumentEvent(uid string, jobId int, docType string) events.Document
 		UserId:      uid,
 		CompanyName: "Tech Solutions Inc.",
 		DocType:     docType,
-		UserInfo: requests.UserInfoRequest{
+		UserInfo: requests.UserInfoPayload{
 			FirstName:       "Jane",
 			LastName:        "Doe",
 			CurrentLocation: "San Francisco, CA",
@@ -22,7 +22,7 @@ func GetMockDocumentEvent(uid string, jobId int, docType string) events.Document
 			Mobile:          "555-123-4567",
 			Summary:         "A highly motivated software engineer with 5 years of experience in building scalable web applications.",
 		},
-		EducationInfo: requests.EducationInfoRequest{
+		EducationInfo: requests.EducationInfoPayload{
 			CourseWork: "Advanced Algorithms, Database Systems, Web Development",
 			Degree:     "Bachelor of Science in Computer Science",
 			Location:   "Berkeley, CA",

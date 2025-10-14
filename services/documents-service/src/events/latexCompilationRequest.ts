@@ -69,7 +69,7 @@ export const ResumePayloadSchema = z.object({
   summary: z.array(SummaryPayloadSchema),
   skills: z.array(SkillPayloadSchema),
   experiences: z.array(ExperiencePayloadSchema),
-  projects: z.array(ProjectPayloadSchema),
+  projects: z.array(ProjectPayloadSchema).optional().nullable(),
 });
 
 export const CoverLetterBody = z.object({

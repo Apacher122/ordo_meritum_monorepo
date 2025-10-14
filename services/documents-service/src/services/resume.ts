@@ -13,7 +13,7 @@ dotenv.config();
 export const compileResume = async (
   docRequest: schemas.CompilationRequest
 ): Promise<schemas.CompilationResult> => {
-  const data = schemas.ResumePayloadSchema.safeParse(docRequest);
+  const data = schemas.ResumePayloadSchema.safeParse(docRequest.resume);
   if (!data.success) {
     logger.error("Malformed resume request", data.error);
     return {
@@ -38,7 +38,8 @@ export const compileResume = async (
       docRequest.userID,
       docRequest.userInfo,
       docRequest.educationInfo,
-      tempFolder
+      tempFolder,
+      "resume",
     );
 
     const sectionNames = [

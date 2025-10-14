@@ -10,8 +10,8 @@ type DocumentEvent struct {
 	UserId        string                        `json:"userID"`
 	CompanyName   string                        `json:"companyName"`
 	DocType       string                        `json:"docType"`
-	UserInfo      requests.UserInfoRequest      `json:"userInfo"`
-	EducationInfo requests.EducationInfoRequest `json:"educationInfo"`
+	UserInfo      requests.UserInfoPayload      `json:"userInfo"`
+	EducationInfo requests.EducationInfoPayload `json:"educationInfo"`
 	Resume        domain.Resume                 `json:"resume,omitzero"`
 	CoverLetter   domain.CoverLetter            `json:"coverLetter,omitzero"`
 }

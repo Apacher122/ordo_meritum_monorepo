@@ -1,5 +1,7 @@
 package requests
 
+import "github.com/ordo_meritum/shared/models/requests"
+
 type QuestionCategory string
 
 const (
@@ -13,7 +15,9 @@ const (
 	Creativity       QuestionCategory = "creativity"
 )
 
-type QuestionnaireRequest struct {
+type QuestionnaireRequest = requests.RequestBody[QuestionnarePayload, QuestionnaireOptions]
+
+type QuestionnarePayload struct {
 	BriefHistory        string                `json:"brief_history,omitempty"`
 	QuestionsByCategory []QuestionsByCategory `json:"questions_form"`
 }
@@ -26,4 +30,9 @@ type QuestionsByCategory struct {
 type QuestionAnswer struct {
 	Question string `json:"question"`
 	Answer   string `json:"answer"`
+}
+
+type QuestionnaireOptions struct {
+	LlmProvider string `json:"llm"`
+	LlmModel    string `json:"llmModel"`
 }
