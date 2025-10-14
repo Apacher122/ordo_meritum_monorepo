@@ -1,4 +1,4 @@
-import { User, createUserWithEmailAndPassword, getAuth, signInWithEmailAndPassword } from 'firebase/auth';
+import { User, createUserWithEmailAndPassword, getAuth, onAuthStateChanged, signInWithEmailAndPassword } from 'firebase/auth';
 import { doc, getDoc, getFirestore, setDoc } from 'firebase/firestore';
 import { useEffect, useState } from 'react';
 
@@ -46,6 +46,16 @@ export function useFirebaseAuth() {
       console.error('Firebase init failed:', err);
     }
   }, []);
+
+  useEffect(() => {
+    if (auth) {
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        setUser(currentUser);
+      });
+
+      return () => unsubscribe();
+    }
+  }, [auth]);
 
   const register = async (email: string, password: string) => {
     if (!auth) throw new Error('Auth not initialized');
