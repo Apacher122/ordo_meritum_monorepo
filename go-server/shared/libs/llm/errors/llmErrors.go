@@ -6,7 +6,6 @@ type LLMError struct {
 	LLMProvider     string
 	Err             error
 	ProviderMessage string
-	StatusCode      int
 }
 
 func (e *LLMError) Error() string {

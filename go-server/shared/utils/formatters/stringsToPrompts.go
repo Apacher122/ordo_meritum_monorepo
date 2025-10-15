@@ -1,15 +1,18 @@
 package formatters
 
 import (
+	"bytes"
+	"embed"
 	"encoding/json"
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
+	"text/template"
 
 	"github.com/ordo_meritum/database/jobs"
 	"github.com/ordo_meritum/features/documents/models/domain"
 	"github.com/ordo_meritum/features/documents/models/requests"
-	"github.com/ordo_meritum/shared/utils/formatters"
 )
 
 func FormatResumeForLLMWithXML(request *requests.DocumentPayload) string {
@@ -173,7 +176,7 @@ func FormatAboutForLLMWithXML(jsonData []byte) (string, error) {
 	return sb.String(), nil
 }
 
-func PrettyJobPost(job jobs.FullJobPosting) string {
+func FormatJobPostForLLM(job jobs.FullJobPosting) string {
 	return fmt.Sprintf(`
 Job Title: %s
 Company: %s
@@ -209,31 +212,31 @@ Applicant Count: %d
 	`,
 		job.JobTitle,
 		job.CompanyName,
-		formatters.PtrString(job.SalaryRange, "Not specified"),
-		formatters.PtrString(job.YearsOfExp, "Not specified"),
-		formatters.PtrString(job.EducationLevel, "Not specified"),
+		PtrString(job.SalaryRange, "Not specified"),
+		PtrString(job.YearsOfExp, "Not specified"),
+		PtrString(job.EducationLevel, "Not specified"),
 
-		formatters.PtrString(job.Description, "No description provided"),
-		formatters.PtrString(job.CompanyCulture, "Not specified"),
-		formatters.PtrString(job.CompanyValues, "Not specified"),
+		PtrString(job.Description, "No description provided"),
+		PtrString(job.CompanyCulture, "Not specified"),
+		PtrString(job.CompanyValues, "Not specified"),
 
-		formatters.FormatArray(job.Tools),
-		formatters.FormatArray(job.ProgrammingLanguages),
-		formatters.FormatArray(job.FrameworksAndLibraries),
-		formatters.FormatArray(job.Databases),
-		formatters.FormatArray(job.CloudTechnologies),
-		formatters.FormatArray(job.IndustryKeywords),
-		formatters.FormatArray(job.SoftSkills),
-		formatters.FormatArray(job.Certifications),
+		FormatArray(job.Tools),
+		FormatArray(job.ProgrammingLanguages),
+		FormatArray(job.FrameworksAndLibraries),
+		FormatArray(job.Databases),
+		FormatArray(job.CloudTechnologies),
+		FormatArray(job.IndustryKeywords),
+		FormatArray(job.SoftSkills),
+		FormatArray(job.Certifications),
 
-		formatters.FormatArray(job.Requirements),
-		formatters.FormatArray(job.NiceToHaves),
+		FormatArray(job.Requirements),
+		FormatArray(job.NiceToHaves),
 
-		formatters.PtrInt(job.ApplicantCount, 0),
+		PtrInt(job.ApplicantCount, 0),
 	)
 }
 
-func PrettyEducation(e requests.EducationInfoPayload) string {
+func FormatEducationForLLM(e requests.EducationInfoPayload) string {
 	return fmt.Sprintf(`
 School: %s
 Degree: %s
@@ -243,14 +246,35 @@ Dates: %s
 Coursework:
 %s
 	`,
-		formatters.PtrString(&e.School, "Not specified"),
-		formatters.PtrString(&e.Degree, "Not specified"),
-		formatters.PtrString(&e.Location, "Not specified"),
-		formatters.PtrString(&e.StartEnd, "Not specified"),
-		formatters.PtrString(&e.CourseWork, "No coursework listed"),
+		PtrString(&e.School, "Not specified"),
+		PtrString(&e.Degree, "Not specified"),
+		PtrString(&e.Location, "Not specified"),
+		PtrString(&e.StartEnd, "Not specified"),
+		PtrString(&e.CourseWork, "No coursework listed"),
 	)
 }
 
 func JSONListToBulletPoints(list []string) string {
 	return strings.Join(list, "\n- ")
+}
+
+func FormatTemplate(fs embed.FS, filename string, data any) (string, error) {
+	content, err := fs.ReadFile(filename)
+
+	if err != nil {
+		return "", nil
+	}
+
+	empl, err := template.New(filename).Parse(string(content))
+	if err != nil {
+		log.Printf("could not parse template %s: %s", filename, err)
+		return "", nil
+	}
+
+	var buf bytes.Buffer
+	if err := empl.Execute(&buf, data); err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
 }

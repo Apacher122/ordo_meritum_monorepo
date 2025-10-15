@@ -8,6 +8,7 @@ import (
 
 	cohere "github.com/cohere-ai/cohere-go/v2"
 	cohereclient "github.com/cohere-ai/cohere-go/v2/client"
+	"github.com/ordo_meritum/shared/contexts"
 )
 
 type CohereClient struct {
@@ -25,11 +26,8 @@ func (c *CohereClient) Generate(
 	instructions string,
 	prompt string,
 	schema any,
-	apiKey string,
 ) (string, error) {
-	if apiKey == "" {
-		return "", errors.New("error: Cohere API key not provided")
-	}
+	userCtx, _ := contexts.FromContext(ctx)
 
 	var response *cohere.ResponseFormatV2
 	if schema != nil {
@@ -44,7 +42,7 @@ func (c *CohereClient) Generate(
 			}
 		}
 	}
-	requestClient := cohereclient.NewClient(cohereclient.WithToken(apiKey))
+	requestClient := cohereclient.NewClient(cohereclient.WithToken(userCtx.ApiKey))
 
 	resp, err := requestClient.V2.Chat(
 		ctx,

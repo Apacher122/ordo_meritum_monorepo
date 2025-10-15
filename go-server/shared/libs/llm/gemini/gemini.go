@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/ordo_meritum/shared/contexts"
 	llmErrors "github.com/ordo_meritum/shared/libs/llm/errors"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/genai"
@@ -23,15 +24,32 @@ func NewClient() *GeminiClient {
 	}
 }
 
+// Generate generates content based on the given prompt and instructions.
+//
+// It will make a single request to the Gemini API with the given
+// configuration and return the response if successful. If the
+// request fails, it will retry up to 3 times with an exponential
+// backoff starting at 1 second. If all retries fail, it will
+// return an error.
+//
+// The response will be unmarshalled into a string and returned. If the
+// response is not of type "application/json", an error will be returned.
+//
+// The schema parameter can be used to specify the expected response schema.
+// If the schema is not provided, the response will be unmarshalled into a
+// map[string]interface{}.
+//
+// The apiKey parameter is used to authenticate the request. If the key is
+// invalid, an error will be returned.
 func (c *GeminiClient) Generate(
 	ctx context.Context,
 	instructions string,
 	prompt string,
 	schema any,
-	apiKey string,
 ) (string, error) {
+	userCtx, _ := contexts.FromContext(ctx)
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
-		APIKey: apiKey,
+		APIKey: userCtx.ApiKey,
 	})
 	if err != nil {
 		return "", &llmErrors.LLMError{

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/ordo_meritum/config"
+	"github.com/ordo_meritum/shared/contexts"
 	"github.com/rs/zerolog/log"
 )
 
@@ -54,7 +55,15 @@ func Authenticate(next http.Handler) http.Handler {
 			Str("middleware", "authentication").
 			Msg(fmt.Sprintf("Authenticate Middleware: SUCCESS - Verified token for UID: %s", token.UID))
 
-		ctx := context.WithValue(r.Context(), VerifiedTokenKey, token)
+		userCtx, ok := r.Context().Value(contexts.UserContextKey).(*contexts.UserContext)
+		if !ok || userCtx == nil {
+			userCtx = &contexts.UserContext{}
+		}
+
+		userCtx.Token = token
+		userCtx.UID = token.UID
+
+		ctx := context.WithValue(r.Context(), contexts.UserContextKey, userCtx)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
