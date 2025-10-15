@@ -22,10 +22,10 @@ func NewController(service *services.AppTrackerService) *Controller {
 }
 
 func (c *Controller) RegisterRoutes(secureRouter *mux.Router, authRouter *mux.Router) {
-	secureRouter.HandleFunc("/apps/track", c.TrackApplication).Methods("POST")
-	authRouter.HandleFunc("/apps/track/list", c.ListApplications).Methods("GET")
-	authRouter.HandleFunc("/track/{id:[0-9]+}", c.GetTrackedApplication).Methods("GET")
-	authRouter.HandleFunc("/track/{id:[0-9]+}/status", c.UpdateStatus).Methods("PUT")
+	secureRouter.HandleFunc("/apps/track", c.HandleTrackApplication).Methods("POST")
+	authRouter.HandleFunc("/apps/track/list", c.HandleListApplications).Methods("GET")
+	authRouter.HandleFunc("/track/{id:[0-9]+}", c.HandleGetTrackedApplication).Methods("GET")
+	authRouter.HandleFunc("/track/{id:[0-9]+}/status", c.HandleUpdateStatus).Methods("PUT")
 }
 
 func parseIDFromVars(r *http.Request) (int, error) {
@@ -33,7 +33,7 @@ func parseIDFromVars(r *http.Request) (int, error) {
 	return strconv.Atoi(idStr)
 }
 
-func (c *Controller) TrackApplication(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) HandleTrackApplication(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	_, ok := contexts.FromContext(r.Context())
@@ -55,7 +55,7 @@ func (c *Controller) TrackApplication(w http.ResponseWriter, r *http.Request) {
 	middleware.JSON(w, http.StatusCreated, jobID)
 }
 
-func (c *Controller) ListApplications(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) HandleListApplications(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	_, ok := contexts.FromContext(r.Context())
@@ -72,7 +72,7 @@ func (c *Controller) ListApplications(w http.ResponseWriter, r *http.Request) {
 	middleware.JSON(w, http.StatusOK, applications)
 }
 
-func (c *Controller) GetTrackedApplication(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) HandleGetTrackedApplication(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	roleID, err := parseIDFromVars(r)
@@ -90,7 +90,7 @@ func (c *Controller) GetTrackedApplication(w http.ResponseWriter, r *http.Reques
 	middleware.JSON(w, http.StatusOK, application)
 }
 
-func (c *Controller) UpdateStatus(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) HandleUpdateStatus(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	roleID, err := parseIDFromVars(r)
