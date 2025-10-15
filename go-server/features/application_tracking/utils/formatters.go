@@ -1,4 +1,4 @@
-package pretty
+package utils
 
 import (
 	"fmt"
@@ -11,7 +11,7 @@ func FormatJobPostingRequest(jp *request.JobPostingRequest) string {
 Company: %s
 Position: %s
 URL: %s
-Number of Applicants: %d
+Number of Applicants: %s
 Post Age: %s
 
 Job Description:
