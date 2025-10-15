@@ -14,7 +14,6 @@ ENV GOPROXY=https://proxy.golang.org,direct \
     CGO_ENABLED=0 \
     GOOS=linux
 
-# Copy go.mod first
 COPY go.mod go.sum ./
 
 RUN --mount=type=cache,target=/go/pkg/mod,sharing=locked,id=gomodcache \
@@ -24,7 +23,6 @@ RUN --mount=type=cache,target=/go/pkg/mod,sharing=locked,id=gomodcache \
         echo "Retrying go mod download in 5s..." && sleep 5; \
     done
 
-# Copy rest of the source
 COPY --link . .
 
 RUN --mount=type=cache,target=/go/pkg/mod,sharing=locked,id=gomodcache \
@@ -34,9 +32,7 @@ RUN --mount=type=cache,target=/go/pkg/mod,sharing=locked,id=gomodcache \
 FROM alpine:3.20.3
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates && update-ca-certificates
-RUN adduser -D appuser
-USER appuser
+RUN apk add --no-cache ca-certificates && update-ca-certificates && adduser -D appuser
 
 COPY --from=builder /server /usr/local/bin/server
 COPY ./config ./config
