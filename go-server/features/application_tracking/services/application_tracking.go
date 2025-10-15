@@ -12,7 +12,6 @@ import (
 	db_models "github.com/ordo_meritum/database/models"
 	"github.com/ordo_meritum/features/application_tracking/models/dto"
 	request "github.com/ordo_meritum/features/application_tracking/models/requests"
-	pretty "github.com/ordo_meritum/features/application_tracking/utils"
 
 	app_schemas "github.com/ordo_meritum/features/application_tracking/models/schemas"
 	"github.com/ordo_meritum/shared/embeds"
@@ -100,7 +99,7 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 		return nil, err
 	}
 
-	jobPost := pretty.FormatJobPostingRequest(r)
+	jobPost := request.FormatJobPostingRequest(r)
 	promptData := map[string]string{
 		"JobPost": jobPost,
 	}

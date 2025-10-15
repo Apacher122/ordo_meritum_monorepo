@@ -1,5 +1,9 @@
 package request
 
+import (
+	"fmt"
+)
+
 type JobPostingRequest struct {
 	CompanyName    string `json:"company"`
 	JobTitle       string `json:"job_title"`
@@ -30,4 +34,24 @@ type JobPostingEvent struct {
 	CompanyCulture         string   `json:"company_culture"`
 	CompanyValues          string   `json:"company_values"`
 	SalaryRange            string   `json:"salary_range"`
+}
+
+func FormatJobPostingRequest(jp *JobPostingRequest) string {
+	return fmt.Sprintf(`
+Company: %s
+Position: %s
+URL: %s
+Number of Applicants: %s
+Post Age: %s
+
+Job Description:
+%s
+	`,
+		jp.CompanyName,
+		jp.JobTitle,
+		jp.Link,
+		jp.ApplicantCount,
+		jp.TimeAgo,
+		jp.JobDescription,
+	)
 }
