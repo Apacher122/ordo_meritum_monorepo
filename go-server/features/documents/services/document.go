@@ -14,11 +14,12 @@ import (
 	"github.com/ordo_meritum/features/documents/models/events"
 	"github.com/ordo_meritum/features/documents/models/requests"
 	"github.com/ordo_meritum/features/documents/models/schemas"
+	"github.com/ordo_meritum/shared/contexts"
 	"github.com/ordo_meritum/shared/libs/llm"
 	"github.com/ordo_meritum/shared/templates/instructions"
 	"github.com/ordo_meritum/shared/templates/prompts"
-	formatters "github.com/ordo_meritum/shared/utils/formatters/pretty"
-	pretty "github.com/ordo_meritum/shared/utils/formatters/pretty"
+	error_response "github.com/ordo_meritum/shared/types/errors"
+	formatters "github.com/ordo_meritum/shared/utils/formatters"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
@@ -44,30 +45,28 @@ func NewDocumentService(
 
 func (s *DocumentService) QueueResumeGeneration(
 	ctx context.Context,
-	apiKey string,
 	requestBody requests.DocumentRequest,
-	uid string,
 ) (int, error) {
-	return s.queueDocumentGeneration(ctx, apiKey, requestBody, uid, "resume")
+	return s.queueDocumentGeneration(ctx, requestBody, "resume")
 }
 
 func (s *DocumentService) QueueCoverLetterGeneration(
 	ctx context.Context,
-	apiKey string,
 	requestBody requests.DocumentRequest,
-	uid string,
 ) (int, error) {
-	return s.queueDocumentGeneration(ctx, apiKey, requestBody, uid, "cover-letter")
+	return s.queueDocumentGeneration(ctx, requestBody, "cover-letter")
 }
 
 func (s *DocumentService) queueDocumentGeneration(
 	ctx context.Context,
-	apiKey string,
 	requestBody requests.DocumentRequest,
-	uid string,
 	docType string,
 ) (int, error) {
-	l := s.serviceLogger(uid, requestBody.Options.JobID, docType)
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return 0, error_response.ErrNoUserContext
+	}
+	l := s.serviceLogger(userCtx.UID, requestBody.Options.JobID, docType)
 	l.Info().Msgf("Starting %s generation process", docType)
 
 	// MOCK
@@ -75,10 +74,10 @@ func (s *DocumentService) queueDocumentGeneration(
 	var kafkaRequest *events.DocumentEvent
 	var err error
 	if docType == "resume" {
-		kafkaRequest, err = s.updateResumeWithLLM(ctx, &requestBody, apiKey, uid)
+		kafkaRequest, err = s.updateResumeWithLLM(ctx, &requestBody)
 	} else {
-		currentResume, _ := s.resumeRepo.GetFullResume(ctx, uid, requestBody.Options.JobID)
-		kafkaRequest, err = s.updateCoverLetterWithLLM(ctx, &requestBody, currentResume, apiKey, uid)
+		currentResume, _ := s.resumeRepo.GetFullResume(ctx, requestBody.Options.JobID)
+		kafkaRequest, err = s.updateCoverLetterWithLLM(ctx, &requestBody, currentResume)
 	}
 
 	if err != nil {
@@ -120,9 +119,12 @@ func (s *DocumentService) sendKafkaMessage(
 func (s *DocumentService) updateResumeWithLLM(
 	ctx context.Context,
 	r *requests.DocumentRequest,
-	apiKey string,
-	uid string,
 ) (*events.DocumentEvent, error) {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return nil, error_response.ErrNoUserContext
+	}
+
 	j, err := s.jobRepo.GetFullJobPosting(ctx, r.Options.JobID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get job posting: %w", err)
@@ -137,7 +139,6 @@ func (s *DocumentService) updateResumeWithLLM(
 	err = s.generateLLMContent(
 		ctx,
 		r.Options.LlmProvider,
-		apiKey,
 		"resume.txt",
 		promptData,
 		schemas.GeminiResumeSchema,
@@ -147,13 +148,13 @@ func (s *DocumentService) updateResumeWithLLM(
 	if err != nil {
 		return nil, err
 	}
-	if err := s.resumeRepo.UpsertResume(ctx, uid, r.Options.JobID, &llmResume); err != nil {
+	if err := s.resumeRepo.UpsertResume(ctx, r.Options.JobID, &llmResume); err != nil {
 		return nil, fmt.Errorf("failed to upsert resume: %w", err)
 	}
 
 	return &events.DocumentEvent{
 		JobID:         r.Options.JobID,
-		UserId:        uid,
+		UserId:        userCtx.UID,
 		CompanyName:   j.CompanyName,
 		DocType:       "resume",
 		UserInfo:      r.Payload.UserInfo,
@@ -166,9 +167,12 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	ctx context.Context,
 	r *requests.DocumentRequest,
 	currentResume *domain.Resume,
-	apiKey string,
-	uid string,
 ) (*events.DocumentEvent, error) {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return nil, error_response.ErrNoUserContext
+	}
+
 	jobID := r.Options.JobID
 	j, err := s.jobRepo.GetFullJobPosting(ctx, jobID)
 	if err != nil {
@@ -184,7 +188,7 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	if err != nil {
 		return nil, err
 	}
-	prompt, err := pretty.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
+	prompt, err := formatters.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
 	if err != nil {
 		return nil, err
 	}
@@ -199,7 +203,6 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 		string(instructions),
 		prompt,
 		schemas.GeminiCoverLetterSchema,
-		apiKey,
 	)
 	if err != nil {
 		return nil, err
@@ -219,7 +222,7 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 
 	load := events.DocumentEvent{
 		JobID:         jobID,
-		UserId:        uid,
+		UserId:        userCtx.UID,
 		CompanyName:   j.CompanyName,
 		DocType:       "resume",
 		UserInfo:      r.Payload.UserInfo,
@@ -231,7 +234,7 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 
 func (s *DocumentService) generateLLMContent(
 	ctx context.Context,
-	providerName, apiKey, instructionsFile string,
+	providerName, instructionsFile string,
 	promptData any,
 	schema any,
 	target interface{},
@@ -241,7 +244,7 @@ func (s *DocumentService) generateLLMContent(
 		return err
 	}
 
-	prompt, err := pretty.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
+	prompt, err := formatters.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
 	if err != nil {
 		return fmt.Errorf("failed to format prompt template: %w", err)
 	}
@@ -251,7 +254,7 @@ func (s *DocumentService) generateLLMContent(
 		return fmt.Errorf("failed to read instructions file: %w", err)
 	}
 
-	rawResponse, err := llmProvider.Generate(ctx, string(instructionBytes), prompt, schema, apiKey)
+	rawResponse, err := llmProvider.Generate(ctx, string(instructionBytes), prompt, schema)
 	if err != nil {
 		return fmt.Errorf("LLM generation failed: %w", err)
 	}
@@ -262,6 +265,36 @@ func (s *DocumentService) generateLLMContent(
 	}
 
 	return nil
+}
+
+func buildResumePromptData(
+	j *jobs.FullJobPosting,
+	payload *requests.DocumentPayload,
+) (map[string]any, error) {
+	additionalInfo, err := formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"JobPost":        formatters.FormatJobPostForLLM(*j),
+		"Resume":         formatters.FormatResumeForLLMWithXML(payload),
+		"AdditionalInfo": additionalInfo,
+	}, nil
+}
+
+func buildCoverLetterPromptData(j *jobs.FullJobPosting, payload *requests.DocumentPayload, opts requests.DocumentOptions, resume *domain.Resume) (map[string]any, error) {
+	additionalInfo, err := formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
+	if err != nil {
+		return nil, err
+	}
+	return map[string]any{
+		"JobPost":        formatters.FormatJobPostForLLM(*j),
+		"Education":      formatters.FormatEducationForLLM(payload.EducationInfo),
+		"Resume":         formatters.FormatResumePayloadForLLMWithXML(*resume),
+		"AdditionalInfo": additionalInfo,
+		"Corrections":    strings.Join(opts.Corrections, "\n- "),
+		"WritingSamples": strings.Join(opts.WritingSamples, "\n- "),
+	}, nil
 }
 
 func (s *DocumentService) serviceLogger(
@@ -275,34 +308,4 @@ func (s *DocumentService) serviceLogger(
 		Int("jobID", jobID).
 		Str("docType", docType).
 		Logger()
-}
-
-func buildResumePromptData(
-	j *jobs.FullJobPosting,
-	payload *requests.DocumentPayload,
-) (map[string]any, error) {
-	additionalInfo, err := pretty.FormatAboutForLLMWithXML(payload.AdditionalInfo)
-	if err != nil {
-		return nil, err
-	}
-	return map[string]any{
-		"JobPost":        pretty.PrettyJobPost(*j),
-		"Resume":         pretty.FormatResumeForLLMWithXML(payload),
-		"AdditionalInfo": additionalInfo,
-	}, nil
-}
-
-func buildCoverLetterPromptData(j *jobs.FullJobPosting, payload *requests.DocumentPayload, opts requests.DocumentOptions, resume *domain.Resume) (map[string]any, error) {
-	additionalInfo, err := pretty.FormatAboutForLLMWithXML(payload.AdditionalInfo)
-	if err != nil {
-		return nil, err
-	}
-	return map[string]any{
-		"JobPost":        pretty.PrettyJobPost(*j),
-		"Education":      pretty.PrettyEducation(payload.EducationInfo),
-		"Resume":         formatters.FormatResumePayloadForLLMWithXML(*resume),
-		"AdditionalInfo": additionalInfo,
-		"Corrections":    strings.Join(opts.Corrections, "\n- "),
-		"WritingSamples": strings.Join(opts.WritingSamples, "\n- "),
-	}, nil
 }

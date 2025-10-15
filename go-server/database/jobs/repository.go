@@ -11,7 +11,8 @@ import (
 	"github.com/lib/pq"
 	"github.com/ordo_meritum/database/models"
 	"github.com/ordo_meritum/features/application_tracking/models/domain"
-	"github.com/ordo_meritum/shared/utils/formatters"
+	"github.com/ordo_meritum/shared/contexts"
+	error_response "github.com/ordo_meritum/shared/types/errors"
 )
 
 type FullJobPosting struct {
@@ -51,10 +52,10 @@ type UserJobPosting struct {
 
 type Repository interface {
 	GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, error)
-	InsertFullJobPosting(ctx context.Context, jobRawText string, jobPost *domain.JobDescription, uid string) (*models.JobRequirements, error)
-	GetAllUserJobPostings(ctx context.Context, uid string) ([]*UserJobPosting, error)
-	UpdateApplicationDetails(ctx context.Context, roleID int, uid string, status *models.AppStatus, applicationDate *time.Time) error
-	DeleteJobPostByID(ctx context.Context, roleID int, uid string) error
+	InsertFullJobPosting(ctx context.Context, jobRawText string, jobPost *domain.JobDescription, companyName string, properName string) (*models.JobRequirements, error)
+	GetAllUserJobPostings(ctx context.Context) ([]*UserJobPosting, error)
+	UpdateApplicationDetails(ctx context.Context, roleID int, status *models.AppStatus, applicationDate *time.Time) error
+	DeleteJobPostByID(ctx context.Context, roleID int) error
 }
 
 type postgresRepository struct {
@@ -66,6 +67,11 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 }
 
 func (r *postgresRepository) GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, error) {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return nil, error_response.ErrNoUserContext
+	}
+
 	query := `
         SELECT
             r.job_title, r.description,
@@ -78,9 +84,10 @@ func (r *postgresRepository) GetFullJobPosting(ctx context.Context, roleID int) 
         FROM roles r
         INNER JOIN companies c ON r.company_id = c.id
         INNER JOIN job_requirements j ON r.id = j.role_id
-        WHERE r.id = $1`
+				INNER JOIN resumes res ON r.id = res.role_id
+        WHERE r.id = $1 and res.firebase_uid = $2`
 	var job FullJobPosting
-	err := r.db.GetContext(ctx, &job, query, roleID)
+	err := r.db.GetContext(ctx, &job, query, roleID, userCtx.UID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, fmt.Errorf("job with role ID %d not found", roleID)
@@ -94,15 +101,15 @@ func (r *postgresRepository) InsertFullJobPosting(
 	ctx context.Context,
 	jobRawText string,
 	jobPost *domain.JobDescription,
-	uid string,
+	companyName string,
+	properName string,
 ) (*models.JobRequirements, error) {
+	userCtx, _ := contexts.FromContext(ctx)
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return nil, err
 	}
 	defer tx.Rollback()
-
-	companyName := formatters.ToSnakeCase(jobPost.CompanyName)
 
 	var companyID int
 	companyQuery := `
@@ -126,7 +133,7 @@ func (r *postgresRepository) InsertFullJobPosting(
 	}
 
 	resumeQuery := `INSERT INTO resumes (role_id, firebase_uid) VALUES ($1, $2)`
-	_, err = tx.ExecContext(ctx, resumeQuery, roleID, uid)
+	_, err = tx.ExecContext(ctx, resumeQuery, roleID, userCtx.UID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create resume entry: %w", err)
 	}
@@ -167,7 +174,11 @@ func (r *postgresRepository) InsertFullJobPosting(
 	return &createdReqs, tx.Commit()
 }
 
-func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context, uid string) ([]*UserJobPosting, error) {
+func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context) ([]*UserJobPosting, error) {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return nil, error_response.ErrNoUserContext
+	}
 	query := `
         SELECT
             r.id as role_id,
@@ -185,11 +196,16 @@ func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context, uid stri
         INNER JOIN job_requirements j ON r.id = j.role_id
         WHERE res.firebase_uid = $1`
 	var jobs []*UserJobPosting
-	err := r.db.SelectContext(ctx, &jobs, query, uid)
+	err := r.db.SelectContext(ctx, &jobs, query, userCtx.UID)
 	return jobs, err
 }
 
-func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleID int, uid string, status *models.AppStatus, applicationDate *time.Time) error {
+func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleID int, status *models.AppStatus, applicationDate *time.Time) error {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return error_response.ErrNoUserContext
+	}
+
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
@@ -200,7 +216,7 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 
 	if status != nil {
 		query := fmt.Sprintf("UPDATE roles SET application_status = $1 WHERE id = $2 AND %s", authCheck)
-		result, err := tx.ExecContext(ctx, query, *status, roleID, roleID, uid)
+		result, err := tx.ExecContext(ctx, query, *status, roleID, roleID, userCtx.UID)
 		if err != nil {
 			return fmt.Errorf("failed to update role status: %w", err)
 		}
@@ -212,7 +228,7 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 
 	if applicationDate != nil {
 		query := "UPDATE resumes SET applied_on = $1 WHERE role_id = $2 AND firebase_uid = $3"
-		_, err := tx.ExecContext(ctx, query, *applicationDate, roleID, uid)
+		_, err := tx.ExecContext(ctx, query, *applicationDate, roleID, userCtx.UID)
 		if err != nil {
 			return fmt.Errorf("failed to update resume application date: %w", err)
 		}
@@ -221,7 +237,12 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 	return tx.Commit()
 }
 
-func (r *postgresRepository) DeleteJobPostByID(ctx context.Context, roleID int, uid string) error {
+func (r *postgresRepository) DeleteJobPostByID(ctx context.Context, roleID int) error {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return error_response.ErrNoUserContext
+	}
+
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
@@ -230,7 +251,7 @@ func (r *postgresRepository) DeleteJobPostByID(ctx context.Context, roleID int, 
 
 	var exists bool
 	authQuery := "SELECT EXISTS(SELECT 1 FROM resumes WHERE role_id = $1 AND firebase_uid = $2)"
-	if err := tx.GetContext(ctx, &exists, authQuery, roleID, uid); err != nil {
+	if err := tx.GetContext(ctx, &exists, authQuery, roleID, userCtx.UID); err != nil {
 		return fmt.Errorf("authorization check failed: %w", err)
 	}
 	if !exists {
@@ -240,7 +261,7 @@ func (r *postgresRepository) DeleteJobPostByID(ctx context.Context, roleID int, 
 	if _, err := tx.ExecContext(ctx, "DELETE FROM job_requirements WHERE role_id = $1", roleID); err != nil {
 		return fmt.Errorf("failed to delete from job_requirements: %w", err)
 	}
-	if _, err := tx.ExecContext(ctx, "DELETE FROM resumes WHERE role_id = $1 AND firebase_uid = $2", roleID, uid); err != nil {
+	if _, err := tx.ExecContext(ctx, "DELETE FROM resumes WHERE role_id = $1 AND firebase_uid = $2", roleID, userCtx.UID); err != nil {
 		return fmt.Errorf("failed to delete from resumes: %w", err)
 	}
 	if _, err := tx.ExecContext(ctx, "DELETE FROM roles WHERE id = $1", roleID); err != nil {

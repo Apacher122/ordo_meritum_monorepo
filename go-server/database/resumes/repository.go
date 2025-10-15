@@ -7,14 +7,16 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	"github.com/ordo_meritum/features/documents/models/domain"
+	"github.com/ordo_meritum/shared/contexts"
+	error_response "github.com/ordo_meritum/shared/types/errors"
 	"golang.org/x/sync/errgroup"
 )
 
 const dateFormat = "Jan. 2006"
 
 type Repository interface {
-	UpsertResume(ctx context.Context, firebaseUID string, roleID int, resume *domain.Resume) error
-	GetFullResume(ctx context.Context, firebaseUID string, roleID int) (*domain.Resume, error)
+	UpsertResume(ctx context.Context, roleID int, resume *domain.Resume) error
+	GetFullResume(ctx context.Context, roleID int) (*domain.Resume, error)
 }
 
 type postgresRepository struct {
@@ -25,23 +27,28 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 	return &postgresRepository{db: db}
 }
 
-func (r *postgresRepository) getResumeID(ctx context.Context, runner sqlx.ExtContext, firebaseUID string, roleID int) (int, error) {
+func (r *postgresRepository) getResumeID(ctx context.Context, runner sqlx.ExtContext, roleID int) (int, error) {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return 0, error_response.ErrNoUserContext
+	}
+
 	var resumeID int
 	query := "SELECT id FROM resumes WHERE firebase_uid = $1 AND role_id = $2"
 	var err error
 
 	switch v := runner.(type) {
 	case *sqlx.DB:
-		err = v.GetContext(ctx, &resumeID, query, firebaseUID, roleID)
+		err = v.GetContext(ctx, &resumeID, query, userCtx.UID, roleID)
 	case *sqlx.Tx:
-		err = v.GetContext(ctx, &resumeID, query, firebaseUID, roleID)
+		err = v.GetContext(ctx, &resumeID, query, userCtx.UID, roleID)
 	default:
 		return 0, fmt.Errorf("unsupported runner type: %T", v)
 	}
 
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return 0, fmt.Errorf("no resume found for user %s and role %d", firebaseUID, roleID)
+			return 0, fmt.Errorf("no resume found for user %s and role %d", userCtx.UID, roleID)
 		}
 		return 0, err
 	}
@@ -76,14 +83,14 @@ func (r *postgresRepository) dropResume(ctx context.Context, tx *sqlx.Tx, resume
 	return nil
 }
 
-func (r *postgresRepository) UpsertResume(ctx context.Context, firebaseUID string, roleID int, resume *domain.Resume) error {
+func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resume *domain.Resume) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
 	}
 	defer tx.Rollback()
 
-	resumeID, err := r.getResumeID(ctx, tx, firebaseUID, roleID)
+	resumeID, err := r.getResumeID(ctx, tx, roleID)
 	if err != nil {
 		return err
 	}
@@ -171,7 +178,6 @@ func (r *postgresRepository) UpsertResume(ctx context.Context, firebaseUID strin
 
 func (r *postgresRepository) GetFullResume(
 	ctx context.Context,
-	firebaseUID string,
 	roleID int,
 ) (*domain.Resume, error) {
 	tx, err := r.db.BeginTxx(ctx, nil)
@@ -180,7 +186,7 @@ func (r *postgresRepository) GetFullResume(
 	}
 	defer tx.Rollback()
 
-	resumeID, err := r.getResumeID(ctx, tx, firebaseUID, roleID)
+	resumeID, err := r.getResumeID(ctx, tx, roleID)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return &domain.Resume{}, nil

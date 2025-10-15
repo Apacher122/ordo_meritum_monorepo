@@ -1,25 +1,17 @@
 package controllers
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 
-	"github.com/rs/zerolog/log"
-
-	"firebase.google.com/go/v4/auth"
 	"github.com/gorilla/mux"
 	"github.com/ordo_meritum/database/models"
 	request "github.com/ordo_meritum/features/application_tracking/models/requests"
 	"github.com/ordo_meritum/features/application_tracking/services"
+	"github.com/ordo_meritum/shared/contexts"
 	"github.com/ordo_meritum/shared/middleware"
-	errors "github.com/ordo_meritum/shared/types/errors"
 	"github.com/ordo_meritum/shared/webrender"
 )
-
-var logger = log.With().
-	Str("controller", "application_tracking").
-	Logger()
 
 type Controller struct {
 	service *services.AppTrackerService
@@ -36,34 +28,25 @@ func (c *Controller) RegisterRoutes(secureRouter *mux.Router, authRouter *mux.Ro
 	authRouter.HandleFunc("/track/{id:[0-9]+}/status", c.UpdateStatus).Methods("PUT")
 }
 
-func getUserID(r *http.Request) (string, error) {
-	verifiedToken, ok := r.Context().Value(middleware.VerifiedTokenKey).(*auth.Token)
-	if !ok || verifiedToken == nil {
-		return "", errors.ErrNoUserID
-	}
-	return verifiedToken.UID, nil
-}
-
 func parseIDFromVars(r *http.Request) (int, error) {
 	idStr := mux.Vars(r)["id"]
 	return strconv.Atoi(idStr)
 }
 
 func (c *Controller) TrackApplication(w http.ResponseWriter, r *http.Request) {
-	uid, _ := getUserID(r)
-	apiKey := r.Context().Value(middleware.APIKeyContextKey)
+	defer r.Body.Close()
 
+	_, ok := contexts.FromContext(r.Context())
+	if !ok {
+		middleware.JSON(w, http.StatusInternalServerError, nil)
+		return
+	}
 	var requestBody request.JobPostingRequest
 	if webrender.DecodeJSONBody(w, r, &requestBody) != nil {
 		return
 	}
 
-	jobID, err := c.service.QueueApplicationTracking(
-		context.Background(),
-		apiKey.(string),
-		uid,
-		requestBody,
-	)
+	jobID, err := c.service.QueueApplicationTracking(r.Context(), requestBody)
 	if err != nil {
 		middleware.JSON(w, http.StatusInternalServerError, nil)
 		return
@@ -73,9 +56,15 @@ func (c *Controller) TrackApplication(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) ListApplications(w http.ResponseWriter, r *http.Request) {
-	uid, _ := getUserID(r)
+	defer r.Body.Close()
 
-	applications, err := c.service.ListTrackedApplications(context.Background(), uid)
+	_, ok := contexts.FromContext(r.Context())
+	if !ok {
+		middleware.JSON(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	applications, err := c.service.ListTrackedApplications(r.Context())
 	if err != nil {
 		middleware.JSON(w, http.StatusInternalServerError, nil)
 		return
@@ -84,13 +73,16 @@ func (c *Controller) ListApplications(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *Controller) GetTrackedApplication(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
 	roleID, err := parseIDFromVars(r)
-	if err != nil {
-		middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid role ID format"})
+	_, ok := contexts.FromContext(r.Context())
+	if !ok || err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, nil)
 		return
 	}
 
-	application, err := c.service.GetTrackedApplicationByID(context.Background(), roleID)
+	application, err := c.service.GetTrackedApplicationByID(r.Context(), roleID)
 	if err != nil {
 		middleware.JSON(w, http.StatusNotFound, nil)
 		return
@@ -99,11 +91,12 @@ func (c *Controller) GetTrackedApplication(w http.ResponseWriter, r *http.Reques
 }
 
 func (c *Controller) UpdateStatus(w http.ResponseWriter, r *http.Request) {
-	uid, _ := getUserID(r)
+	defer r.Body.Close()
 
 	roleID, err := parseIDFromVars(r)
-	if err != nil {
-		middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid role ID format"})
+	_, ok := contexts.FromContext(r.Context())
+	if !ok || err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, nil)
 		return
 	}
 
@@ -114,7 +107,7 @@ func (c *Controller) UpdateStatus(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = c.service.UpdateApplicationStatus(context.Background(), uid, roleID, payload.Status)
+	err = c.service.UpdateApplicationStatus(r.Context(), roleID, payload.Status)
 	if err != nil {
 		middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to update status"})
 		return

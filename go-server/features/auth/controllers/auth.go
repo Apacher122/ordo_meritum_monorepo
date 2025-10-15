@@ -23,7 +23,10 @@ func (c *Controller) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/login-or-register", c.HandleLoginOrRegister).Methods("POST")
 }
 
-func (c *Controller) HandleLoginOrRegister(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) HandleLoginOrRegister(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	verifiedToken, ok := r.Context().Value(middleware.VerifiedTokenKey).(*auth.Token)
 	if !ok || verifiedToken == nil {
 		middleware.JSON(w, http.StatusUnauthorized, map[string]string{"error": "No authenticated user found in context"})

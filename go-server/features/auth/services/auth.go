@@ -21,12 +21,18 @@ func NewAuthService(userRepo users.Repository) *AuthService {
 	}
 }
 
-func (s *AuthService) LoginOrRegister(ctx context.Context, authUser *auth_models.User) (*db_models.User, error) {
+func (s *AuthService) LoginOrRegister(
+	ctx context.Context,
+	authUser *auth_models.User,
+) (*db_models.User, error) {
 	l := log.With().
 		Str("service", "auth").
 		Logger()
 
-	existingUser, err := s.userRepo.GetUserByFirebaseUID(ctx, authUser.FirebaseUID)
+	existingUser, err := s.userRepo.GetUserByFirebaseUID(
+		ctx,
+		authUser.FirebaseUID,
+	)
 	if err != nil && !errors.Is(err, users.ErrUserNotFound) {
 		l.Error().Err(err).Str("uid", authUser.FirebaseUID).Msg("Error fetching user by UID")
 		return nil, err
