@@ -10,7 +10,7 @@ import (
 
 	"github.com/ordo_meritum/database/jobs"
 	db_models "github.com/ordo_meritum/database/models"
-	"github.com/ordo_meritum/features/application_tracking/models/dto"
+	"github.com/ordo_meritum/features/application_tracking/models/domain"
 	request "github.com/ordo_meritum/features/application_tracking/models/requests"
 
 	app_schemas "github.com/ordo_meritum/features/application_tracking/models/schemas"
@@ -93,7 +93,7 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 	ctx context.Context,
 	r *request.JobPostingRequest,
 	apiKey string,
-) (*dto.JobDescription, error) {
+) (*domain.JobDescription, error) {
 	llmProvider, err := llm.GetProvider("cohere")
 	if err != nil {
 		return nil, err
@@ -128,7 +128,7 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
 
-	var llmResponse dto.JobDescription
+	var llmResponse domain.JobDescription
 	if err := json.Unmarshal([]byte(cleanedJSON), &llmResponse); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal LLM response for job info: %w. Raw response: %s", err, rawResponse)
 	}

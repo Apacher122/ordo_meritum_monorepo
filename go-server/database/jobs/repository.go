@@ -10,7 +10,7 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/ordo_meritum/database/models"
-	"github.com/ordo_meritum/features/application_tracking/models/dto"
+	"github.com/ordo_meritum/features/application_tracking/models/domain"
 	"github.com/ordo_meritum/shared/utils/formatters"
 )
 
@@ -51,7 +51,7 @@ type UserJobPosting struct {
 
 type Repository interface {
 	GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, error)
-	InsertFullJobPosting(ctx context.Context, jobRawText string, jobPost *dto.JobDescription, uid string) (*models.JobRequirements, error)
+	InsertFullJobPosting(ctx context.Context, jobRawText string, jobPost *domain.JobDescription, uid string) (*models.JobRequirements, error)
 	GetAllUserJobPostings(ctx context.Context, uid string) ([]*UserJobPosting, error)
 	UpdateApplicationDetails(ctx context.Context, roleID int, uid string, status *models.AppStatus, applicationDate *time.Time) error
 	DeleteJobPostByID(ctx context.Context, roleID int, uid string) error
@@ -93,7 +93,7 @@ func (r *postgresRepository) GetFullJobPosting(ctx context.Context, roleID int) 
 func (r *postgresRepository) InsertFullJobPosting(
 	ctx context.Context,
 	jobRawText string,
-	jobPost *dto.JobDescription,
+	jobPost *domain.JobDescription,
 	uid string,
 ) (*models.JobRequirements, error) {
 	tx, err := r.db.BeginTxx(ctx, nil)

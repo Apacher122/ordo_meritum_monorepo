@@ -1,4 +1,4 @@
-package dto
+package domain
 
 type JobDescription struct {
 	JobTitle               string   `json:"job_title"`
