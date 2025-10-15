@@ -18,7 +18,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-func ServeWs(hub *ordows.Hub, w http.ResponseWriter, r *http.Request) {
+func ServeWs(
+	hub *ordows.Hub,
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	authClient, err := config.AuthClient()
 	if err != nil {
 		log.Error().Err(err).Msg("Failed to get auth client")
@@ -63,7 +67,10 @@ type DownloadRequest struct {
 	ChangesURL  string `json:"changes_url"`
 }
 
-func HandleDownload(w http.ResponseWriter, r *http.Request) {
+func HandleDownload(
+	w http.ResponseWriter,
+	r *http.Request,
+) {
 	var req DownloadRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
