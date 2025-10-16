@@ -29,7 +29,7 @@ The whole setup is a collection of services that talk to each other, all living 
 * Docker
 * Go
 * Node.js & npm
-* An API Key from your favorite LLM provider (Gemini, OpenAI, etc.)
+* An API Key from Gemini or Cohere (Anthropic, OpenAI, Ollama, and Groq will be back up and running soon)
 
 ### **Setting it up**
 
