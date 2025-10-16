@@ -13,3 +13,7 @@ func PtrInt(i *int, fallback int) int {
 	}
 	return *i
 }
+
+func StringToPtr(s string) *string {
+	return &s
+}

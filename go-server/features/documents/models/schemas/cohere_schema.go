@@ -117,8 +117,25 @@ var CohereResumeSchema = map[string]any{
 			},
 		},
 	},
+	"required": []string{"resume", "summary", "experiences", "projects", "skills"},
 }
 
 var CohereResumeSchemaFormat = cohere.JsonResponseFormatV2{
 	JsonSchema: CohereResumeSchema,
+}
+
+var CoverLetterSchema = map[string]any{
+	"$schema": "http://json-schema.org/draft-07/schema#",
+	"type":    "object",
+	"properties": map[string]any{
+		"about":           map[string]any{"type": "string"},
+		"experience":      map[string]any{"type": "string"},
+		"whatIBring":      map[string]any{"type": "string"},
+		"revisionSummary": map[string]any{"type": "string"},
+	},
+	"required": []string{"about", "experience", "whatIBring", "revisionSummary"},
+}
+
+var CohereCoverLetterSchemaFormat = cohere.JsonResponseFormatV2{
+	JsonSchema: CoverLetterSchema,
 }

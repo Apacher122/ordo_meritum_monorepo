@@ -48,10 +48,12 @@ func (c *GeminiClient) Generate(
 	schema any,
 ) (string, error) {
 	userCtx, _ := contexts.FromContext(ctx)
+	log.Printf("User context: %+v", userCtx)
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey: userCtx.ApiKey,
 	})
 	if err != nil {
+		log.Printf("Failed to create Gemini client: %v", err)
 		return "", &llmErrors.LLMError{
 			LLMProvider: "Gemini",
 			Err:         llmErrors.ErrFailedToInit,

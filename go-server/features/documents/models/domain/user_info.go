@@ -12,9 +12,11 @@ type UserInfo struct {
 }
 
 type EducationInfo struct {
-	CourseWork string `json:"coursework"`
-	Degree     string `json:"degree"`
-	Location   string `json:"location"`
-	School     string `json:"school"`
-	StartEnd   string `json:"start_end"`
+	CourseWork *string  `json:"coursework,omitempty"`
+	Degree     string   `json:"degree"`
+	Location   string   `json:"location"`
+	School     string   `json:"school"`
+	StartEnd   string   `json:"start_end"`
+	GPA        *float64 `json:"gpa,omitempty"`
+	Honors     *string  `json:"honors,omitempty"`
 }

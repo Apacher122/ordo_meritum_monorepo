@@ -4,6 +4,7 @@ import (
 	"github.com/ordo_meritum/features/documents/models/domain"
 	"github.com/ordo_meritum/features/documents/models/events"
 	"github.com/ordo_meritum/features/documents/models/requests"
+	"github.com/ordo_meritum/shared/utils/formatters"
 )
 
 func GetMockDocumentEvent(uid string, jobId int, docType string) events.DocumentEvent {
@@ -23,7 +24,7 @@ func GetMockDocumentEvent(uid string, jobId int, docType string) events.Document
 			Summary:         "A highly motivated software engineer with 5 years of experience in building scalable web applications.",
 		},
 		EducationInfo: requests.EducationInfoPayload{
-			CourseWork: "Advanced Algorithms, Database Systems, Web Development",
+			CourseWork: formatters.StringToPtr("Advanced Algorithms, Database Systems, Web Development"),
 			Degree:     "Bachelor of Science in Computer Science",
 			Location:   "Berkeley, CA",
 			School:     "University of California, Berkeley",

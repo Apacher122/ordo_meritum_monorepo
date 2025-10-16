@@ -6,6 +6,11 @@ import (
 	"github.com/rs/zerolog"
 )
 
+type ErrorBody struct {
+	ErrCode string
+	ErrMsg  error
+}
+
 var (
 	ERR_LLM_INVALID_API_KEY        = "ERR_LLM_INVALID_API_KEY"
 	ERR_LLM_FAILED_TO_INIT         = "ERR_LLM_FAILED_TO_INIT"
@@ -33,6 +38,9 @@ var (
 
 	ERR_USER_NOT_AUTHORIZED = "ERR_USER_NOT_AUTHORIZED"
 	ERR_USER_NO_CONTEXT     = "ERR_USER_NO_CONTEXT"
+
+	ERR_INVALID_REQUEST_FORMAT = "ERR_INVALID_REQUEST_FORMAT"
+	ERR_INVALID_SCHEMA         = "ERR_INVALID_SCHEMA"
 )
 
 var (
@@ -42,8 +50,11 @@ var (
 	ErrInstructionTemplate = "failed to format instruction template"
 )
 
-func ErrorLog(errorCode string, event *zerolog.Event) *zerolog.Event {
-	ctx := event.Str("error_code", errorCode).Err(ErrorMessage(errorCode))
+func ErrorLog(errorCode string, err error, event *zerolog.Event) *zerolog.Event {
+	if err == nil {
+		err = ErrorMessage((errorCode))
+	}
+	ctx := event.Str("error_code", errorCode).Err(err)
 	return ctx
 }
 
@@ -99,6 +110,11 @@ func ErrorMessage(msg string) error {
 		return fmt.Errorf("unauthorized access attempt")
 	case ERR_USER_NO_CONTEXT:
 		return fmt.Errorf("user does not exist in this context")
+
+	case ERR_INVALID_REQUEST_FORMAT:
+		return fmt.Errorf("invalid request format")
+	case ERR_INVALID_SCHEMA:
+		return fmt.Errorf("invalid schema")
 
 	default:
 		return fmt.Errorf("unknown error")

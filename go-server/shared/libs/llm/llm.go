@@ -6,8 +6,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/ordo_meritum/shared/libs/llm/cohere"
-	"github.com/ordo_meritum/shared/libs/llm/gemini"
+	"github.com/ordo_meritum/shared/libs/llm/providers/cohere"
+	"github.com/ordo_meritum/shared/libs/llm/providers/gemini"
 )
 
 type LLMProvider interface {

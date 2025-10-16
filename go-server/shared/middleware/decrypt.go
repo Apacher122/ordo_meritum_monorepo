@@ -25,7 +25,6 @@ func Decrypt(privateKey *rsa.PrivateKey) func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			body, err := io.ReadAll(r.Body)
-			userCtx := contexts.UserContext{}
 			if err != nil {
 				log.Error().
 					Err(err).
@@ -71,6 +70,7 @@ func Decrypt(privateKey *rsa.PrivateKey) func(http.Handler) http.Handler {
 				Str("apiKey", apiKeyStr).
 				Msg("Decryption Middleware: SUCCESS - Decrypted API key from header")
 
+			userCtx := &contexts.UserContext{}
 			userCtx.ApiKey = apiKeyStr
 			ctx := context.WithValue(r.Context(), contexts.UserContextKey, userCtx)
 			r.Body = io.NopCloser(bytes.NewReader(body))
