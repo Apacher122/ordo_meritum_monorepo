@@ -7,6 +7,13 @@ import {
   sectionToLatexEnvMap,
 } from "./index.js";
 
+/**
+ * Generates a LaTeX section file based on the given data and template.
+ * @param sectionName The name of the section to generate (e.g. "summary", "experiences", etc.).
+ * @param data The data to format for the LaTeX section.
+ * @param tempFolder The temporary folder to write the LaTeX section file to.
+ * @returns A promise that resolves once the LaTeX section file is written.
+ */
 export const generateLatexSectionFile = async (
   sectionName: string,
   data: any,

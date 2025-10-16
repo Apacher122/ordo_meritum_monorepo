@@ -4,6 +4,17 @@ import * as schemas from "@events/index.js";
 
 import { formatTextForLatex } from "../latex/latex_formatters.js";
 
+/**
+ * Creates the header files for a document.
+ * @param uid The user ID.
+ * @param userInfo The user information.
+ * @param education The education information.
+ * @param tempFolder The temporary folder to write files to.
+ * @param docType The document type to generate.
+ * @param companyName The company name to generate the cover letter for.
+ * @param jobTitle The job title to generate the cover letter for.
+ * @returns A promise that resolves once the header files are written.
+ */
 export const createHeader = async (
   uid: string,
   userInfo: schemas.UserInfo,

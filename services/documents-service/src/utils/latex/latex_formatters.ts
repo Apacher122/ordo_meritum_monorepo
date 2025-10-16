@@ -53,7 +53,7 @@ export const formatTextForLatex = (text: string) => {
     '\u2015': '-',
   };
 
-  const escapeForRegex = (char: string) => char.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+  const escapeForRegex = (char: string) => char.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
 
   const regex = new RegExp(
     `[${Object.keys(replacements).map(escapeForRegex).join('')}]`,

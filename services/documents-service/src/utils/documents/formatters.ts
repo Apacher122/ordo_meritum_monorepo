@@ -24,6 +24,6 @@ export function companyNameToFile(name: string): string {
   s = s.normalize("NFKD").replace(/\p{M}/gu, "");
   s = s.replace(/\s+/g, "_");
   s = s.replace(/[^a-z0-9_]/g, "");
-  s = s.replace(/_+/g, "_").replace(/^_+|_+$/g, "");
+  s = s.replace(/_+/g, "_").replace(/(?:^_+)|(?:_+$)/g, "");
   return s;
 }
