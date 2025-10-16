@@ -103,75 +103,13 @@ func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resum
 		return fmt.Errorf("failed to upsert skills")
 	}
 
-	// for _, s := range resume.Skills {
-	// 	var skillID int
-	// 	skillQuery := "INSERT INTO skills (resume_id, category, justification_for_changes) VALUES ($1, $2, $3) RETURNING id"
-	// 	err := tx.GetContext(ctx, &skillID, skillQuery, resumeID, s.Category, s.JustificationForChanges)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	var skillItems []models.SkillItem
-	// 	for _, item := range s.SkillItem {
-	// 		skillItems = append(skillItems, models.SkillItem{SkillID: skillID, Name: item})
-	// 	}
-	// 	if len(skillItems) > 0 {
-	// 		_, err = tx.NamedExecContext(ctx, "INSERT INTO skill_items (skill_id, name) VALUES (:skill_id, :name)", skillItems)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-
 	if err := r.UpsertExperiences(ctx, tx, resumeID, resume.Experiences); err != nil {
 		return fmt.Errorf("failed to upsert experiences")
 	}
 
-	// for _, e := range resume.Experiences {
-	// 	start, _ := time.Parse(dateFormat, e.Start)
-	// 	end, _ := time.Parse(dateFormat, e.End)
-	// 	var expID int
-	// 	expQuery := "INSERT INTO experiences (resume_id, position, company, start_date, end_date) VALUES ($1, $2, $3, $4, $5) RETURNING id"
-	// 	err := tx.GetContext(ctx, &expID, expQuery, resumeID, e.Position, e.Company, start, end)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	var expDescs []models.ExperienceDescription
-	// 	for _, desc := range e.BulletPoints {
-	// 		expDescs = append(expDescs, models.ExperienceDescription{ExpID: expID, Text: desc.Text, NewSuggestion: desc.IsNewSuggestion, JustificationForChange: &desc.JustificationForChange})
-	// 	}
-	// 	if len(expDescs) > 0 {
-	// 		_, err = tx.NamedExecContext(ctx, "INSERT INTO experience_descriptions (exp_id, text, new_suggestion, justification_for_change) VALUES (:exp_id, :text, :new_suggestion, :justification_for_change)", expDescs)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
-
 	if err := r.UpsertProjects(ctx, tx, resumeID, resume.Projects); err != nil {
 		return fmt.Errorf("failed to upsert projects")
 	}
-
-	// for _, p := range resume.Projects {
-	// 	var projectID int
-	// 	projQuery := `INSERT INTO projects (resume_id, name, role, status) VALUES ($1, $2, $3, 'ACTIVE') RETURNING id`
-	// 	err := tx.GetContext(ctx, &projectID, projQuery, resumeID, p.Name, p.Role)
-	// 	if err != nil {
-	// 		return err
-	// 	}
-
-	// 	var projDescs []models.ProjectDescription
-	// 	for _, desc := range p.BulletPoints {
-	// 		projDescs = append(projDescs, models.ProjectDescription{ProjectID: projectID, Text: desc.Text, NewSuggestion: desc.IsNewSuggestion, JustificationForChange: &desc.JustificationForChange})
-	// 	}
-	// 	if len(projDescs) > 0 {
-	// 		_, err = tx.NamedExecContext(ctx, "INSERT INTO project_descriptions (project_id, text, new_suggestion, justification_for_change) VALUES (:project_id, :text, :new_suggestion, :justification_for_change)", projDescs)
-	// 		if err != nil {
-	// 			return err
-	// 		}
-	// 	}
-	// }
 
 	return tx.Commit()
 }
