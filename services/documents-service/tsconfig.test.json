@@ -1,24 +1,13 @@
 {
   "extends": "./tsconfig.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "outDir": "dist-test",
-    "rootDir": ".",
-    "baseUrl": ".",       
-    "paths": {
-      "@shared/*": ["src/shared/*"],
-      "@documents/*": ["src/documents/*"],
-      "@database/*": ["src/database/*"],
-      "@utils/*": ["src/utils/*"],
-      "@events/*": ["src/events/*"],
-      "@consumers/*": ["src/consumers/*"],
-      "@producers/*": ["src/producers/*"],
-      "@workers/*": ["src/workers/*"],
-      "@services/*": ["src/services/*"],
-      "@models/*": ["src/models/*"],
-      "@kafka/*": ["src/kafka/*"]
-    }
+    "outDir": "./dist-test",
+    "types": [
+      "node",
+      "jest"
+    ]
   },
-  "include": ["src", "tests"],
-  "exclude": ["node_modules", "dist", "dist-test"]
+  "include": [
+    "tests/**/*.ts"
+  ]
 }
