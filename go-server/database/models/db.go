@@ -195,17 +195,18 @@ type SkillItem struct {
 }
 
 type Education struct {
-	ID           int        `db:"id"`
-	ResumeID     int        `db:"resume_id"`
-	School       string     `db:"school"`
-	Degree       string     `db:"degree"`
-	FieldOfStudy string     `db:"field_of_study"`
-	StartDate    time.Time  `db:"start_date"`
-	EndDate      *time.Time `db:"end_date"`
-	GPA          *string    `db:"gpa"`
-	Honors       *string    `db:"honors"`
-	CreatedAt    time.Time  `db:"created_at"`
-	UpdatedAt    time.Time  `db:"updated_at"`
+	ID       int      `db:"id"`
+	ResumeID int      `db:"resume_id"`
+	School   string   `db:"school"`
+	Degree   string   `db:"degree"`
+	Dates    string   `db:"dates"`
+	Location string   `db:"location"`
+	Courses  *string  `db:"courses"`
+	GPA      *float64 `db:"gpa"`
+	Honors   *string  `db:"honors"`
+
+	CreatedAt time.Time `db:"created_at"`
+	UpdatedAt time.Time `db:"updated_at"`
 }
 
 type CandidateQuestionnaire struct {

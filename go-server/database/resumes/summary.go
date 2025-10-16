@@ -13,7 +13,7 @@ func (r *postgresRepository) GetResumeSummary(ctx context.Context, resumeID int)
 	err := r.db.GetContext(ctx, &matchSummary, "SELECT * FROM match_summaries WHERE resume_id = $1 LIMIT 1", resumeID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // No summary is not an error
+			return nil, nil
 		}
 		return nil, err
 	}
@@ -22,7 +22,7 @@ func (r *postgresRepository) GetResumeSummary(ctx context.Context, resumeID int)
 	err = r.db.GetContext(ctx, &overview, "SELECT summary FROM match_summary_overviews WHERE match_summary_id = $1 LIMIT 1", matchSummary.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return nil, nil // No overview is not an error
+			return nil, nil
 		}
 		return nil, err
 	}

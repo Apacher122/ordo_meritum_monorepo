@@ -15,7 +15,7 @@ import (
 const dateFormat = "Jan. 2006"
 
 type Repository interface {
-	UpsertResume(ctx context.Context, roleID int, resume *domain.Resume) error
+	UpsertResume(ctx context.Context, roleID int, resume *domain.Resume, education *domain.EducationInfo) error
 	GetFullResume(ctx context.Context, roleID int) (*domain.Resume, error)
 }
 
@@ -83,7 +83,7 @@ func (r *postgresRepository) dropResume(ctx context.Context, tx *sqlx.Tx, resume
 	return nil
 }
 
-func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resume *domain.Resume) error {
+func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resume *domain.Resume, education *domain.EducationInfo) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
 		return err
@@ -100,15 +100,19 @@ func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resum
 	}
 
 	if err := r.UpsertSkills(ctx, tx, resumeID, resume); err != nil {
-		return fmt.Errorf("failed to upsert skills")
+		return fmt.Errorf("failed to upsert skills %w", err)
 	}
 
 	if err := r.UpsertExperiences(ctx, tx, resumeID, resume.Experiences); err != nil {
-		return fmt.Errorf("failed to upsert experiences")
+		return fmt.Errorf("failed to upsert experiences %w", err)
 	}
 
 	if err := r.UpsertProjects(ctx, tx, resumeID, resume.Projects); err != nil {
-		return fmt.Errorf("failed to upsert projects")
+		return fmt.Errorf("failed to upsert projects %w", err)
+	}
+
+	if err := r.UpsertEducation(ctx, tx, resumeID, education); err != nil {
+		return fmt.Errorf("failed to upsert educations %w", err)
 	}
 
 	return tx.Commit()
@@ -150,12 +154,6 @@ func (r *postgresRepository) GetFullResume(
 	g.Go(func() error {
 		var err error
 		resumePayload.Skills, err = r.GetResumeSkills(gCtx, resumeID)
-		return err
-	})
-
-	g.Go(func() error {
-		var err error
-		resumePayload.Summary, err = r.GetResumeSummary(gCtx, resumeID)
 		return err
 	})
 
