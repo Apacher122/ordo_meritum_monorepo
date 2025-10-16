@@ -4,7 +4,9 @@
 
 This is a personal tool I'm developing for myself to get through unemployment purgatory, but feel free to look around the repo. What started as a simple backend has morphed into a full-blown monorepo.
 
-Long story short, it's an overglorified resume/cover letter proofreader that's also an application tracker and job match analyzer. The purpose of the job match analyzer is mostly to provide some extra insight on my alignment to a particular role before I fire my resume into the void.
+Long story short, it's an overglorified resume/cover letter proofreader that's also an application tracker and job match analyzer. Personally, I don't subscribe to the notion that there's really a way to quantize human aspects of workstyle personalities, but I do like cool graphs and numbers. The purpose of this whole platform is mostly to provide some extra insight on my alignment to a particular role before I fire my resume into the void. 
+
+I'm also really itching to just make stuff with code. Seriously. I spent like 2 days straight with no sleep teaching myself idiomatic Go because I saw a cool TikTok about it.
 
 ### Previews
 
@@ -15,7 +17,7 @@ Soon...
 
 ## Architecture - What is this thing now?
 
-The whole setup is a collection of services that talk to each other, all living happily in this monorepo.
+The whole setup is a collection of services that talk to each other, all living happily in this monorepo. I'll eventually transition it to full-on microservices architecture instead of this hybrid thing I got going on.
 
 * `electron-frontend`: The face of the operation. A desktop app built with **Electron** and **React** so I can use this thing on my MacBook.
 * `go-server`: The new brain of the operation, written in **Go**. It handles most of the core logic, talks to the database, and manages user data.
@@ -33,7 +35,7 @@ The whole setup is a collection of services that talk to each other, all living 
 
 ### **Setting it up**
 
-1.  **Clone the repo.** You know how to do this.
+1.  **Clone the repo.**
 
 2.  **Environment Variables:** In the root directory, you'll need a `.env` file. Check out `docker-compose.yml` to see all the environment variables you need to set for the Go server and the documents service.
 
