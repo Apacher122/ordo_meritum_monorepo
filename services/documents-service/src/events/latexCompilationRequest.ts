@@ -93,7 +93,7 @@ export const CompilationRequestSchema = z.object({
   docType: z.string(),
   userInfo: UserInfoSchema,
   educationInfo: EducationPayloadSchema,
-  resume: ResumePayloadSchema,
+  resume: ResumePayloadSchema.optional().nullable(),
   coverLetter: CoverLetterPayloadSchema.optional().nullable(),
 });
 
