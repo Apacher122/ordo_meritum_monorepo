@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"os"
+	"path/filepath"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -41,8 +42,13 @@ func main() {
 		log.Warn().Str("service", "startup").Msgf("LOG_DIR not set, defaulting to %s", logDir)
 	}
 
+	logFileDir := filepath.Dir(logDir)
+	if err := os.MkdirAll(logFileDir, 0755); err != nil {
+		log.Fatal().Err(err).Msg("Failed to create log directory")
+	}
+
 	logFile, err := os.OpenFile(
-		"/usr/src/app/logs/server/server.log",
+		logFileDir+"/server.log",
 		os.O_APPEND|os.O_CREATE|os.O_WRONLY,
 		0664,
 	)
@@ -92,6 +98,8 @@ func main() {
 			doc_controllers.NewDocumentController,
 			jobguide_services.NewJobGuideService,
 			jobguide_controllers.NewController,
+
+			web.NewRouteDependencies,
 		),
 
 		fx.Invoke(web.InitializeFirebase),
@@ -107,6 +115,6 @@ func main() {
 			})
 		}),
 
-		fx.Invoke(func(*http.Server) {}),
+		fx.Invoke(func(*http.Server) { /*intentionally left empty*/ }),
 	).Run()
 }

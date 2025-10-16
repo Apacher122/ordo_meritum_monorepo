@@ -10,16 +10,19 @@ import (
 
 	"github.com/ordo_meritum/database/jobs"
 	"github.com/ordo_meritum/database/resumes"
+	apps_mappers "github.com/ordo_meritum/features/application_tracking/utils/mappers"
 	"github.com/ordo_meritum/features/documents/models/domain"
 	"github.com/ordo_meritum/features/documents/models/events"
 	"github.com/ordo_meritum/features/documents/models/requests"
 	"github.com/ordo_meritum/features/documents/models/schemas"
+	"github.com/ordo_meritum/features/documents/utils/formatters"
 	"github.com/ordo_meritum/shared/contexts"
 	"github.com/ordo_meritum/shared/libs/llm"
 	"github.com/ordo_meritum/shared/templates/instructions"
 	"github.com/ordo_meritum/shared/templates/prompts"
 	error_response "github.com/ordo_meritum/shared/types/errors"
-	formatters "github.com/ordo_meritum/shared/utils/formatters"
+	shared_formatters "github.com/ordo_meritum/shared/utils/formatters"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
@@ -188,7 +191,7 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	if err != nil {
 		return nil, err
 	}
-	prompt, err := formatters.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
+	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +247,7 @@ func (s *DocumentService) generateLLMContent(
 		return err
 	}
 
-	prompt, err := formatters.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
+	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
 	if err != nil {
 		return fmt.Errorf("failed to format prompt template: %w", err)
 	}
@@ -271,26 +274,27 @@ func buildResumePromptData(
 	j *jobs.FullJobPosting,
 	payload *requests.DocumentPayload,
 ) (map[string]any, error) {
-	additionalInfo, err := formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
+	additionalInfo, err := shared_formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
 	if err != nil {
 		return nil, err
 	}
 	return map[string]any{
-		"JobPost":        formatters.FormatJobPostForLLM(*j),
-		"Resume":         formatters.FormatResumeForLLMWithXML(payload),
+		"JobPost":        shared_formatters.FormatJobPostForLLM(*j),
+		"Resume":         formatters.FormatResumeRequestForLLMWithXML(payload),
 		"AdditionalInfo": additionalInfo,
 	}, nil
 }
 
 func buildCoverLetterPromptData(j *jobs.FullJobPosting, payload *requests.DocumentPayload, opts requests.DocumentOptions, resume *domain.Resume) (map[string]any, error) {
-	additionalInfo, err := formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
+	additionalInfo, err := shared_formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
 	if err != nil {
 		return nil, err
 	}
+	jobPost := apps_mappers.NewJobDescriptionFromPost(j)
 	return map[string]any{
-		"JobPost":        formatters.FormatJobPostForLLM(*j),
-		"Education":      formatters.FormatEducationForLLM(payload.EducationInfo),
-		"Resume":         formatters.FormatResumePayloadForLLMWithXML(*resume),
+		"JobPost":        jobPost.FormatForLLM(),
+		"Education":      payload.EducationInfo.FormatForLLM(),
+		"Resume":         resume.FormatForLLM(),
 		"AdditionalInfo": additionalInfo,
 		"Corrections":    strings.Join(opts.Corrections, "\n- "),
 		"WritingSamples": strings.Join(opts.WritingSamples, "\n- "),

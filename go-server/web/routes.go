@@ -63,5 +63,5 @@ func RegisterRoutes(
 	deps.UserController.RegisterRoutes(secureRouter.PathPrefix("/user").Subrouter())
 	deps.AppTrackerController.RegisterRoutes(secureRouter.Router, authenticatedRouter.Router)
 	deps.DocController.RegisterRoutes(secureRouter.Router)
-	deps.JobGuideController.RegisterRoutes(secureRouter.PathPrefix("/guide").Subrouter())
+	deps.JobGuideController.RegisterRoutes(secureRouter.Router, authenticatedRouter.Router)
 }

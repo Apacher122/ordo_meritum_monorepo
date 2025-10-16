@@ -13,7 +13,7 @@ type DocumentPayload struct {
 	UserInfo       UserInfoPayload      `json:"userInfo"`
 	AdditionalInfo json.RawMessage      `json:"additionalInfo"`
 	EducationInfo  EducationInfoPayload `json:"educationInfo"`
-	Coverletter    CoverLetterPayload   `json:"coverletter,omitempty"`
+	Coverletter    CoverLetterPayload   `json:"coverletter,omitzero"`
 }
 
 type DocumentOptions struct {
@@ -68,26 +68,8 @@ type CoverLetterPayload struct {
 }
 
 type CoverLetterPayloadBody struct {
-	About      string `json:"about"`
-	Experience string `json:"experience"`
-	WhatIBring string `json:"whatIBring"`
-}
-
-type EducationInfoPayload struct {
-	CourseWork string `json:"coursework"`
-	Degree     string `json:"degree"`
-	Location   string `json:"location"`
-	School     string `json:"school"`
-	StartEnd   string `json:"start_end"`
-}
-
-type UserInfoPayload struct {
-	FirstName       string `json:"first_name"`
-	LastName        string `json:"last_name"`
-	CurrentLocation string `json:"current_location"`
-	Email           string `json:"email"`
-	Github          string `json:"github,omitempty"`
-	Linkedin        string `json:"linkedin,omitempty"`
-	Mobile          string `json:"mobile,omitempty"`
-	Summary         string `json:"summary,omitempty"`
+	About      string `json:"about,omitempty"`
+	Experience string `json:"experience,omitempty"`
+	WhatIBring string `json:"whatIBring,omitempty"`
+	Paragraph  string `json:"paragraph,omitempty"`
 }

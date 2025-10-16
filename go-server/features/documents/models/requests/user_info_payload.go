@@ -1,6 +1,6 @@
 package requests
 
-type UserInfoRequest struct {
+type UserInfoPayload struct {
 	FirstName       string `json:"first_name"`
 	LastName        string `json:"last_name"`
 	CurrentLocation string `json:"current_location"`
