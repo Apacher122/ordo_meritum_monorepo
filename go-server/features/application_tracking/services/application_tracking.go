@@ -13,10 +13,10 @@ import (
 	"github.com/ordo_meritum/features/application_tracking/models/domain"
 	request "github.com/ordo_meritum/features/application_tracking/models/requests"
 
-	app_schemas "github.com/ordo_meritum/features/application_tracking/models/schemas"
 	"github.com/ordo_meritum/shared/contexts"
 	"github.com/ordo_meritum/shared/embeds"
 	"github.com/ordo_meritum/shared/libs/llm"
+	schemaregistry "github.com/ordo_meritum/shared/libs/llm/schema_registry"
 	"github.com/ordo_meritum/shared/templates/instructions"
 	prompts "github.com/ordo_meritum/shared/templates/prompts"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
@@ -56,7 +56,7 @@ func (s *AppTrackerService) QueueApplicationTracking(
 	)
 
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_NO_CONTENT, l.Error()).Msg("could not extract job info from LLM")
+		error_messages.ErrorLog(error_messages.ERR_LLM_NO_CONTENT, err, l.Error())
 		return nil, err
 	}
 
@@ -64,7 +64,7 @@ func (s *AppTrackerService) QueueApplicationTracking(
 	cn := formatters.ToSnakeCase(parsedJob.CompanyName)
 	res, err := s.jobRepo.InsertFullJobPosting(ctx, requestBody.JobDescription, parsedJob, cn, parsedJob.CompanyName)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_DB_FAILED_TO_INSERT, l.Error()).Msg("failed to insert full job posting")
+		error_messages.ErrorLog(error_messages.ERR_DB_FAILED_TO_INSERT, err, l.Error())
 		return nil, err
 	}
 
@@ -117,11 +117,16 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 		return nil, err
 	}
 
+	sch, err := schemaregistry.GetSchema("cohere", schemaregistry.ApplicationTracking)
+	if err != nil {
+		return nil, err
+	}
+
 	rawResponse, err := llmProvider.Generate(
 		ctx,
 		instructions,
 		prompt,
-		app_schemas.JobDescriptionResponseFormat,
+		sch,
 	)
 
 	if err != nil {
