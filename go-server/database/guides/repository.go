@@ -45,6 +45,7 @@ func (r *postgresRepository) getResumeID(ctx context.Context, tx *sqlx.Tx, roleI
 	return resumeID, nil
 }
 
+/* -- WILL NEED TO REFACTOR THIS -- */
 func (r *postgresRepository) UpsertMatchSummary(ctx context.Context, summaryPayload *domain.MatchSummary) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {

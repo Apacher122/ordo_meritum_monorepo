@@ -1,4 +1,4 @@
-package dto
+package domain
 
 type GuidingQuestions struct {
 	Questions []string `json:"questions"`

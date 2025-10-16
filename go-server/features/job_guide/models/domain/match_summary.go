@@ -1,8 +1,8 @@
-package dto
+package domain
 
 import "github.com/ordo_meritum/database/models"
 
-type MatchSummaryPayload struct {
+type MatchSummary struct {
 	MatchSummary struct {
 		ShouldApply          models.ShouldApply `json:"should_apply"`
 		ShouldApplyReasoning string             `json:"should_apply_reasoning"`
