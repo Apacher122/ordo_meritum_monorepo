@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1.4
-
 # --- Base layer from prebuilt image with LaTeX ---
 FROM ordo_meritum-app:latest AS latex-base
 WORKDIR /usr/src/app
@@ -32,9 +30,6 @@ WORKDIR /usr/src/app
 
 # Copy package files
 COPY package*.json ./
-
-# Copy node_modules from deps (already installed)
-# COPY --from=deps /usr/src/app/node_modules ./node_modules
 
 # Copy built app
 COPY --from=builder /usr/src/app ./
