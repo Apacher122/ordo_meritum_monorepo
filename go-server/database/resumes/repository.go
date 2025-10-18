@@ -9,6 +9,7 @@ import (
 	"github.com/ordo_meritum/features/documents/models/domain"
 	"github.com/ordo_meritum/shared/contexts"
 	error_response "github.com/ordo_meritum/shared/types/errors"
+	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -16,7 +17,7 @@ const dateFormat = "Jan. 2006"
 
 type Repository interface {
 	UpsertResume(ctx context.Context, roleID int, resume *domain.Resume, education *domain.EducationInfo) error
-	GetFullResume(ctx context.Context, roleID int) (*domain.Resume, error)
+	GetFullResume(ctx context.Context, roleID int) (*domain.Resume, error, *error_messages.ErrorBody)
 }
 
 type postgresRepository struct {
@@ -121,10 +122,10 @@ func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resum
 func (r *postgresRepository) GetFullResume(
 	ctx context.Context,
 	roleID int,
-) (*domain.Resume, error) {
+) (*domain.Resume, *error_messages.ErrorBody) {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, &error_messages.ErrorBody{ErrMsg: err}
 	}
 	defer tx.Rollback()
 

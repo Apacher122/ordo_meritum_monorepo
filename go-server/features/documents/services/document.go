@@ -20,7 +20,6 @@ import (
 	schemaregistry "github.com/ordo_meritum/shared/libs/llm/schema_registry"
 	"github.com/ordo_meritum/shared/templates/instructions"
 	"github.com/ordo_meritum/shared/templates/prompts"
-	error_response "github.com/ordo_meritum/shared/types/errors"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	shared_formatters "github.com/ordo_meritum/shared/utils/formatters"
 	lg "github.com/ordo_meritum/shared/utils/logger"
@@ -93,6 +92,7 @@ func (s *DocumentService) queueDocumentGeneration(
 
 		kafkaRequest, err = s.updateCoverLetterWithLLM(ctx, &requestBody, currentResume)
 		if err != nil {
+			lg.ErrorLoggerType{Service: &service, ErrorCode: &err.ErrCode, Error: err.ErrMsg}.ErrorLog()
 			l.Error().Err(err).Msgf("Failed to update %s with LLM", docType)
 			return 0, err
 		}
@@ -187,45 +187,40 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	ctx context.Context,
 	r *requests.DocumentRequest,
 	currentResume *domain.Resume,
-) (*events.DocumentEvent, error) {
+) (*events.DocumentEvent, *error_messages.ErrorBody) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return nil, error_response.ErrNoUserContext
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_USER_NO_CONTEXT}
 	}
 
 	jobID := r.Options.JobID
 	j, err := s.jobRepo.GetFullJobPosting(ctx, jobID)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_DB_FAILED_TO_GET, err, logger.Error())
-		return nil, fmt.Errorf("GetFullJobPosting Failed %w", err)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_DB_FAILED_TO_GET, ErrMsg: err}
 	}
 
 	llmProvider, err := llm.GetProvider(r.Options.LlmProvider)
 	if err != nil {
-		return nil, fmt.Errorf("GetProvider Failed %w", err)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
 	}
 
 	schema, err := schemaregistry.GetSchema(r.Options.LlmProvider, schemaregistry.Coverletter)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_INVALID_SCHEMA, err, logger.Error())
-		return nil, fmt.Errorf("GetSchema Failed %w", err)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_INVALID_SCHEMA, ErrMsg: err}
 	}
 
 	promptData, err := buildCoverLetterPromptData(j, &r.Payload, r.Options, currentResume)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_PROMPT_FORMATTING, err, logger.Error())
-		return nil, fmt.Errorf("failed to build cover letter prompt data: %w", err)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: err}
 	}
 	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_PROMPT_FORMATTING, err, logger.Error())
-		return nil, fmt.Errorf("failed to format prompt template: %w", err)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: err}
 	}
 
 	instructions, err := instructions.Instructions.ReadFile("coverletter.txt")
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_INSTRUCTION_FORMATTING, err, logger.Error())
-		return nil, fmt.Errorf("failed to read instructions file: %w", err)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_INSTRUCTION_FORMATTING, ErrMsg: err}
 	}
 
 	rawResponse, err := llmProvider.Generate(
@@ -235,14 +230,13 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 		schema,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("LLM generation failed: %w", err)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
 	}
 
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
 	var llmCoverLetter domain.CoverLetterBody
 	if err := json.Unmarshal([]byte(cleanedJSON), &llmCoverLetter); err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_MALFORMED_RESPONSE, err, logger.Error())
-		return nil, fmt.Errorf("failed to unmarshal LLM resume response: %w. Raw response: %s", err, rawResponse)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_MALFORMED_RESPONSE, ErrMsg: err}
 	}
 
 	coverLetterPayload := domain.CoverLetter{
