@@ -50,7 +50,7 @@ func (s *JobGuideService) GetCompanyInfo(ctx context.Context, companyName string
 	return nil, nil
 }
 
-func (s *JobGuideService) GetMatchSummary(ctx context.Context, r *requests.JobGuideRequests) error {
+func (s *JobGuideService) GetMatchSummary(ctx context.Context, r *requests.JobGuideRequests) *error_messages.ErrorBody {
 
 	promptData, err := s.buildMatchSummaryPromptData(ctx, &r.Payload)
 	if err != nil {
@@ -129,7 +129,7 @@ func (s *JobGuideService) generateLLMContent(
 	promptData any,
 	schema any,
 	target interface{},
-) error {
+) *error_messages.ErrorBody {
 	llmProvider, err := llm.GetProvider(providerName)
 	if err != nil {
 		return err
@@ -137,31 +137,31 @@ func (s *JobGuideService) generateLLMContent(
 
 	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
 	if err != nil {
-		return fmt.Errorf("failed to format prompt template: %w", err)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: fmt.Errorf("failed to format prompt template: %w", err.ErrMsg)}
 	}
 
-	instructionBytes, err := instructions.Instructions.ReadFile(instructionsFile)
+	instructionBytes, errMsg := instructions.Instructions.ReadFile(instructionsFile)
 	if err != nil {
-		return fmt.Errorf("failed to read instructions file: %w", err)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_INSTRUCTION_FORMATTING, ErrMsg: fmt.Errorf("failed to read instructions file: %w", errMsg)}
 	}
 
 	rawResponse, err := llmProvider.Generate(ctx, string(instructionBytes), prompt, schema)
 	if err != nil {
-		return fmt.Errorf("LLM generation failed: %w", err)
+		return err
 	}
 
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
 	if err := json.Unmarshal([]byte(cleanedJSON), target); err != nil {
-		return fmt.Errorf("failed to unmarshal LLM response: %w. Raw response: %s", err, rawResponse)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_MALFORMED_RESPONSE, ErrMsg: fmt.Errorf("failed to unmarshal LLM response: %w. Raw response: %s", err, rawResponse)}
 	}
 
 	return nil
 }
 
-func (s *JobGuideService) buildMatchSummaryPromptData(ctx context.Context, payload *requests.JobGuidePayload) (map[string]any, error) {
+func (s *JobGuideService) buildMatchSummaryPromptData(ctx context.Context, payload *requests.JobGuidePayload) (map[string]any, *error_messages.ErrorBody) {
 	_, ok := contexts.FromContext(ctx)
 	if !ok {
-		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_USER_NO_CONTEXT, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)}
 	}
 
 	r, err := s.resumeRepo.GetFullResume(ctx, payload.JobID)

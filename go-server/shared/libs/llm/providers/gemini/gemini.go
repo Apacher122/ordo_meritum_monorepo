@@ -4,12 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/ordo_meritum/shared/contexts"
-	llmErrors "github.com/ordo_meritum/shared/libs/llm/errors"
+	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	"google.golang.org/api/googleapi"
 	"google.golang.org/genai"
 )
@@ -46,18 +47,14 @@ func (c *GeminiClient) Generate(
 	instructions string,
 	prompt string,
 	schema any,
-) (string, error) {
+) (string, *error_messages.ErrorBody) {
 	userCtx, _ := contexts.FromContext(ctx)
 	log.Printf("User context: %+v", userCtx)
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey: userCtx.ApiKey,
 	})
 	if err != nil {
-		log.Printf("Failed to create Gemini client: %v", err)
-		return "", &llmErrors.LLMError{
-			LLMProvider: "Gemini",
-			Err:         llmErrors.ErrFailedToInit,
-		}
+		return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_FAILED_TO_INIT, ErrMsg: fmt.Errorf("Failed to create Gemini client: %v", err)}
 	}
 
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
@@ -79,25 +76,15 @@ func (c *GeminiClient) Generate(
 		case map[string]any:
 			bytes, err := json.Marshal(v)
 			if err != nil {
-				return "", &llmErrors.LLMError{
-					LLMProvider: "Gemini",
-					Err:         llmErrors.ErrUnsupportedSchema,
-				}
+				return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_UNSUPPORTED_SCHEMA, ErrMsg: err}
 			}
 			var s genai.Schema
 			if err := json.Unmarshal(bytes, &s); err != nil {
-				return "", &llmErrors.LLMError{
-					LLMProvider:     "Gemini",
-					Err:             llmErrors.ErrUnsupportedSchema,
-					ProviderMessage: err.Error(),
-				}
+				return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_UNSUPPORTED_SCHEMA, ErrMsg: err}
 			}
 			finalSchema = &s
 		default:
-			return "", &llmErrors.LLMError{
-				LLMProvider: "Gemini",
-				Err:         llmErrors.ErrUnsupportedSchema,
-			}
+			return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_UNSUPPORTED_SCHEMA, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_LLM_UNSUPPORTED_SCHEMA)}
 		}
 		config.ResponseSchema = finalSchema
 	}
@@ -112,7 +99,7 @@ func (c *GeminiClient) callWithRetries(
 	config *genai.GenerateContentConfig,
 	maxRetries int,
 	baseDelay time.Duration,
-) (string, error) {
+) (string, *error_messages.ErrorBody) {
 	var err error
 	var resp *genai.GenerateContentResponse
 	for i := range maxRetries {
@@ -139,26 +126,15 @@ func (c *GeminiClient) callWithRetries(
 			}
 		}
 
-		return "", &llmErrors.LLMError{
-			LLMProvider:     "Gemini",
-			Err:             llmErrors.ErrNoContent,
-			ProviderMessage: err.Error(),
-		}
+		return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
 	}
 
 	if err != nil {
-		return "", &llmErrors.LLMError{
-			LLMProvider:     "Gemini",
-			Err:             llmErrors.ErrNoContent,
-			ProviderMessage: err.Error(),
-		}
+		return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
 	}
 
 	if len(resp.Candidates) == 0 || len(resp.Candidates[0].Content.Parts) == 0 {
-		return "", &llmErrors.LLMError{
-			LLMProvider: "Gemini",
-			Err:         llmErrors.ErrNoContent,
-		}
+		return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
 	}
 	return resp.Candidates[0].Content.Parts[0].Text, nil
 

@@ -5,12 +5,12 @@ import (
 	"embed"
 	"encoding/json"
 	"fmt"
-	"log"
 	"regexp"
 	"strings"
 	"text/template"
 
 	"github.com/ordo_meritum/database/jobs"
+	error_messages "github.com/ordo_meritum/shared/utils/errors"
 )
 
 var nonAlphanumericRegex = regexp.MustCompile(`[^a-zA-Z0-9_]+`)
@@ -105,22 +105,21 @@ func JSONListToBulletPoints(list []string) string {
 	return strings.Join(list, "\n- ")
 }
 
-func FormatTemplate(fs embed.FS, filename string, data any) (string, error) {
+func FormatTemplate(fs embed.FS, filename string, data any) (string, *error_messages.ErrorBody) {
 	content, err := fs.ReadFile(filename)
 
 	if err != nil {
-		return "", nil
+		return "", &error_messages.ErrorBody{ErrMsg: err}
 	}
 
 	empl, err := template.New(filename).Parse(string(content))
 	if err != nil {
-		log.Printf("could not parse template %s: %s", filename, err)
-		return "", nil
+		return "", &error_messages.ErrorBody{ErrMsg: fmt.Errorf("could not parse template %s: %s", filename, err)}
 	}
 
 	var buf bytes.Buffer
 	if err := empl.Execute(&buf, data); err != nil {
-		return "", err
+		return "", &error_messages.ErrorBody{ErrMsg: err}
 	}
 
 	return buf.String(), nil

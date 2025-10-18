@@ -2,13 +2,13 @@ package cohere
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log"
 
 	cohere "github.com/cohere-ai/cohere-go/v2"
 	cohereclient "github.com/cohere-ai/cohere-go/v2/client"
 	"github.com/ordo_meritum/shared/contexts"
+	error_messages "github.com/ordo_meritum/shared/utils/errors"
 )
 
 type CohereClient struct {
@@ -26,7 +26,7 @@ func (c *CohereClient) Generate(
 	instructions string,
 	prompt string,
 	schema any,
-) (string, error) {
+) (string, *error_messages.ErrorBody) {
 	userCtx, _ := contexts.FromContext(ctx)
 
 	var response *cohere.ResponseFormatV2
@@ -67,11 +67,11 @@ func (c *CohereClient) Generate(
 	)
 
 	if err != nil {
-		return "", fmt.Errorf("error: Cohere chat generation failed: %w", err)
+		return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: fmt.Errorf("error: Cohere chat generation failed: %w", err)}
 	}
 
 	if resp.Message == nil || len(resp.Message.Content) == 0 {
-		return "", errors.New("error: Cohere returned no content")
+		return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: fmt.Errorf("error: Cohere returned no content")}
 	}
 
 	var assistantReply string
@@ -82,7 +82,7 @@ func (c *CohereClient) Generate(
 	}
 
 	if assistantReply == "" {
-		return "", errors.New("error: Cohere assistant message was empty")
+		return "", &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: fmt.Errorf("error: Cohere assistant message was empty")}
 	}
 
 	log.Println(assistantReply)

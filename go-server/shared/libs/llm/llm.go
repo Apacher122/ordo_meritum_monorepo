@@ -8,17 +8,18 @@ import (
 
 	"github.com/ordo_meritum/shared/libs/llm/providers/cohere"
 	"github.com/ordo_meritum/shared/libs/llm/providers/gemini"
+	error_messages "github.com/ordo_meritum/shared/utils/errors"
 )
 
 type LLMProvider interface {
-	Generate(ctx context.Context, instructions string, prompt string, schema any) (string, error)
+	Generate(ctx context.Context, instructions string, prompt string, schema any) (string, *error_messages.ErrorBody)
 }
 
 // GetProvider returns a new LLMProvider based on the given LLM provider name.
 // If the given LLM provider is not supported, it returns an error.
 // Supported LLM providers are "cohere", "gemini", and "anthropic".
 // The "anthropic" provider is not supported and will return an error.
-func GetProvider(llm string) (LLMProvider, error) {
+func GetProvider(llm string) (LLMProvider, *error_messages.ErrorBody) {
 	switch llm {
 	// case "openai":
 	// 	return openai.NewClient(), nil
@@ -31,11 +32,11 @@ func GetProvider(llm string) (LLMProvider, error) {
 	case "cohere":
 		return cohere.NewClient(), nil
 	case "anthropic":
-		return nil, fmt.Errorf("unsupported LLM provider: %s", llm)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_INVALID_PROVIDER, ErrMsg: fmt.Errorf("anthropic is not yet implemented")}
 	case "gemini":
 		return gemini.NewClient(), nil
 	default:
-		return nil, fmt.Errorf("unsupported LLM provider: %s", llm)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_INVALID_PROVIDER, ErrMsg: fmt.Errorf("wnsupported LLM somehow request: %s", llm)}
 	}
 }
 

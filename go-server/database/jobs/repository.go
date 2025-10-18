@@ -15,6 +15,7 @@ import (
 	request "github.com/ordo_meritum/features/application_tracking/models/requests"
 	"github.com/ordo_meritum/shared/contexts"
 	error_response "github.com/ordo_meritum/shared/types/errors"
+	em "github.com/ordo_meritum/shared/utils/errors"
 )
 
 type FullJobPosting struct {
@@ -53,9 +54,9 @@ type UserJobPosting struct {
 }
 
 type Repository interface {
-	GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, error)
-	InsertFullJobPosting(ctx context.Context, jobRawText string, jobPost *domain.JobDescription, companyName string, properName string) (*models.JobRequirements, error)
-	GetAllUserJobPostings(ctx context.Context) ([]*UserJobPosting, error)
+	GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, *em.ErrorBody)
+	InsertFullJobPosting(ctx context.Context, jobRawText string, jobPost *domain.JobDescription, companyName string, properName string) (*models.JobRequirements, *em.ErrorBody)
+	GetAllUserJobPostings(ctx context.Context) ([]*UserJobPosting, *em.ErrorBody)
 	UpdateApplicationDetails(ctx context.Context, roleID int, req *request.ApplicationUpdateRequest) error
 	DeleteJobPostByID(ctx context.Context, roleID int) error
 }
@@ -68,10 +69,10 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 	return &postgresRepository{db: db}
 }
 
-func (r *postgresRepository) GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, error) {
+func (r *postgresRepository) GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, *em.ErrorBody) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return nil, error_response.ErrNoUserContext
+		return nil, &em.ErrorBody{ErrCode: em.ERR_USER_NO_CONTEXT, ErrMsg: em.ErrorMessage(em.ERR_USER_NO_CONTEXT)}
 	}
 
 	query := `
@@ -92,9 +93,9 @@ func (r *postgresRepository) GetFullJobPosting(ctx context.Context, roleID int) 
 	err := r.db.GetContext(ctx, &job, query, roleID, userCtx.UID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, fmt.Errorf("job with role ID %d not found", roleID)
+			return nil, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_GET, ErrMsg: fmt.Errorf("job with role ID %d not found", roleID)}
 		}
-		return nil, err
+		return nil, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_GET, ErrMsg: em.ErrorMessage(em.ERR_DB_FAILED_TO_GET)}
 	}
 	return &job, nil
 }
@@ -105,11 +106,11 @@ func (r *postgresRepository) InsertFullJobPosting(
 	jobPost *domain.JobDescription,
 	companyName string,
 	properName string,
-) (*models.JobRequirements, error) {
+) (*models.JobRequirements, *em.ErrorBody) {
 	userCtx, _ := contexts.FromContext(ctx)
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
-		return nil, err
+		return nil, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_INSERT, ErrMsg: err}
 	}
 	defer tx.Rollback()
 
@@ -122,7 +123,7 @@ func (r *postgresRepository) InsertFullJobPosting(
         RETURNING id`
 	err = tx.GetContext(ctx, &companyID, companyQuery, companyName, jobPost.CompanyName, jobPost.CompanyCulture, jobPost.CompanyValues)
 	if err != nil {
-		return nil, fmt.Errorf("failed to upsert company: %w", err)
+		return nil, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_UPSERT, ErrMsg: fmt.Errorf("failed to upsert company: %w", err)}
 	}
 
 	var roleID int
@@ -131,13 +132,13 @@ func (r *postgresRepository) InsertFullJobPosting(
         VALUES ($1, $2, $3, $4) RETURNING id`
 	err = tx.GetContext(ctx, &roleID, roleQuery, jobPost.JobTitle, jobRawText, companyID, jobPost.SalaryRange)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create role: %w", err)
+		return nil, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_INSERT, ErrMsg: fmt.Errorf("failed to create role: %w", err)}
 	}
 
 	resumeQuery := `INSERT INTO resumes (role_id, firebase_uid) VALUES ($1, $2)`
 	_, err = tx.ExecContext(ctx, resumeQuery, roleID, userCtx.UID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create resume entry: %w", err)
+		return nil, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_INSERT, ErrMsg: fmt.Errorf("failed to create resume entry: %w", err)}
 	}
 
 	reqs := models.JobRequirements{
@@ -162,24 +163,24 @@ func (r *postgresRepository) InsertFullJobPosting(
         RETURNING *`
 	rows, err := tx.NamedQuery(reqQuery, &reqs)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create job requirements: %w", err)
+		return nil, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_INSERT, ErrMsg: fmt.Errorf("failed to create job requirements: %w", err)}
 	}
 	defer rows.Close()
 
 	var createdReqs models.JobRequirements
 	if rows.Next() {
 		if err := rows.StructScan(&createdReqs); err != nil {
-			return nil, err
+			return nil, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_INSERT, ErrMsg: err}
 		}
 	}
-
-	return &createdReqs, tx.Commit()
+	err = tx.Commit()
+	return &createdReqs, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_INSERT, ErrMsg: err}
 }
 
-func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context) ([]*UserJobPosting, error) {
+func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context) ([]*UserJobPosting, *em.ErrorBody) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return nil, error_response.ErrNoUserContext
+		return nil, &em.ErrorBody{ErrCode: em.ERR_USER_NO_CONTEXT, ErrMsg: em.ErrorMessage(em.ERR_USER_NO_CONTEXT)}
 	}
 	query := `
         SELECT
@@ -199,7 +200,10 @@ func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context) ([]*User
         WHERE res.firebase_uid = $1`
 	var jobs []*UserJobPosting
 	err := r.db.SelectContext(ctx, &jobs, query, userCtx.UID)
-	return jobs, err
+	if err != nil {
+		return jobs, &em.ErrorBody{ErrCode: em.ERR_DB_FAILED_TO_GET, ErrMsg: err}
+	}
+	return jobs, nil
 }
 
 func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleID int, req *request.ApplicationUpdateRequest) error {
@@ -224,7 +228,7 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 	if err != nil {
 		return fmt.Errorf("could not begin transaction: %w", err)
 	}
-	defer tx.Rollback() // Ensures transaction is rolled back on any subsequent error.
+	defer tx.Rollback()
 
 	if payload.Link != nil {
 		var companyID int
@@ -241,7 +245,6 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 		}
 	}
 
-	// --- 3. Handle Role Updates (roles table) ---
 	roleUpdates := make(map[string]interface{})
 	if payload.JobTitle != nil {
 		roleUpdates["job_title"] = *payload.JobTitle
@@ -256,7 +259,6 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 		}
 	}
 
-	// --- 4. Handle Job Requirement Updates (job_requirements table) ---
 	reqUpdates := make(map[string]interface{})
 	if payload.InterviewCount != nil {
 		reqUpdates["interview_count"] = *payload.InterviewCount
@@ -271,7 +273,6 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 		}
 	}
 
-	// If all updates succeed, commit the transaction.
 	return tx.Commit()
 }
 

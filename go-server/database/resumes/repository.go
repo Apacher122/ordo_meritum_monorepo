@@ -17,7 +17,7 @@ const dateFormat = "Jan. 2006"
 
 type Repository interface {
 	UpsertResume(ctx context.Context, roleID int, resume *domain.Resume, education *domain.EducationInfo) error
-	GetFullResume(ctx context.Context, roleID int) (*domain.Resume, error, *error_messages.ErrorBody)
+	GetFullResume(ctx context.Context, roleID int) (*domain.Resume, *error_messages.ErrorBody)
 }
 
 type postgresRepository struct {
@@ -134,7 +134,7 @@ func (r *postgresRepository) GetFullResume(
 		if err == sql.ErrNoRows {
 			return &domain.Resume{}, nil
 		}
-		return nil, err
+		return nil, &error_messages.ErrorBody{ErrMsg: err}
 	}
 
 	var resumePayload domain.Resume
@@ -159,7 +159,7 @@ func (r *postgresRepository) GetFullResume(
 	})
 
 	if err := g.Wait(); err != nil {
-		return nil, err
+		return nil, &error_messages.ErrorBody{ErrMsg: err}
 	}
 
 	return &resumePayload, nil

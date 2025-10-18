@@ -87,20 +87,20 @@ func (s *DocumentService) queueDocumentGeneration(
 	} else {
 		currentResume, err := s.resumeRepo.GetFullResume(ctx, requestBody.Options.JobID)
 		if err != nil {
-			return 0, err
+			lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_DB_FAILED_TO_GET, Error: err.ErrMsg}.ErrorLog()
+			return 0, error_messages.ErrorMessage(error_messages.ERR_DB_FAILED_TO_GET)
 		}
 
 		kafkaRequest, err = s.updateCoverLetterWithLLM(ctx, &requestBody, currentResume)
 		if err != nil {
 			lg.ErrorLoggerType{Service: &service, ErrorCode: &err.ErrCode, Error: err.ErrMsg}.ErrorLog()
-			l.Error().Err(err).Msgf("Failed to update %s with LLM", docType)
-			return 0, err
+			return 0, err.ErrMsg
 		}
 	}
 
 	if err := s.sendKafkaMessage(ctx, kafkaRequest); err != nil {
-		l.Error().Err(err).Msg("Error writing to Kafka")
-		return 0, err
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &err.ErrCode}.ErrorLog()
+		return 0, err.ErrMsg
 	}
 
 	l.Info().Msgf("Successfully queued %s for compilation", docType)
@@ -110,10 +110,10 @@ func (s *DocumentService) queueDocumentGeneration(
 func (s *DocumentService) sendKafkaMessage(
 	ctx context.Context,
 	event *events.DocumentEvent,
-) error {
+) *error_messages.ErrorBody {
 	messageBytes, err := json.Marshal(event)
 	if err != nil {
-		return fmt.Errorf("failed to marshal Kafka request: %w", err)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_KAFKA_INVALID_REQUEST, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_KAFKA_INVALID_REQUEST)}
 	}
 
 	kafkaCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
@@ -124,7 +124,7 @@ func (s *DocumentService) sendKafkaMessage(
 		Value: messageBytes,
 	})
 	if err != nil {
-		return fmt.Errorf("failed to write to kafka: %w", err)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_KAFKA_FAILED_TO_WRITE, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_KAFKA_FAILED_TO_WRITE)}
 	}
 	return nil
 }
@@ -141,18 +141,18 @@ func (s *DocumentService) updateResumeWithLLM(
 
 	j, err := s.jobRepo.GetFullJobPosting(ctx, r.Options.JobID)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_DB_FAILED_TO_GET, ErrMsg: err}
+		return nil, err
 	}
 
 	promptData, err := buildResumePromptData(j, &r.Payload)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: err}
+		return nil, err
 	}
 
 	e := r.Payload.EducationInfo
 	education, err := formatters.NewEducationInfoFromPayload(&e)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_INVALID_REQUEST_FORMAT, ErrMsg: err}
+		return nil, err
 	}
 
 	var llmResume domain.Resume
@@ -165,7 +165,7 @@ func (s *DocumentService) updateResumeWithLLM(
 		&llmResume,
 	)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
+		return nil, err
 	}
 
 	if err := s.resumeRepo.UpsertResume(ctx, r.Options.JobID, &llmResume, education); err != nil {
@@ -196,31 +196,31 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	jobID := r.Options.JobID
 	j, err := s.jobRepo.GetFullJobPosting(ctx, jobID)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_DB_FAILED_TO_GET, ErrMsg: err}
+		return nil, err
 	}
 
 	llmProvider, err := llm.GetProvider(r.Options.LlmProvider)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
+		return nil, err
 	}
 
 	schema, err := schemaregistry.GetSchema(r.Options.LlmProvider, schemaregistry.Coverletter)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_INVALID_SCHEMA, ErrMsg: err}
+		return nil, err
 	}
 
 	promptData, err := buildCoverLetterPromptData(j, &r.Payload, r.Options, currentResume)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: err}
+		return nil, err
 	}
 	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: err}
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: err.ErrMsg}
 	}
 
-	instructions, err := instructions.Instructions.ReadFile("coverletter.txt")
+	instructions, errMsg := instructions.Instructions.ReadFile("coverletter.txt")
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_INSTRUCTION_FORMATTING, ErrMsg: err}
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_INSTRUCTION_FORMATTING, ErrMsg: errMsg}
 	}
 
 	rawResponse, err := llmProvider.Generate(
@@ -230,7 +230,7 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 		schema,
 	)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
+		return nil, err
 	}
 
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
@@ -263,38 +263,34 @@ func (s *DocumentService) generateLLMContent(
 	promptData any,
 	schemaType string,
 	target interface{},
-) error {
+) *error_messages.ErrorBody {
 	llmProvider, err := llm.GetProvider(providerName)
 	if err != nil {
-		return err
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_SERVICE_UNAVAILABLE, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_LLM_SERVICE_UNAVAILABLE)}
 	}
 	schema, err := schemaregistry.GetSchema(providerName, schemaType)
 	if err != nil {
-		return err
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_UNSUPPORTED_SCHEMA, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_LLM_UNSUPPORTED_SCHEMA)}
 	}
 
 	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_PROMPT_FORMATTING, err, logger.Error())
-		return fmt.Errorf("failed to format prompt template: %w", err)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_LLM_PROMPT_FORMATTING)}
 	}
 
-	instructionBytes, err := instructions.Instructions.ReadFile(instructionsFile)
+	instructionBytes, errMsg := instructions.Instructions.ReadFile(instructionsFile)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_INSTRUCTION_FORMATTING, err, logger.Error())
-		return fmt.Errorf("failed to read instructions file: %w", err)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_INSTRUCTION_FORMATTING, ErrMsg: errMsg}
 	}
 
 	rawResponse, err := llmProvider.Generate(ctx, string(instructionBytes), prompt, schema)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_NO_CONTENT, err, logger.Error())
-		return fmt.Errorf("LLM generation failed: %w", err)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_LLM_NO_CONTENT)}
 	}
 
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
 	if err := json.Unmarshal([]byte(cleanedJSON), target); err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_MALFORMED_RESPONSE, err, logger.Error())
-		return fmt.Errorf("failed to unmarshal LLM response: %w. Raw response: %s", err, rawResponse)
+		return &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_MALFORMED_RESPONSE, ErrMsg: error_messages.ErrorMessage(error_messages.ERR_LLM_MALFORMED_RESPONSE)}
 	}
 
 	return nil
@@ -303,10 +299,10 @@ func (s *DocumentService) generateLLMContent(
 func buildResumePromptData(
 	j *jobs.FullJobPosting,
 	payload *requests.DocumentPayload,
-) (map[string]any, error) {
+) (map[string]any, *error_messages.ErrorBody) {
 	additionalInfo, err := shared_formatters.FormatAboutForLLMWithXML(payload.AdditionalInfo)
 	if err != nil {
-		return nil, err
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: fmt.Errorf("failed to format prompt %w", err)}
 	}
 	return map[string]any{
 		"JobPost":        shared_formatters.FormatJobPostForLLM(*j),
@@ -315,7 +311,7 @@ func buildResumePromptData(
 	}, nil
 }
 
-func buildCoverLetterPromptData(j *jobs.FullJobPosting, payload *requests.DocumentPayload, opts requests.DocumentOptions, resume *domain.Resume) (map[string]any, error) {
+func buildCoverLetterPromptData(j *jobs.FullJobPosting, payload *requests.DocumentPayload, opts requests.DocumentOptions, resume *domain.Resume) (map[string]any, *error_messages.ErrorBody) {
 	additionalInfo := ""
 	var err error
 	if payload.AdditionalInfo != nil {
@@ -323,7 +319,7 @@ func buildCoverLetterPromptData(j *jobs.FullJobPosting, payload *requests.Docume
 
 	}
 	if err != nil {
-		return nil, err
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: err}
 	}
 	jobPost := apps_mappers.NewJobDescriptionFromPost(j)
 	return map[string]any{

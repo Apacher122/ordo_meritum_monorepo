@@ -76,9 +76,9 @@ func (c *Controller) HandleListApplications(w http.ResponseWriter, r *http.Reque
 func (c *Controller) HandleGetTrackedApplication(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
-	roleID, err := parseIDFromVars(r)
+	roleID, errMsg := parseIDFromVars(r)
 	_, ok := contexts.FromContext(r.Context())
-	if !ok || err != nil {
+	if !ok || errMsg != nil {
 		middleware.JSON(w, http.StatusInternalServerError, nil)
 		return
 	}

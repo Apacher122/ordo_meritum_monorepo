@@ -20,6 +20,7 @@ import (
 	prompts "github.com/ordo_meritum/shared/templates/prompts"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	formatters "github.com/ordo_meritum/shared/utils/formatters"
+	"github.com/ordo_meritum/shared/utils/logger"
 )
 
 var serviceName = "application-tracking"
@@ -37,44 +38,45 @@ func NewAppTrackerService(jobRepo jobs.Repository) *AppTrackerService {
 func (s *AppTrackerService) QueueApplicationTracking(
 	ctx context.Context,
 	requestBody request.JobPostingRequest,
-) (any, error) {
+) (any, *error_messages.ErrorBody) {
+	elg := &logger.ErrorLoggerType{Service: &serviceName}
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
+		elg.ErrorCode = &error_messages.ERR_USER_NO_CONTEXT
+		elg.ErrorLog()
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_USER_NO_CONTEXT}
 	}
-	l := log.With().
-		Str("service", serviceName).
-		Str("uid", userCtx.UID).
-		Logger()
-
-	l.Info().Msg("Starting application tracking process")
-
 	parsedJob, err := s.parseJobDescriptionWithLLM(
 		ctx,
 		&requestBody,
 	)
 
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_NO_CONTENT, err, l.Error())
+		elg.Uid = &userCtx.UID
+		elg.ErrorCode = &err.ErrCode
+		elg.Error = err.ErrMsg
+		elg.ErrorLog()
 		return nil, err
 	}
 
-	l.Info().Msg("Persisting full job posting to database...")
+	logger.InfoLoggerType{Service: &serviceName, Uid: &userCtx.UID, Message: "Persisting full job posting to database..."}.InfoLog()
 	cn := formatters.ToSnakeCase(parsedJob.CompanyName)
 	res, err := s.jobRepo.InsertFullJobPosting(ctx, requestBody.JobDescription, parsedJob, cn, parsedJob.CompanyName)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_DB_FAILED_TO_INSERT, err, l.Error())
+		elg.ErrorCode = &err.ErrCode
+		elg.Error = err.ErrMsg
+		elg.ErrorLog()
 		return nil, err
 	}
 
-	l.Info().Msg("Successfully tracked new job.")
+	logger.InfoLoggerType{Service: &serviceName, Uid: &userCtx.UID, JobID: &res.RoleID, Message: "Successfully tracked new job."}.InfoLog()
 	return res.ID, nil
 }
 
 func (s *AppTrackerService) GetTrackedApplicationByID(
 	ctx context.Context,
 	roleID int,
-) (*jobs.FullJobPosting, error) {
+) (*jobs.FullJobPosting, *error_messages.ErrorBody) {
 	return s.jobRepo.GetFullJobPosting(ctx, roleID)
 }
 
@@ -95,17 +97,17 @@ func (s *AppTrackerService) UpdateApplicationStatus(
 
 func (s *AppTrackerService) ListTrackedApplications(
 	ctx context.Context,
-) ([]*jobs.UserJobPosting, error) {
+) ([]*jobs.UserJobPosting, *error_messages.ErrorBody) {
 	return s.jobRepo.GetAllUserJobPostings(ctx)
 }
 
 func (s *AppTrackerService) parseJobDescriptionWithLLM(
 	ctx context.Context,
 	r *request.JobPostingRequest,
-) (*domain.JobDescription, error) {
+) (*domain.JobDescription, *error_messages.ErrorBody) {
 	llmProvider, err := llm.GetProvider("cohere")
 	if err != nil {
-		return nil, err
+		return nil, &error_messages.ErrorBody{}
 	}
 
 	jobPost := request.FormatJobPostingRequest(r)
@@ -115,12 +117,12 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 	prompt, err := formatters.FormatTemplate(prompts.Prompts, "jobInfoExtraction.txt", promptData)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to format prompt template: %w", err)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: fmt.Errorf("failed to format prompt template: %w", err.ErrMsg)}
 	}
 
-	instructions, err := embeds.ReadFile(instructions.Instructions, "jobInfoExtraction.txt")
+	instructions, errMsg := embeds.ReadFile(instructions.Instructions, "jobInfoExtraction.txt")
 	if err != nil {
-		return nil, err
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_INSTRUCTION_FORMATTING, ErrMsg: errMsg}
 	}
 
 	sch, err := schemaregistry.GetSchema("cohere", schemaregistry.ApplicationTracking)
@@ -136,14 +138,14 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 	)
 
 	if err != nil {
-		return nil, fmt.Errorf("LLM generation failed: %w", err)
+		return nil, err
 	}
 
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
 
 	var llmResponse domain.JobDescription
 	if err := json.Unmarshal([]byte(cleanedJSON), &llmResponse); err != nil {
-		return nil, fmt.Errorf("failed to unmarshal LLM response for job info: %w. Raw response: %s", err, rawResponse)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_MALFORMED_RESPONSE, ErrMsg: fmt.Errorf("failed to unmarshal LLM response for job info: %w. Raw response: %s", err, rawResponse)}
 	}
 
 	return &llmResponse, nil

@@ -11,7 +11,7 @@ type InfoLoggerType struct {
 	JobID   *int
 	Service *string
 	DocType *string
-	Message *string
+	Message string
 }
 
 type ErrorLoggerType struct {
@@ -41,9 +41,7 @@ func (l InfoLoggerType) InfoLog() {
 		lg.Str("docType", *l.DocType)
 	}
 
-	if l.Message != nil {
-		lg.Msg(*l.Message)
-	}
+	lg.Msg(l.Message)
 }
 
 func (l ErrorLoggerType) ErrorLog() {

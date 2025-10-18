@@ -5,6 +5,7 @@ import (
 
 	app_schemas "github.com/ordo_meritum/features/application_tracking/models/schemas"
 	doc_schemas "github.com/ordo_meritum/features/documents/models/schemas"
+	error_messages "github.com/ordo_meritum/shared/utils/errors"
 )
 
 var (
@@ -26,15 +27,15 @@ var ProviderSchemaRegistry = map[string]map[string]any{
 	},
 }
 
-func GetSchema(provider, schemaName string) (any, error) {
+func GetSchema(provider, schemaName string) (any, *error_messages.ErrorBody) {
 	providerSchemas, ok := ProviderSchemaRegistry[provider]
 	if !ok {
-		return nil, fmt.Errorf("provider '%s' not found in schema registry", provider)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_INVALID_SCHEMA, ErrMsg: fmt.Errorf("provider '%s' not found in schema registry", provider)}
 	}
 
 	schema, ok := providerSchemas[schemaName]
 	if !ok {
-		return nil, fmt.Errorf("document type '%s' not found for provider '%s'", schemaName, provider)
+		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_INVALID_SCHEMA, ErrMsg: fmt.Errorf("document type '%s' not found for provider '%s'", schemaName, provider)}
 	}
 
 	return schema, nil
