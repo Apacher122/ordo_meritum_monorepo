@@ -23,15 +23,12 @@ import (
 	error_response "github.com/ordo_meritum/shared/types/errors"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	shared_formatters "github.com/ordo_meritum/shared/utils/formatters"
+	lg "github.com/ordo_meritum/shared/utils/logger"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
 )
-
-var logger = log.With().
-	Str("service", "documents").
-	Logger()
 
 type DocumentService struct {
 	jobRepo     jobs.Repository
@@ -50,6 +47,8 @@ func NewDocumentService(
 		LatexWriter: latexWriter,
 	}
 }
+
+var service = "documents-service"
 
 func (s *DocumentService) QueueResumeGeneration(
 	ctx context.Context,
@@ -72,27 +71,26 @@ func (s *DocumentService) queueDocumentGeneration(
 ) (int, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return 0, error_response.ErrNoUserContext
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
+		return 0, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
 	}
 	l := s.serviceLogger(userCtx.UID, requestBody.Options.JobID, docType)
 	l.Info().Msgf("Starting %s generation process", docType)
 
-	// MOCK
-	// kafkaRequest := mocks.GetMockDocumentEvent(uid, requestBody.Options.JobID, "cover-letter")
 	var kafkaRequest *events.DocumentEvent
 	var err *error_messages.ErrorBody
 	if docType == "resume" {
 		kafkaRequest, err = s.updateResumeWithLLM(ctx, &requestBody)
 		if err != nil {
-			error_messages.ErrorLog(err.ErrCode, err.ErrMsg, logger.Error())
+			lg.ErrorLoggerType{Service: &service, ErrorCode: &err.ErrCode, Error: err.ErrMsg}.ErrorLog()
 			return 0, err.ErrMsg
 		}
 	} else {
 		currentResume, err := s.resumeRepo.GetFullResume(ctx, requestBody.Options.JobID)
 		if err != nil {
-			l.Error().Err(err).Msgf("Failed to update %s with LLM", docType)
 			return 0, err
 		}
+
 		kafkaRequest, err = s.updateCoverLetterWithLLM(ctx, &requestBody, currentResume)
 		if err != nil {
 			l.Error().Err(err).Msgf("Failed to update %s with LLM", docType)

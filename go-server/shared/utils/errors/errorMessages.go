@@ -2,8 +2,6 @@ package error_messages
 
 import (
 	"fmt"
-
-	"github.com/rs/zerolog"
 )
 
 type ErrorBody struct {
@@ -49,14 +47,6 @@ var (
 	ErrPromptTemplate      = "failed to format prompt template"
 	ErrInstructionTemplate = "failed to format instruction template"
 )
-
-func ErrorLog(errorCode string, err error, event *zerolog.Event) *zerolog.Event {
-	if err == nil {
-		err = ErrorMessage((errorCode))
-	}
-	ctx := event.Str("error_code", errorCode).Err(err)
-	return ctx
-}
 
 func ErrorMessage(msg string) error {
 	switch msg {

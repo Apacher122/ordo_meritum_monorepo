@@ -2,7 +2,37 @@ package request
 
 import (
 	"fmt"
+	"time"
+
+	db_models "github.com/ordo_meritum/database/models"
+	"github.com/ordo_meritum/shared/models/requests"
 )
+
+type JobPostingRequestV1 = requests.RequestBody[JobPostingPayload, JobPostingOptions]
+type ApplicationUpdateRequest = requests.RequestBody[ApplicationUpdatePayload, struct{}]
+
+type JobPostingPayload struct {
+	CompanyName    string `json:"company"`
+	JobTitle       string `json:"job_title"`
+	Link           string `json:"website"`
+	ApplicantCOunt string `json:"applicant_count"`
+	TimeAgo        string `json:"time_ago"`
+	JobDescription string `json:"job_description"`
+}
+
+type JobPostingOptions struct {
+	LlmProvider string `json:"llm"`
+	LlmModel    string `json:"llmModel"`
+}
+
+type ApplicationUpdatePayload struct {
+	JobID                  int                  `json:"job_id"`
+	JobTitle               *string              `json:"job_title,omitempty"`
+	Link                   *string              `json:"website,omitempty"`
+	ApplicationStatus      *db_models.AppStatus `json:"application_status,omitempty"`
+	InterviewCount         *int                 `json:"interview_count,omitempty"`
+	InitialApplicationDate *time.Time           `json:"initial_application_date,omitempty"`
+}
 
 type JobPostingRequest struct {
 	CompanyName    string `json:"company"`

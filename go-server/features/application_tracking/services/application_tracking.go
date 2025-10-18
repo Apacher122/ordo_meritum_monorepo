@@ -9,7 +9,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/ordo_meritum/database/jobs"
-	db_models "github.com/ordo_meritum/database/models"
 	"github.com/ordo_meritum/features/application_tracking/models/domain"
 	request "github.com/ordo_meritum/features/application_tracking/models/requests"
 
@@ -81,10 +80,17 @@ func (s *AppTrackerService) GetTrackedApplicationByID(
 
 func (s *AppTrackerService) UpdateApplicationStatus(
 	ctx context.Context,
-	roleID int,
-	status db_models.AppStatus,
+	request *request.ApplicationUpdateRequest,
 ) error {
-	return s.jobRepo.UpdateApplicationDetails(ctx, roleID, &status, nil)
+	l := log.With().
+		Str("service", serviceName).
+		Logger()
+	err := s.jobRepo.UpdateApplicationDetails(ctx, request.Payload.JobID, request)
+	if err != nil {
+		l.Error().Err(err).Msg("Error updating application status")
+		return err
+	}
+	return nil
 }
 
 func (s *AppTrackerService) ListTrackedApplications(
