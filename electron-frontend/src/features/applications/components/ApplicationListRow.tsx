@@ -51,12 +51,12 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ applicat
   };
 
   const formatDate = (date: Date) => {
-    if (!date || isNaN(date.getTime())) return 'N/A';
+    if (!date || Number.isNaN(date.getTime())) return 'N/A';
     return date.toLocaleDateString();
   };
   
   const formatDateForInput = (date: Date): string => {
-      if (!date || isNaN(date.getTime())) return '';
+      if (!date || Number.isNaN(date.getTime())) return '';
       return date.toISOString().split('T')[0];
   };
 

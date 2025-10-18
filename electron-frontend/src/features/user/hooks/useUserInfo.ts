@@ -116,12 +116,7 @@ export const useUserInfo = () => {
         const loadedProfile = profileResult.data;
         const loadedSamples = samplesResult.data || [];
 
-        if (!loadedProfile) {
-          setUserProfile({
-            ...initialProfileState,
-            writingSamples: loadedSamples,
-          });
-        } else {
+        if (loadedProfile) {
           const cleanedExperiences = cleanLoadedExperiences(
             loadedProfile.resume?.experiences
           );
@@ -142,11 +137,11 @@ export const useUserInfo = () => {
           const mergedProfile: UserProfile = {
             userInfo: {
               ...initialProfileState.userInfo,
-              ...(loadedProfile.userInfo || {}),
+              ...loadedProfile.userInfo,
             },
             education: {
               ...initialProfileState.education,
-              ...(loadedProfile.education || {}),
+              ...loadedProfile.education,
             },
             resume: {
               ...initialProfileState.resume,
@@ -158,11 +153,11 @@ export const useUserInfo = () => {
             },
             coverLetter: {
               ...initialProfileState.coverLetter,
-              ...(loadedProfile.coverLetter || {}),
+              ...loadedProfile.coverLetter,
             },
             aboutMe: {
               ...initialProfileState.aboutMe,
-              ...(loadedProfile.aboutMe || {}),
+              ...loadedProfile.aboutMe,
             },
             writingSamples: loadedSamples,
           };
@@ -175,6 +170,11 @@ export const useUserInfo = () => {
             );
             await window.appAPI.user.saveUserInfo(mergedProfile);
           }
+        } else {
+          setUserProfile({
+            ...initialProfileState,
+            writingSamples: loadedSamples,
+          });
         }
       } catch (err: any) {
         setError(err.message ?? "An unknown error occurred.");

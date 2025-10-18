@@ -8,27 +8,15 @@ import { useDocumentStatus } from "../providers/DocumentStatusProvider";
 import { useSettings } from "../../settings/hooks/useSettings";
 import { useUserInfo } from "@/features/user/hooks/useUserInfo";
 
-const getLocalPath = (
-  jobId: number,
-  docType: DocumentType,
-  company: string,
-  title: string
-): string => {
-  const baseName = `${company.toLowerCase().replace(/ /g, "_")}_${title
-    .toLowerCase()
-    .replace(/ /g, "_")}_${jobId}`;
-  return `${docType}/${baseName}_${docType}.pdf`;
-};
-
 const baseFileName = (
   jobId: number,
   docType: DocumentType,
   company: string,
   title: string
 ): string => {
-  const baseName = `${company.toLowerCase().replace(/ /g, "_")}_${title
+const baseName = `${company.toLowerCase().replaceAll(" ", "_")}_${title
     .toLowerCase()
-    .replace(/ /g, "_")}_${jobId}`;
+    .replaceAll(" ", "_")}_${jobId}`;
   return `/${baseName}_${docType}`;
 };
 
@@ -174,11 +162,32 @@ export const useDocumentManager = (
     return "idle";
   }, [isCheckingFile, isApiLoading, serverStatus, fileExists]);
 
+const doesFileExist = useCallback(
+    async (
+      checkJobId: number,
+      checkDocType: DocumentType,
+      checkCompanyName: string,
+      checkJobTitle: string
+    ): Promise<boolean> => {
+      const pdfPath =
+        baseFileName(checkJobId, checkDocType, checkCompanyName, checkJobTitle) + ".pdf";
+      try {
+        const exists = await window.appAPI.files.checkFileExists(pdfPath);
+        return exists;
+      } catch (err) {
+        console.error("Error in doesFileExist check:", err);
+        return false;
+      }
+    },
+    []
+  );
+
   return {
     displayStatus,
     localPdfPath,
     localJsonData,
     generate,
     error: apiError || serverStatus?.error,
+    doesFileExist,
   };
 };

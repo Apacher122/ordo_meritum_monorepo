@@ -18,20 +18,6 @@ const initialState: FormState = {
 };
 
 
-/**
- * A hook that provides a form state and handlers for submitting job information to the backend.
- *
- * The hook uses the `settings` hook to get the currently selected LLM provider and its associated API key.
- *
- * The hook returns the following values:
- * - `formState`: The current state of the job information form.
- * - `loading`: Whether the form is currently being submitted.
- * - `error`: Any error that occurred during the submission process.
- * - `successMessage`: A success message that is displayed after the form is successfully submitted.
- * - `settings`: The current settings object.
- * - `handleChange`: A function that updates the form state when a form field changes.
- * - `handleSubmit`: A function that submits the form data to the backend when the form is submitted.
- */
 export const useJobInfoForm = () => {
   const [formState, setFormState] = useState<FormState>(initialState);
   const [loading, setLoading] = useState(false);

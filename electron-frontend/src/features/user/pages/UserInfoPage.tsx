@@ -107,7 +107,7 @@ export const UserInfoPage: React.FC = () => {
     const skillsArray = skillsString
       .split(',')
       .map(skill => skill.trim())
-      .filter(skill => skill)
+      .filter(Boolean)
       .map(skillName => ({ skill: skillName })); 
 
     

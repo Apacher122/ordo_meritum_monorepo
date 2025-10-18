@@ -18,7 +18,7 @@ interface PDFViewProps {
 export const PDFView: React.FC<PDFViewProps> = ({ file }) => {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
-  const [scale, setScale] = useState<number>(1.0);
+  const [scale, setScale] = useState<number>(1);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
@@ -31,9 +31,9 @@ export const PDFView: React.FC<PDFViewProps> = ({ file }) => {
   const goToNextPage = () =>
     setPageNumber((prevPageNumber) => Math.min(prevPageNumber + 1, numPages));
 
-  const zoomIn = () => setScale(prevScale => Math.min(prevScale + 0.1, 2.0));
+  const zoomIn = () => setScale(prevScale => Math.min(prevScale + 0.1, 2));
   const zoomOut = () => setScale(prevScale => Math.max(prevScale - 0.1, 0.5));
-  const resetZoom = () => setScale(1.0);
+  const resetZoom = () => setScale(1);
 
   if (!file) {
     return (
@@ -66,7 +66,7 @@ export const PDFView: React.FC<PDFViewProps> = ({ file }) => {
           >
             {Math.round(scale * 100)}%
           </button>
-          <button onClick={zoomIn} disabled={scale >= 2.0}>+</button>
+          <button onClick={zoomIn} disabled={scale >= 2}>+</button>
         </div>
       </div>
 

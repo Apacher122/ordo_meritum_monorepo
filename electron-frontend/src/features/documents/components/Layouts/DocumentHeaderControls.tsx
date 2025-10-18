@@ -1,8 +1,9 @@
 import "@/assets/styles/Components/UI/DocumentHeaderControls.css";
 
+import { AppliedJob } from "@/features/applications/types";
 import { CircleProgress } from "@/components/UI/loaders/CircleProgress";
 import { DocumentType } from "../../types";
-import { JobSelectorDropdown } from "@/features/applications/components/JobSelectorDropdown";
+import { DualJobSelectorDropdown } from "@/features/applications/components/DualJobSelectorDropDown";
 import React from "react";
 
 interface DocumentHeaderControlsProps {
@@ -14,6 +15,8 @@ interface DocumentHeaderControlsProps {
   showViewChangesButton: boolean;
   isGenerating: boolean;
   isCreateDisabled: boolean;
+  jobsWithDoc: AppliedJob[];
+  jobsWithoutDoc: AppliedJob[];
 }
 
 export const DocumentHeaderControls: React.FC<DocumentHeaderControlsProps> = ({
@@ -25,10 +28,15 @@ export const DocumentHeaderControls: React.FC<DocumentHeaderControlsProps> = ({
   showViewChangesButton,
   isGenerating,
   isCreateDisabled,
+  jobsWithDoc,
+  jobsWithoutDoc,
 }) => {
   return (
     <div className="document-header-controls">
-      <JobSelectorDropdown />
+      <DualJobSelectorDropdown
+        jobsWithDoc={jobsWithDoc}
+        jobsWithoutDoc={jobsWithoutDoc}
+      />
       {isJobSelected && (
         <>
           <div className="doc-type-tabs">

@@ -36,7 +36,9 @@ export const BulletPointInput: React.FC<BulletPointInputProps> = ({
   };
   
   useEffect(() => {
-    itemRefs.current.forEach(adjustHeight);
+    for (const item of itemRefs.current) {
+      adjustHeight(item);
+    }
   }, [keyedBullets]);
   
   useEffect(() => {

@@ -30,7 +30,9 @@ const writeFile = (absolutePath: string, data: string | Buffer) => {
   fs.writeFileSync(absolutePath, data);
 };
 
-Object.values(paths).forEach(ensureDir);
+for (const dirPath of Object.values(paths)) {
+  ensureDir(dirPath);
+}
 
 ipcMain.handle("check-file-exists", (event, relativePath: string): boolean => {
   const absPath = getSafePath(paths.pdfs, relativePath);

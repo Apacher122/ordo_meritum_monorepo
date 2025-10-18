@@ -12,8 +12,8 @@ export const JobSelectorDropdown: React.FC = () => {
   const { jobs, selectedId, setSelectedId } = useApplication();
 
   const handleSelectionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    const newId = parseInt(event.target.value, 10);
-    setSelectedId(isNaN(newId) ? null : newId);
+    const newId = Number.parseInt(event.target.value, 10);
+    setSelectedId(Number.isNaN(newId) ? null : newId);
   };
 
   return (

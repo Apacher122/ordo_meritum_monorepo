@@ -51,19 +51,19 @@ export const useDocumentDownload = (
         const pdfArrayBuffer = await response.pdf.arrayBuffer();
         const pdfPath = `${docType}/${companyName
           .toLowerCase()
-          .replace(/ /g, "_")}_${jobTitle
+          .replaceAll(" ", "_")}_${jobTitle
           .toLowerCase()
-          .replace(/ /g, "_")}_${jobId}_${docType}.pdf`;
+          .replaceAll(" ", "_")}_${jobId}_${docType}.pdf`;
         const jsonPath = `${docType}/${companyName
           .toLowerCase()
-          .replace(/ /g, "_")}_${jobTitle
+          .replaceAll(" ", "_")}_${jobTitle
           .toLowerCase()
-          .replace(/ /g, "_")}_${jobId}_${docType}.json`;
+          .replaceAll(" ", "_")}_${jobId}_${docType}.json`;
 
         await window.appAPI.files.saveFile(pdfPath, pdfArrayBuffer);
         await window.appAPI.files.saveJsonFile(jsonPath, response.jsonData);
 
-        await checkFile(); // update local state
+        await checkFile();
         console.log(`Download complete: ${pdfPath}`);
       } catch (err) {
         console.error("Failed to download and save document:", err);
