@@ -30,6 +30,7 @@ func BuildResumeSchema(data any) (any, error) {
 						"justification_for_change": {Type: genai.TypeString},
 						"is_new_suggestion":        {Type: genai.TypeBoolean},
 					},
+					Required: []string{"sentence", "is_new_suggestion", "justification_for_change"},
 				},
 			},
 			"skills": {
@@ -44,6 +45,7 @@ func BuildResumeSchema(data any) (any, error) {
 							Items: &genai.Schema{Type: genai.TypeString},
 						},
 					},
+					Required: []string{"category", "justification_for_changes", "skill"},
 				},
 			},
 			"experiences": {
@@ -64,7 +66,7 @@ func BuildResumeSchema(data any) (any, error) {
 									"is_new_suggestion":        {Type: genai.TypeBoolean},
 									"justification_for_change": {Type: genai.TypeString},
 								},
-								Required: []string{"text"},
+								Required: []string{"text", "is_new_suggestion", "justification_for_change"},
 							},
 						},
 					},
@@ -88,6 +90,7 @@ func BuildResumeSchema(data any) (any, error) {
 									"is_new_suggestion":        {Type: genai.TypeBoolean},
 									"justification_for_change": {Type: genai.TypeString},
 								},
+								Required: []string{"text", "is_new_suggestion", "justification_for_change"},
 							},
 						},
 					},
@@ -194,4 +197,126 @@ var GeminiCoverLetterSchema = &genai.Schema{
 		},
 	},
 	Required: []string{"about", "experience", "whatIBring", "revisionSummary"},
+}
+
+var GeminiSummarySchema = &genai.Schema{
+	Type: genai.TypeObject,
+	Properties: map[string]*genai.Schema{
+		"summary": {
+			Type: genai.TypeArray,
+			Items: &genai.Schema{
+				Type: genai.TypeObject,
+				Properties: map[string]*genai.Schema{
+					"sentence":                 {Type: genai.TypeString},
+					"justification_for_change": {Type: genai.TypeString},
+					"is_new_suggestion":        {Type: genai.TypeBoolean},
+				},
+				Required: []string{"sentence", "is_new_suggestion", "justification_for_change"},
+			},
+		},
+	},
+}
+
+func BuildExperienceSchema(data any) (any, error) {
+	experiences, ok := data.([]requests.ExperiencePayload)
+	if !ok {
+		return nil, fmt.Errorf("invalid data type for BuildResumeSchema; expected []requests.ExperiencePayload")
+	}
+	var allPositions, allCompanies []string
+	for _, exp := range experiences {
+		allPositions = append(allPositions, exp.Position)
+		allCompanies = append(allCompanies, exp.Company)
+	}
+
+	return &genai.Schema{
+		Type: genai.TypeObject,
+		Properties: map[string]*genai.Schema{
+			"experiences": {
+				Type: genai.TypeArray,
+				Items: &genai.Schema{
+					Type: genai.TypeObject,
+					Properties: map[string]*genai.Schema{
+						"position": {Type: genai.TypeString, Enum: allPositions},
+						"company":  {Type: genai.TypeString, Enum: allCompanies},
+						"start":    {Type: genai.TypeString},
+						"end":      {Type: genai.TypeString},
+						"bulletPoints": {
+							Type: genai.TypeArray,
+							Items: &genai.Schema{
+								Type: genai.TypeObject,
+								Properties: map[string]*genai.Schema{
+									"text":                     {Type: genai.TypeString},
+									"is_new_suggestion":        {Type: genai.TypeBoolean},
+									"justification_for_change": {Type: genai.TypeString},
+								},
+								Required: []string{"text", "is_new_suggestion", "justification_for_change"},
+							},
+						},
+						"relevantSkillsMentioned": {
+							Type: genai.TypeArray,
+							Items: &genai.Schema{
+								Type: genai.TypeString,
+							},
+						},
+					},
+					Required: []string{"position", "company", "start", "end", "bulletPoints", "relevantSkillsMentioned"},
+				},
+			},
+		},
+	}, nil
+
+}
+
+var GeminiProjectSchema = &genai.Schema{
+	Type: genai.TypeObject,
+	Properties: map[string]*genai.Schema{
+		"projects": {
+			Type: genai.TypeObject,
+			Properties: map[string]*genai.Schema{
+				"name":   {Type: genai.TypeString},
+				"role":   {Type: genai.TypeString},
+				"status": {Type: genai.TypeString},
+				"bulletPoints": {
+					Type: genai.TypeArray,
+					Items: &genai.Schema{
+						Type: genai.TypeObject,
+						Properties: map[string]*genai.Schema{
+							"text":                     {Type: genai.TypeString},
+							"is_new_suggestion":        {Type: genai.TypeBoolean},
+							"justification_for_change": {Type: genai.TypeString},
+						},
+					},
+					Required: []string{"text", "is_new_suggestion", "justification_for_change"},
+				},
+				"relevantSkillsMentioned": {
+					Type: genai.TypeArray,
+					Items: &genai.Schema{
+						Type: genai.TypeString,
+					},
+				},
+			},
+			Required: []string{"name", "role", "status", "bulletPoints", "relevantSkillsMentioned"},
+		},
+	},
+}
+
+var GeminiSkillSchema = &genai.Schema{
+	Type: genai.TypeObject,
+	Properties: map[string]*genai.Schema{
+		"skills": {
+			Type: genai.TypeArray,
+			Items: &genai.Schema{
+				Type: genai.TypeObject,
+				Properties: map[string]*genai.Schema{
+					"category":          {Type: genai.TypeString},
+					"is_new_suggestion": {Type: genai.TypeBoolean},
+					"skill": {
+						Type:  genai.TypeArray,
+						Items: &genai.Schema{Type: genai.TypeString},
+					},
+				},
+				Required: []string{"category", "is_new_suggestion", "skill"},
+			},
+		},
+	},
 }

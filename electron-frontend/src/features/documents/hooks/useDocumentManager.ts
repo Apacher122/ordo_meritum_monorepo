@@ -14,10 +14,35 @@ const baseFileName = (
   company: string,
   title: string
 ): string => {
-const baseName = `${company.toLowerCase().replaceAll(" ", "_")}_${title
+  const baseName = `${company.toLowerCase().replaceAll(" ", "_")}_${title
     .toLowerCase()
     .replaceAll(" ", "_")}_${jobId}`;
   return `/${baseName}_${docType}`;
+};
+
+const getSafeFilename = (
+  jobId: number,
+  docType: DocumentType,
+  company: string,
+  title: string
+): string => {
+  const sanitizePart = (input: string): string => {
+    return (
+      input
+        .toLowerCase()
+        .replaceAll(/[.,]/g, "")
+        .replaceAll(/[/\s\\]+/g, '_')
+        .replaceAll(/_+/g, "_")
+        .replaceAll(/[\s/\\.]+/g, '_')
+    );
+  };
+
+  const safeCompany = sanitizePart(company);
+  const safeTitle = sanitizePart(title);
+
+  const baseName = `${safeCompany}_${safeTitle}_${jobId}`;
+
+  return `${baseName}_${docType}`;
 };
 
 export const useDocumentManager = (
@@ -53,9 +78,9 @@ export const useDocumentManager = (
     }
     setIsCheckingFile(true);
     const pdfPath =
-      baseFileName(jobId, docType, companyName, jobTitle) + ".pdf";
+      getSafeFilename(jobId, docType, companyName, jobTitle) + ".pdf";
     const jsonPath =
-      baseFileName(jobId, docType, companyName, jobTitle) + ".json";
+      getSafeFilename(jobId, docType, companyName, jobTitle) + ".json";
     try {
       const exists = await window.appAPI.files.checkFileExists(pdfPath);
       setFileExists(exists);
@@ -94,9 +119,9 @@ export const useDocumentManager = (
         const jsonData = response.jsonData;
         const arrayBuffer = await pdfBlob.arrayBuffer();
         const pdfPath =
-          baseFileName(jobId, docType, companyName, jobTitle) + ".pdf";
+          getSafeFilename(jobId, docType, companyName, jobTitle) + ".pdf";
         const jsonPath =
-          baseFileName(jobId, docType, companyName, jobTitle) + ".json";
+          getSafeFilename(jobId, docType, companyName, jobTitle) + ".json";
         await window.appAPI.files.saveFile(pdfPath, arrayBuffer);
         await window.appAPI.files.saveJsonFile(jsonPath, jsonData);
         await checkFile();
@@ -150,7 +175,7 @@ export const useDocumentManager = (
     return "idle";
   }, [isCheckingFile, serverStatus, fileExists]);
 
-const doesFileExist = useCallback(
+  const doesFileExist = useCallback(
     async (
       checkJobId: number,
       checkDocType: DocumentType,
@@ -158,7 +183,12 @@ const doesFileExist = useCallback(
       checkJobTitle: string
     ): Promise<boolean> => {
       const pdfPath =
-        baseFileName(checkJobId, checkDocType, checkCompanyName, checkJobTitle) + ".pdf";
+        getSafeFilename(
+          checkJobId,
+          checkDocType,
+          checkCompanyName,
+          checkJobTitle
+        ) + ".pdf";
       try {
         const exists = await window.appAPI.files.checkFileExists(pdfPath);
         return exists;

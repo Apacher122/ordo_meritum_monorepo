@@ -25,7 +25,7 @@ export async function startDocumentWorker() {
   await kafka.consumer.run({
     eachMessage: async ({ message }) => {
       if (!message.value) return;
-      console.log("Received Kafka message:", message.value.toString());
+      logger.info("Received Kafka message:", message.value.toString());
       let request;
       try {
         request = CompilationRequestSchema.parse(
@@ -37,7 +37,7 @@ export async function startDocumentWorker() {
           topic: kafka.Topics.LATEX_COMPILATION_RESULT,
           messages: [
             {
-              key: String(request?.jobID ?? 0),
+              key: "error",
               value: JSON.stringify({error: "Invalid Kafka message"}),
             },
           ],

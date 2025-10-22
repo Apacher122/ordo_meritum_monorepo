@@ -10,7 +10,6 @@ import (
 
 	"github.com/ordo_meritum/shared/contexts"
 	llmErrors "github.com/ordo_meritum/shared/libs/llm/errors"
-	"google.golang.org/api/googleapi"
 	"google.golang.org/genai"
 )
 
@@ -31,7 +30,6 @@ func (c *GeminiClient) Generate(
 	schema any,
 ) (string, error) {
 	userCtx, _ := contexts.FromContext(ctx)
-	log.Printf("User context: %+v", userCtx)
 	client, err := genai.NewClient(ctx, &genai.ClientConfig{
 		APIKey: userCtx.ApiKey,
 	})
@@ -81,7 +79,7 @@ func (c *GeminiClient) Generate(
 		config.ResponseSchema = finalSchema
 	}
 
-	return c.callWithRetries(ctx, client, prompt, config, 3, 1*time.Second)
+	return c.callWithRetries(ctx, client, prompt, config, 2, 30*time.Second)
 }
 
 func (c *GeminiClient) callWithRetries(
@@ -108,8 +106,9 @@ func (c *GeminiClient) callWithRetries(
 
 		log.Printf("Gemini API call failed (attempt %d/%d): %v", i+1, maxRetries, err)
 
-		var googleErr *googleapi.Error
+		var googleErr genai.APIError
 		if errors.As(err, &googleErr) {
+			log.Printf("Google API error code: %d", googleErr.Code)
 			if googleErr.Code == http.StatusTooManyRequests || googleErr.Code >= 500 {
 				delay := baseDelay * time.Duration(1<<i)
 				log.Printf("Retrying in %v...", delay)
@@ -119,17 +118,15 @@ func (c *GeminiClient) callWithRetries(
 		}
 
 		return "", &llmErrors.LLMError{
-			LLMProvider:     "Gemini",
-			Err:             llmErrors.ErrNoContent,
-			ProviderMessage: err.Error(),
+			LLMProvider: "Gemini",
+			Err:         llmErrors.ErrNoContent,
 		}
 	}
 
 	if err != nil {
 		return "", &llmErrors.LLMError{
-			LLMProvider:     "Gemini",
-			Err:             llmErrors.ErrNoContent,
-			ProviderMessage: err.Error(),
+			LLMProvider: "Gemini",
+			Err:         llmErrors.ErrNoContent,
 		}
 	}
 
@@ -140,5 +137,4 @@ func (c *GeminiClient) callWithRetries(
 		}
 	}
 	return resp.Candidates[0].Content.Parts[0].Text, nil
-
 }

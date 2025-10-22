@@ -259,13 +259,12 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	}
 
 	load := events.DocumentEvent{
-		JobID:         jobID,
-		UserId:        userCtx.UID,
-		CompanyName:   j.CompanyName,
-		DocType:       "cover-letter",
-		UserInfo:      r.Payload.UserInfo,
-		EducationInfo: r.Payload.EducationInfo,
-		CoverLetter:   coverLetterPayload,
+		JobID:       jobID,
+		UserId:      userCtx.UID,
+		CompanyName: j.CompanyName,
+		DocType:     "cover-letter",
+		UserInfo:    r.Payload.UserInfo,
+		CoverLetter: coverLetterPayload,
 	}
 	return &load, nil
 }

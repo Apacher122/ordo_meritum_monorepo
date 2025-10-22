@@ -107,8 +107,6 @@ export const downloadDocument = async (
 
   const { parts, boundaryMatch } = splitMultipartResponse(dataView);
 
-  // This logic stays identical to the original: if no boundary is found,
-  // the entire response is treated as the PDF.
   if (!boundaryMatch) {
     return { pdf: multipartBlob };
   }
