@@ -19,8 +19,10 @@ The user's coverletter (if provided below):
 2. As an ATS system, analyze whether the user would be auto-rejected:  
    - Do not consider file parsing or formatting.  
    - Use common ATS rejection rules (keyword gaps, unexplained gaps, lack of qualifications, etc.).  
-3. Provide a raw (objective) score out of 100 for each metric category listed in [OUTPUT].  
-4. Provide a weighted (subjective) score out of 100 for each metric category, applying realistic recruiter/ATS weighting.  
+3. Provide a raw (objective) score out of 100 for each metric category listed in [OUTPUT].
+   - This must be a score that represents the user applying under ideal conditions with minimal external factors affecting chances, such as applicant pool size.
+4. Provide a weighted (subjective) score out of 100 for each metric category, applying realistic recruiter/ATS weighting.
+   - This must be a score that represents the user applying under realistic conditions, such as actual applicant count, company hiring history, hiring trend, job market trends/history, job post age, etc.
 5. Provide a final overall match score that accounts for:  
    - Applicant pool size  
    - Job post age  

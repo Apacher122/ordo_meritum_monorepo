@@ -1,3 +1,5 @@
+import "@/assets/styles/Components/Layouts/CogitatorView.css";
+
 import React, { useEffect, useMemo, useState } from "react";
 import { useSetHeaderControls, useSetHeaderSubtitle, useSetHeaderTitle } from "@/components/Layouts/providers/HeaderProvider";
 
@@ -11,11 +13,9 @@ export const ApplicationListPage: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showMetrics, setShowMetrics] = useState(false);
   
-  
   const setHeaderTitle = useSetHeaderTitle();
   const setHeaderSubtitle = useSetHeaderSubtitle();
   const setHeaderControls = useSetHeaderControls();
-  
   
   const headerControls = useMemo(() => (
     <>
@@ -38,7 +38,6 @@ export const ApplicationListPage: React.FC = () => {
     };
   }, [setHeaderTitle, setHeaderSubtitle, setHeaderControls, headerControls]); 
 
-
   const filteredJobs = useMemo(() => {
     if (!searchQuery) return jobs;
     return jobs.filter(
@@ -52,16 +51,14 @@ export const ApplicationListPage: React.FC = () => {
   if (error) return <div className="error-message">{error}</div>;
 
   return (
-<div className="application-list-page cogitator-view">
+    <div className="application-list-page cogitator-view">
       <ApplicationListView
         jobs={filteredJobs}
         onStatusUpdate={updateJobStatus}
         onDateUpdate={updateJobDate}
         onDelete={removeJob}
       />
-
       {showMetrics && <ApplicationMetrics metrics={metrics} onClose={() => setShowMetrics(false)} />}
     </div>
   );
 };
-

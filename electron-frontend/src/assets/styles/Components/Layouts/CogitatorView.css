@@ -1,0 +1,28 @@
+.cogitator-view {
+  perspective: 1000px;
+  height: 100%;
+  overflow: hidden;
+}
+
+.application-list-view {
+  height: 100%;
+  overflow-y: auto;
+  transform-style: preserve-3d;
+  box-sizing: border-box;
+}
+
+.application-row {
+  transition: transform 0.05s linear, opacity 0.05s linear;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
+  transform-origin: center;
+}
+
+.application-row:hover {
+  background-color: var(--hover-bg);
+}

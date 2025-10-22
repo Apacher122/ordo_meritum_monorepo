@@ -8,6 +8,7 @@ interface ApplicationListRowProps {
   onStatusUpdate: (roleId: number, newStatus: ApplicationStatus) => void;
   onDateUpdate: (roleId: number, newDate: Date) => void;
   onDelete: (roleId: number) => void;
+  className?: string;
 }
 
 const statusOptions: ApplicationStatus[] = ['Rejected', 'Offered', 'Open', 'Closed', 'Moved', 'Not applied', 'Ghosted', 'Interviewing'];
@@ -25,7 +26,8 @@ const ConfirmationModal: React.FC<{ message: string; onConfirm: () => void; onCa
     </div>
 );
 
-export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ application, onStatusUpdate, onDateUpdate, onDelete }) => {
+// The component function signature now includes 'className'
+export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ application, onStatusUpdate, onDateUpdate, onDelete, className }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
@@ -60,7 +62,7 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ applicat
       return date.toISOString().split('T')[0];
   };
 
-  const rowClasses = `application-row ${application.ApplicationStatus === 'Rejected' ? 'rejected' : ''}`;
+  const rowClasses = `${className || ''} application-row ${application.ApplicationStatus === 'Rejected' ? 'rejected' : ''}`.trim();
 
   return (
     <div className={rowClasses}>
@@ -98,7 +100,7 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ applicat
                         />
                     ) : (
                         <button
-                            className="applied-date editable text-button" // Add a class like "text-button" to remove default button styles
+                            className="applied-date editable text-button"
                             onClick={() => setIsEditingDate(true)}
                             title="Click to edit date"
 >
@@ -126,4 +128,3 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ applicat
     </div>
   );
 };
-
