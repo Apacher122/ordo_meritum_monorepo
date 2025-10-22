@@ -37,7 +37,6 @@ export const useDocumentManager = (
     null
   );
   const [isCheckingFile, setIsCheckingFile] = useState(true);
-  const [isApiLoading, setIsApiLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const serverStatus = useMemo(
@@ -80,16 +79,10 @@ export const useDocumentManager = (
   }, [checkFile]);
 
   useEffect(() => {
-    console.log("Effect triggered", {
-      serverStatus,
-      jobId,
-      downloadUrl: serverStatus?.downloadUrl,
-    });
     if (!serverStatus || serverStatus.status !== "COMPLETED") return;
     if (!serverStatus.downloadUrl || !serverStatus.changesUrl) return;
     if (!jobId) return;
     const downloadAndSave = async () => {
-      console.log("Downloading and saving file...");
       try {
         const token = await user?.getIdToken();
         const response = await downloadDocument(
@@ -113,8 +106,7 @@ export const useDocumentManager = (
       }
     };
     downloadAndSave();
-    console.log("File downloaded and saved.");
-  }, [serverStatus, jobId, docType, companyName, jobTitle, checkFile]);
+  }, [serverStatus, jobId, docType, companyName, jobTitle, checkFile, user]);
 
   const generate = useCallback(async () => {
     if (!jobId || !user || !settings || !userProfile) {
@@ -122,8 +114,8 @@ export const useDocumentManager = (
       return;
     }
 
-    setIsApiLoading(true);
     setApiError(null);
+    addPendingDocument(String(jobId), docType);
 
     try {
       const token = await user.getIdToken();
@@ -131,7 +123,7 @@ export const useDocumentManager = (
         docType === "resume" ? "resumeGeneration" : "coverLetterGeneration";
       const llmProvider = settings.featureAssignments[feature];
 
-      const response = await generateDocumentApi(
+      await generateDocumentApi(
         docType,
         userProfile,
         jobId,
@@ -139,8 +131,6 @@ export const useDocumentManager = (
         settings,
         token
       );
-
-      addPendingDocument(String(response.jobId), docType);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred.";
@@ -149,18 +139,16 @@ export const useDocumentManager = (
         errorMessage
       );
       setApiError(`API Error: ${errorMessage}`);
-    } finally {
-      setIsApiLoading(false);
     }
   }, [jobId, docType, user, settings, addPendingDocument, userProfile]);
 
   const displayStatus = useMemo(() => {
     if (isCheckingFile) return "checking";
-    if (isApiLoading || serverStatus?.status === "PENDING") return "generating";
+    if (serverStatus?.status === "PENDING") return "generating";
     if (serverStatus?.status === "FAILED") return "failed";
     if (fileExists) return "present";
     return "idle";
-  }, [isCheckingFile, isApiLoading, serverStatus, fileExists]);
+  }, [isCheckingFile, serverStatus, fileExists]);
 
 const doesFileExist = useCallback(
     async (

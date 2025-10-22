@@ -84,7 +84,7 @@ export const DocumentPage: React.FC = () => {
 
   useEffect(() => {
     if (selectedJob) {
-      setHeaderTitle(selectedJob.CompanyName);
+      setHeaderTitle(selectedJob.CompanyProperName);
       setHeaderSubtitle(selectedJob.JobTitle);
     } else {
       setHeaderTitle("No Job Selected");
@@ -160,4 +160,3 @@ export const DocumentPage: React.FC = () => {
     </div>
   );
 };
-

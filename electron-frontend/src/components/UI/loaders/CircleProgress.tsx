@@ -7,6 +7,7 @@ interface CircleProgressProps {
   size?: number;
   strokeWidth?: number;
   tickCount?: number;
+  isGenerating?: boolean;
 }
 
 export const CircleProgress: React.FC<CircleProgressProps> = ({
@@ -14,6 +15,7 @@ export const CircleProgress: React.FC<CircleProgressProps> = ({
   size = 200,
   strokeWidth = 6,
   tickCount = 100,
+  isGenerating = false,
 }) => {
   const [progress, setProgress] = useState(0);
 
@@ -98,9 +100,9 @@ export const CircleProgress: React.FC<CircleProgressProps> = ({
           color: '#fff',
         }}
       >
-        <div style={{ fontSize: size * 0.12, fontWeight: 'normal' }}>
+        {isGenerating && <div style={{ fontSize: size * 0.12, fontWeight: 'normal' }}>
           Generating...
-        </div>
+        </div>}
         <div style={{ fontSize: size * 0.25, fontWeight: 'bold' }}>
           {progress}%
         </div>

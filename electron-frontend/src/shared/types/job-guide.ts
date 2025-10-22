@@ -4,7 +4,7 @@ export interface ScoreMetric {
   weighted_score: number;
   score_weight: number;
   score_reason: string;
-  isCompatible: boolean;
+  is_compatible: boolean;
   strength: string;
   weaknesses: string;
 }
@@ -29,6 +29,11 @@ export interface MatchSummary {
   overall_match_summary: OverallSummary;
   created_at: string;
   updated_at: string;
+}
+
+export interface MatchSummaryResponse {
+  company: string;
+  match_summary: MatchSummary;
 }
 
 export interface GuidingQuestion {
