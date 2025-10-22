@@ -20,7 +20,7 @@ I'm also really itching to just make stuff with code. Seriously. I spent like 2 
 
 
 
-## Architecture - What is this thing now?
+## Architecture - What is this?
 
 The whole setup is a collection of services that talk to each other, all living happily in this monorepo. I'll eventually transition it to full-on microservices architecture instead of this hybrid thing I got going on.
 
