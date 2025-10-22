@@ -10,12 +10,17 @@ I'm also really itching to just make stuff with code. Seriously. I spent like 2 
 
 ### Previews
 
-Soon...
-<!-- ![alt text](https://github.com/Apacher122/job_hunter/blob/main/previews/Screenshot%202025-09-16%20at%2018.22.58.png "Match Score Sample")
-![alt text](https://github.com/Apacher122/job_hunter/blob/main/previews/Screenshot%202025-09-16%20at%2018.23.16.png "Resume Sample")
-![alt text](https://github.com/Apacher122/job_hunter/blob/main/previews/Screenshot%202025-09-16%20at%2018.24.08.png "Cover Letter Sample") -->
+![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot3.png "Job Info Preview")
+![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot6.png "Match Summary Preview")
+![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot1.png "Application List Preview")
+![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot5.png "Documents Preview")
+![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot2.png "User Profile Preview")
+![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot4.png "Settings Preview")
 
-## Architecture - What is this thing now?
+
+
+
+## Architecture - What is this?
 
 The whole setup is a collection of services that talk to each other, all living happily in this monorepo. I'll eventually transition it to full-on microservices architecture instead of this hybrid thing I got going on.
 
