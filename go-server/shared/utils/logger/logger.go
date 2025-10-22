@@ -11,16 +11,17 @@ type InfoLoggerType struct {
 	JobID   *int
 	Service *string
 	DocType *string
-	Message *string
+	Message string
 }
 
 type ErrorLoggerType struct {
-	Uid       *string
-	JobID     *int
-	Service   *string
-	DocType   *string
-	ErrorCode *string
-	Error     error
+	Uid        *string
+	JobID      *int
+	Service    *string
+	DocType    *string
+	ErrorLevel *zerolog.Event
+	ErrorCode  *string
+	Error      error
 }
 
 func (l InfoLoggerType) InfoLog() {
@@ -40,15 +41,16 @@ func (l InfoLoggerType) InfoLog() {
 	if l.DocType != nil {
 		lg.Str("docType", *l.DocType)
 	}
-
-	if l.Message != nil {
-		lg.Msg(*l.Message)
-	}
+	lg.Msg(l.Message)
 }
 
 func (l ErrorLoggerType) ErrorLog() {
-	event := log.Error().
-		Str("uid", *l.Uid)
+	var event *zerolog.Event
+	if l.ErrorLevel == log.Warn() {
+		event = log.Warn()
+	} else {
+		event = log.Error()
+	}
 
 	if l.Uid != nil {
 		event.Str("uid", *l.Uid)

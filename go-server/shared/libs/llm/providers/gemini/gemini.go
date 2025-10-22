@@ -20,27 +20,10 @@ type GeminiClient struct {
 
 func NewClient() *GeminiClient {
 	return &GeminiClient{
-		model: "gemini-2.5-pro",
+		model: "gemini-2.5-flash",
 	}
 }
 
-// Generate generates content based on the given prompt and instructions.
-//
-// It will make a single request to the Gemini API with the given
-// configuration and return the response if successful. If the
-// request fails, it will retry up to 3 times with an exponential
-// backoff starting at 1 second. If all retries fail, it will
-// return an error.
-//
-// The response will be unmarshalled into a string and returned. If the
-// response is not of type "application/json", an error will be returned.
-//
-// The schema parameter can be used to specify the expected response schema.
-// If the schema is not provided, the response will be unmarshalled into a
-// map[string]interface{}.
-//
-// The apiKey parameter is used to authenticate the request. If the key is
-// invalid, an error will be returned.
 func (c *GeminiClient) Generate(
 	ctx context.Context,
 	instructions string,
@@ -65,10 +48,6 @@ func (c *GeminiClient) Generate(
 
 	config := &genai.GenerateContentConfig{
 		ResponseMIMEType: "application/json",
-	}
-
-	if instructions != "" {
-		config.SystemInstruction = genai.NewContentFromText(instructions, genai.RoleModel)
 	}
 
 	if schema != nil {

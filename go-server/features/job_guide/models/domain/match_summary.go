@@ -7,7 +7,7 @@ type MatchSummary struct {
 		ShouldApply          models.ShouldApply `json:"should_apply"`
 		ShouldApplyReasoning string             `json:"should_apply_reasoning"`
 		OverallMatchSummary  struct {
-			OverallMatchScore int      `json:"overall_match_score"`
+			OverallMatchScore float64  `json:"overall_match_score"`
 			Suggestions       []string `json:"suggestions"`
 			Summary           []struct {
 				SummaryText        string             `json:"summary_text"`

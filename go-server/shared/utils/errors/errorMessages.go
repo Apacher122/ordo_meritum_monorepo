@@ -39,6 +39,10 @@ var (
 
 	ERR_INVALID_REQUEST_FORMAT = "ERR_INVALID_REQUEST_FORMAT"
 	ERR_INVALID_SCHEMA         = "ERR_INVALID_SCHEMA"
+
+	ERR_KAFKA_FAILED_TO_WRITE    = "ERR_KAFKA_FAILED_TO_SEND"
+	ERR_KAFKA_FAILED_TO_READ     = "ERR_KAFKA_FAILED_TO_READ"
+	ERR_KAFKA_MALFORMED_RESPONSE = "ERR_KAFKA_MALFORMED_RESPONSE"
 )
 
 var (
@@ -105,6 +109,13 @@ func ErrorMessage(msg string) error {
 		return fmt.Errorf("invalid request format")
 	case ERR_INVALID_SCHEMA:
 		return fmt.Errorf("invalid schema")
+
+	case ERR_KAFKA_FAILED_TO_READ:
+		return fmt.Errorf("failed to read from kafka")
+	case ERR_KAFKA_FAILED_TO_WRITE:
+		return fmt.Errorf("failed to write to kafka")
+	case ERR_KAFKA_MALFORMED_RESPONSE:
+		return fmt.Errorf("malformed response from kafka")
 
 	default:
 		return fmt.Errorf("unknown error")

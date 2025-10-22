@@ -114,7 +114,7 @@ type MatchSummary struct {
 	ResumeID          int            `db:"resume_id"`
 	ShouldApply       ShouldApply    `db:"should_apply"`
 	Reasoning         string         `db:"reasoning"`
-	OverallMatchScore *int           `db:"overall_match_score"`
+	OverallMatchScore *float64       `db:"overall_match_score"`
 	Suggestions       pq.StringArray `db:"suggestions"`
 	CreatedAt         time.Time      `db:"created_at"`
 	UpdatedAt         time.Time      `db:"updated_at"`

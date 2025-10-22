@@ -13,10 +13,12 @@ import (
 	"github.com/ordo_meritum/shared/contexts"
 	"github.com/ordo_meritum/shared/middleware"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
+	lg "github.com/ordo_meritum/shared/utils/logger"
 	"github.com/rs/zerolog/log"
 )
 
 var logger = log.With().Str("service", "documents-controller").Logger()
+var service = "documents-controller"
 
 type Controller struct {
 	docService *services.DocumentService
@@ -42,7 +44,7 @@ func (c *Controller) generateDocumentHandler(
 
 		_, ok := contexts.FromContext(r.Context())
 		if !ok {
-			error_messages.ErrorLog(error_messages.ERR_USER_NO_CONTEXT, nil, logger.Error())
+			lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
 			middleware.JSON(w, http.StatusInternalServerError, nil)
 			return
 		}
@@ -55,7 +57,6 @@ func (c *Controller) generateDocumentHandler(
 
 		jobID, err := generationFunc(r.Context(), requestBody)
 		if err != nil {
-			error_messages.ErrorLog(error_messages.ERR_DB_FAILED_TO_INSERT, err, logger.Error())
 			middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to queue document for generation"})
 			return
 		}
