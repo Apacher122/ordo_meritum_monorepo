@@ -26,7 +26,7 @@ export const UserInfoSchema = z.object({
 });
 
 export const EducationPayloadSchema = z.object({
-  coursework: z.string(),
+  coursework: z.string().optional().nullable(),
   degree: z.string(),
   location: z.string(),
   school: z.string(),
@@ -92,7 +92,7 @@ export const CompilationRequestSchema = z.object({
   companyName: z.string(),
   docType: z.string(),
   userInfo: UserInfoSchema,
-  educationInfo: EducationPayloadSchema,
+  educationInfo: EducationPayloadSchema.optional().nullable(),
   resume: ResumePayloadSchema.optional().nullable(),
   coverLetter: CoverLetterPayloadSchema.optional().nullable(),
 });

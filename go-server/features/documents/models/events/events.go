@@ -11,7 +11,7 @@ type DocumentEvent struct {
 	CompanyName   string                        `json:"companyName"`
 	DocType       string                        `json:"docType"`
 	UserInfo      requests.UserInfoPayload      `json:"userInfo"`
-	EducationInfo requests.EducationInfoPayload `json:"educationInfo"`
+	EducationInfo requests.EducationInfoPayload `json:"educationInfo,omitzero"`
 	Resume        domain.Resume                 `json:"resume,omitzero"`
 	CoverLetter   domain.CoverLetter            `json:"coverLetter,omitzero"`
 }

@@ -1,3 +1,32 @@
+
+@font-face {
+  font-family: "Orator";
+  src: url("../fonts/orator_std_medium.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "ocr-a-regular";
+  src: url("../fonts/ocr_a_regular.otf") format("opentype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "cutive-mono-regular";
+  src: url("../fonts/cutive_mono_regular.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "vcr-osd-mono";
+  src: url("../fonts/vcr_osd_mono.ttf") format("truetype");
+  font-weight: normal;
+  font-style: normal;
+}
+
 :root {
   --sidebar-bg: #1f1f1f;
   --border-color: #333;
@@ -20,8 +49,11 @@ html,
   height: 100%;
   background-color: var(--bg-color);
   color: var(--text-color);
-  font-family: sans-serif;
+  font-family: "vcr-osd-mono", sans-serif;
   overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
 
 h1 {
