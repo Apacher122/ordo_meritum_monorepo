@@ -9,7 +9,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/ordo_meritum/database/jobs"
-	db_models "github.com/ordo_meritum/database/models"
 	"github.com/ordo_meritum/features/application_tracking/models/domain"
 	request "github.com/ordo_meritum/features/application_tracking/models/requests"
 
@@ -21,6 +20,7 @@ import (
 	prompts "github.com/ordo_meritum/shared/templates/prompts"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	formatters "github.com/ordo_meritum/shared/utils/formatters"
+	lg "github.com/ordo_meritum/shared/utils/logger"
 )
 
 var serviceName = "application-tracking"
@@ -56,7 +56,7 @@ func (s *AppTrackerService) QueueApplicationTracking(
 	)
 
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_NO_CONTENT, err, l.Error())
+		lg.ErrorLoggerType{Service: &serviceName, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: err}.ErrorLog()
 		return nil, err
 	}
 
@@ -64,7 +64,7 @@ func (s *AppTrackerService) QueueApplicationTracking(
 	cn := formatters.ToSnakeCase(parsedJob.CompanyName)
 	res, err := s.jobRepo.InsertFullJobPosting(ctx, requestBody.JobDescription, parsedJob, cn, parsedJob.CompanyName)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_DB_FAILED_TO_INSERT, err, l.Error())
+		lg.ErrorLoggerType{Service: &serviceName, ErrorCode: &error_messages.ERR_DB_FAILED_TO_INSERT, Error: err}.ErrorLog()
 		return nil, err
 	}
 
@@ -81,10 +81,17 @@ func (s *AppTrackerService) GetTrackedApplicationByID(
 
 func (s *AppTrackerService) UpdateApplicationStatus(
 	ctx context.Context,
-	roleID int,
-	status db_models.AppStatus,
+	request *request.ApplicationUpdateRequest,
 ) error {
-	return s.jobRepo.UpdateApplicationDetails(ctx, roleID, &status, nil)
+	l := log.With().
+		Str("service", serviceName).
+		Logger()
+	err := s.jobRepo.UpdateApplicationDetails(ctx, request.Payload.JobID, request)
+	if err != nil {
+		l.Error().Err(err).Msg("Error updating application status")
+		return err
+	}
+	return nil
 }
 
 func (s *AppTrackerService) ListTrackedApplications(
@@ -117,7 +124,7 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 		return nil, err
 	}
 
-	sch, err := schemaregistry.GetSchema("cohere", schemaregistry.ApplicationTracking)
+	sch, err := schemaregistry.GetSchema("cohere", schemaregistry.ApplicationTracking, nil)
 	if err != nil {
 		return nil, err
 	}

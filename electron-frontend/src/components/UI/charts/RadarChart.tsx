@@ -1,4 +1,4 @@
-import '../../../Styles/Components/UI/RadarChart.css';
+import '@/assets/Styles/Components/UI/RadarChart.css';
 
 import {
   Chart as ChartJS,
@@ -12,6 +12,7 @@ import {
 
 import { Radar } from 'react-chartjs-2';
 import React from 'react';
+import { ScoreMetric } from '@/shared/types';
 
 ChartJS.register(
   RadialLinearScale,
@@ -30,7 +31,7 @@ interface Metric {
 }
 
 interface RadarChartOverviewProps {
-  metrics: Metric[];
+  metrics: ScoreMetric[];
 }
 
 const RadarChartOverview: React.FC<RadarChartOverviewProps> = ({ metrics }) => {

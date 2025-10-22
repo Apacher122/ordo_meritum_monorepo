@@ -11,14 +11,6 @@ const initialSettingsState: Settings = {
   },
 };
 
-
-/**
- * Hook to manage the application settings.
- * It loads the settings from the electron storage on mount and provides functions to update the settings.
- * It also provides the current state of the settings, whether the settings are being loaded, and any errors that may have occurred.
- * @returns {{ settings: Settings, setSettings: (newSettings: Settings) => Promise<void>, loading: boolean, error: string | null, saveSettings: (newSettings: Settings) => Promise<void> }}
- */
-
 export const useSettings = () => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,20 +24,20 @@ export const useSettings = () => {
       if (result.success) {
         const loadedData = result.data;
 
-        if (!loadedData) {
-          setSettings(initialSettingsState);
-        } else {
+        if (loadedData) {
           const mergedSettings: Settings = {
             apiKeys: {
               ...initialSettingsState.apiKeys,
-              ...(loadedData.apiKeys || {}),
+              ...loadedData.apiKeys,
             },
             featureAssignments: {
               ...initialSettingsState.featureAssignments,
-              ...(loadedData.featureAssignments || {}),
+              ...loadedData.featureAssignments,
             },
           };
           setSettings(mergedSettings);
+        } else {
+          setSettings(initialSettingsState);
         }
       } else {
         setError(result.error ?? null);

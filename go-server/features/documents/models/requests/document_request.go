@@ -49,7 +49,7 @@ type ExperiencePayload struct {
 	BulletPoints []string `json:"bulletPoints"`
 	Company      string   `json:"company"`
 	ID           string   `json:"id"`
-	Position     string   `json:"position"`
+	Position     string   `json:"jobTitle"`
 	Years        string   `json:"years"`
 }
 

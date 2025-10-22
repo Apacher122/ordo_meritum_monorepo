@@ -4,7 +4,7 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
-	request "github.com/ordo_meritum/features/application_tracking/models/requests"
+	request "github.com/ordo_meritum/features/job_guide/models/requests"
 	"github.com/ordo_meritum/features/job_guide/services"
 	"github.com/ordo_meritum/shared/contexts"
 	"github.com/ordo_meritum/shared/middleware"
@@ -21,7 +21,7 @@ func NewController(service *services.JobGuideService) *Controller {
 
 func (c *Controller) RegisterRoutes(secureRouter *mux.Router, authRouter *mux.Router) {
 	secureRouter.HandleFunc("/company-info", c.HandleGetCompanyInfo).Methods("POST")
-	secureRouter.HandleFunc("/match-summary", c.HandleGetMatchSummary).Methods("POST")
+	secureRouter.HandleFunc("/match-summary", c.getMatchSummaryHandler).Methods("POST")
 	secureRouter.HandleFunc("/guiding-answers", c.HandleGetGuidingAnswers).Methods("POST")
 }
 
@@ -42,7 +42,7 @@ func (c *Controller) HandleGetCompanyInfo(w http.ResponseWriter, r *http.Request
 	// middleware.JSON(w, http.StatusOK, info)
 }
 
-func (c *Controller) HandleGetMatchSummary(w http.ResponseWriter, r *http.Request) {
+func (c *Controller) getMatchSummaryHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	_, ok := contexts.FromContext(r.Context())
 	if !ok {
@@ -50,10 +50,18 @@ func (c *Controller) HandleGetMatchSummary(w http.ResponseWriter, r *http.Reques
 		return
 	}
 
-	var requestBody request.JobPostingRequest
+	var requestBody request.JobGuideRequest
 	if webrender.DecodeJSONBody(w, r, &requestBody) != nil {
 		return
 	}
+
+	summary, err := c.service.GetMatchSummary(r.Context(), &requestBody)
+	if err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
+		return
+	}
+
+	middleware.JSON(w, http.StatusOK, summary)
 	// verifiedToken, ok := r.Context().Value(middleware.VerifiedTokenKey).(*auth.Token)
 	// if !ok {
 	// 	middleware.JSON(w, http.StatusUnauthorized, map[string]string{"error": "No authenticated user found"})

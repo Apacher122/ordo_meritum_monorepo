@@ -1,1 +1,29 @@
 
+.radar-chart-container {
+  animation: radar-fade-in 1s ease-out forwards;
+}
+
+@keyframes radar-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.radar-chart-container canvas {
+  animation: radar-draw 1.5s ease-in-out forwards;
+}
+
+@keyframes radar-draw {
+  from {
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}

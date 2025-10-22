@@ -1,4 +1,4 @@
-import React, { ReactNode, createContext, useContext } from "react";
+import React, { ReactNode, createContext, useContext, useMemo } from "react";
 
 import { useAuth } from "../../auth/providers/AuthProvider";
 import { usePublicKeyStream } from "../hooks/usePublicKeyStream";
@@ -13,8 +13,7 @@ const PublicKeyContext = createContext<PublicKeyContextType | undefined>(undefin
 
 export const PublicKeyProvider = ({ children }: { children: ReactNode }) => {
   const { user } = useAuth();   const { publicKey, loading, error } = usePublicKeyStream(user);   
-  const value = { publicKey, loading, error };
-
+  const value = useMemo(() => ({ publicKey, loading, error }), [publicKey, loading, error]);
   return (
     <PublicKeyContext.Provider value={value}>
       {children}

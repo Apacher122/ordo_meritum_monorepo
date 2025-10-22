@@ -20,18 +20,14 @@ import (
 	schemaregistry "github.com/ordo_meritum/shared/libs/llm/schema_registry"
 	"github.com/ordo_meritum/shared/templates/instructions"
 	"github.com/ordo_meritum/shared/templates/prompts"
-	error_response "github.com/ordo_meritum/shared/types/errors"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	shared_formatters "github.com/ordo_meritum/shared/utils/formatters"
+	lg "github.com/ordo_meritum/shared/utils/logger"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 	"github.com/segmentio/kafka-go"
 )
-
-var logger = log.With().
-	Str("service", "documents").
-	Logger()
 
 type DocumentService struct {
 	jobRepo     jobs.Repository
@@ -50,6 +46,8 @@ func NewDocumentService(
 		LatexWriter: latexWriter,
 	}
 }
+
+var service = "documents-service"
 
 func (s *DocumentService) QueueResumeGeneration(
 	ctx context.Context,
@@ -72,40 +70,36 @@ func (s *DocumentService) queueDocumentGeneration(
 ) (int, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return 0, error_response.ErrNoUserContext
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
+		return 0, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
 	}
 	l := s.serviceLogger(userCtx.UID, requestBody.Options.JobID, docType)
 	l.Info().Msgf("Starting %s generation process", docType)
 
-	// MOCK
-	// kafkaRequest := mocks.GetMockDocumentEvent(uid, requestBody.Options.JobID, "cover-letter")
 	var kafkaRequest *events.DocumentEvent
-	var err *error_messages.ErrorBody
+	var err error
 	if docType == "resume" {
 		kafkaRequest, err = s.updateResumeWithLLM(ctx, &requestBody)
 		if err != nil {
-			error_messages.ErrorLog(err.ErrCode, err.ErrMsg, logger.Error())
-			return 0, err.ErrMsg
+			return 0, err
 		}
 	} else {
 		currentResume, err := s.resumeRepo.GetFullResume(ctx, requestBody.Options.JobID)
 		if err != nil {
-			l.Error().Err(err).Msgf("Failed to update %s with LLM", docType)
 			return 0, err
 		}
+
 		kafkaRequest, err = s.updateCoverLetterWithLLM(ctx, &requestBody, currentResume)
 		if err != nil {
-			l.Error().Err(err).Msgf("Failed to update %s with LLM", docType)
 			return 0, err
 		}
 	}
 
 	if err := s.sendKafkaMessage(ctx, kafkaRequest); err != nil {
-		l.Error().Err(err).Msg("Error writing to Kafka")
 		return 0, err
 	}
 
-	l.Info().Msgf("Successfully queued %s for compilation", docType)
+	lg.InfoLoggerType{Service: &service, JobID: &kafkaRequest.JobID, Message: fmt.Sprintf("Successfully queued %s for compilation", docType)}.InfoLog()
 	return kafkaRequest.JobID, nil
 }
 
@@ -115,6 +109,7 @@ func (s *DocumentService) sendKafkaMessage(
 ) error {
 	messageBytes, err := json.Marshal(event)
 	if err != nil {
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_KAFKA_MALFORMED_RESPONSE, Error: fmt.Errorf("failed to marshal Kafka request: %w", err)}.ErrorLog()
 		return fmt.Errorf("failed to marshal Kafka request: %w", err)
 	}
 
@@ -126,6 +121,7 @@ func (s *DocumentService) sendKafkaMessage(
 		Value: messageBytes,
 	})
 	if err != nil {
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_KAFKA_FAILED_TO_WRITE, Error: fmt.Errorf("failed to write to kafka: %w", err)}.ErrorLog()
 		return fmt.Errorf("failed to write to kafka: %w", err)
 	}
 	return nil
@@ -134,44 +130,50 @@ func (s *DocumentService) sendKafkaMessage(
 func (s *DocumentService) updateResumeWithLLM(
 	ctx context.Context,
 	r *requests.DocumentRequest,
-) (*events.DocumentEvent, *error_messages.ErrorBody) {
+) (*events.DocumentEvent, error) {
 
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_USER_NO_CONTEXT}
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
 	}
 
 	j, err := s.jobRepo.GetFullJobPosting(ctx, r.Options.JobID)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_DB_FAILED_TO_GET, ErrMsg: err}
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_DB_FAILED_TO_GET, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_DB_FAILED_TO_GET)
 	}
 
 	promptData, err := buildResumePromptData(j, &r.Payload)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_PROMPT_FORMATTING, ErrMsg: err}
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_PROMPT_FORMATTING, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_LLM_PROMPT_FORMATTING)
 	}
 
 	e := r.Payload.EducationInfo
 	education, err := formatters.NewEducationInfoFromPayload(&e)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_INVALID_REQUEST_FORMAT, ErrMsg: err}
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_INVALID_REQUEST_FORMAT, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_INVALID_REQUEST_FORMAT)
 	}
 
 	var llmResume domain.Resume
 	err = s.generateLLMContent(
 		ctx,
-		r.Options.LlmProvider,
+		r,
 		"resume.txt",
 		promptData,
 		schemaregistry.Resume,
 		&llmResume,
 	)
 	if err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_LLM_NO_CONTENT, ErrMsg: err}
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_LLM_NO_CONTENT)
 	}
 
 	if err := s.resumeRepo.UpsertResume(ctx, r.Options.JobID, &llmResume, education); err != nil {
-		return nil, &error_messages.ErrorBody{ErrCode: error_messages.ERR_DB_FAILED_TO_UPSERT, ErrMsg: err}
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_DB_FAILED_TO_UPSERT, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_DB_FAILED_TO_UPSERT)
 	}
 
 	return &events.DocumentEvent{
@@ -192,42 +194,44 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 ) (*events.DocumentEvent, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return nil, error_response.ErrNoUserContext
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
 	}
 
 	jobID := r.Options.JobID
 	j, err := s.jobRepo.GetFullJobPosting(ctx, jobID)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_DB_FAILED_TO_GET, err, logger.Error())
-		return nil, fmt.Errorf("GetFullJobPosting Failed %w", err)
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_DB_FAILED_TO_GET, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_DB_FAILED_TO_GET)
 	}
 
 	llmProvider, err := llm.GetProvider(r.Options.LlmProvider)
 	if err != nil {
-		return nil, fmt.Errorf("GetProvider Failed %w", err)
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_LLM_NO_CONTENT)
 	}
 
-	schema, err := schemaregistry.GetSchema(r.Options.LlmProvider, schemaregistry.Coverletter)
+	schema, err := schemaregistry.GetSchema(r.Options.LlmProvider, schemaregistry.Coverletter, nil)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_INVALID_SCHEMA, err, logger.Error())
-		return nil, fmt.Errorf("GetSchema Failed %w", err)
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_INVALID_SCHEMA, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_INVALID_SCHEMA)
 	}
 
 	promptData, err := buildCoverLetterPromptData(j, &r.Payload, r.Options, currentResume)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_PROMPT_FORMATTING, err, logger.Error())
-		return nil, fmt.Errorf("failed to build cover letter prompt data: %w", err)
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_PROMPT_FORMATTING, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_LLM_PROMPT_FORMATTING)
 	}
 	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, "coverletter.txt", promptData)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_PROMPT_FORMATTING, err, logger.Error())
-		return nil, fmt.Errorf("failed to format prompt template: %w", err)
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_PROMPT_FORMATTING, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_LLM_PROMPT_FORMATTING)
 	}
 
 	instructions, err := instructions.Instructions.ReadFile("coverletter.txt")
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_INSTRUCTION_FORMATTING, err, logger.Error())
-		return nil, fmt.Errorf("failed to read instructions file: %w", err)
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_INSTRUCTION_FORMATTING, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_LLM_INSTRUCTION_FORMATTING)
 	}
 
 	rawResponse, err := llmProvider.Generate(
@@ -237,14 +241,15 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 		schema,
 	)
 	if err != nil {
-		return nil, fmt.Errorf("LLM generation failed: %w", err)
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_LLM_NO_CONTENT)
 	}
 
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
 	var llmCoverLetter domain.CoverLetterBody
 	if err := json.Unmarshal([]byte(cleanedJSON), &llmCoverLetter); err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_MALFORMED_RESPONSE, err, logger.Error())
-		return nil, fmt.Errorf("failed to unmarshal LLM resume response: %w. Raw response: %s", err, rawResponse)
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_MALFORMED_RESPONSE, Error: err}.ErrorLog()
+		return nil, error_messages.ErrorMessage(error_messages.ERR_LLM_MALFORMED_RESPONSE)
 	}
 
 	coverLetterPayload := domain.CoverLetter{
@@ -267,41 +272,50 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 
 func (s *DocumentService) generateLLMContent(
 	ctx context.Context,
-	providerName, instructionsFile string,
+	r *requests.DocumentRequest,
+	instructionsFile string,
 	promptData any,
 	schemaType string,
 	target interface{},
 ) error {
-	llmProvider, err := llm.GetProvider(providerName)
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
+		return error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
+	}
+
+	llmProvider, err := llm.GetProvider(r.Options.LlmProvider)
 	if err != nil {
 		return err
 	}
-	schema, err := schemaregistry.GetSchema(providerName, schemaType)
+	schema, err := schemaregistry.GetSchema(r.Options.LlmProvider, schemaType, r.Payload.Resume.Experiences)
 	if err != nil {
 		return err
 	}
 
 	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_PROMPT_FORMATTING, err, logger.Error())
+		lg.ErrorLoggerType{Uid: &userCtx.UID, Service: &service, ErrorCode: &error_messages.ERR_LLM_PROMPT_FORMATTING, Error: fmt.Errorf("failed to format prompt template: %w", err)}.ErrorLog()
 		return fmt.Errorf("failed to format prompt template: %w", err)
 	}
 
 	instructionBytes, err := instructions.Instructions.ReadFile(instructionsFile)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_INSTRUCTION_FORMATTING, err, logger.Error())
+		lg.ErrorLoggerType{Uid: &userCtx.UID, Service: &service, ErrorCode: &error_messages.ERR_LLM_INSTRUCTION_FORMATTING, Error: fmt.Errorf("failed to read instructions file: %w", err)}.ErrorLog()
 		return fmt.Errorf("failed to read instructions file: %w", err)
 	}
 
 	rawResponse, err := llmProvider.Generate(ctx, string(instructionBytes), prompt, schema)
 	if err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_NO_CONTENT, err, logger.Error())
+		lg.ErrorLoggerType{Uid: &userCtx.UID, Service: &service, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: fmt.Errorf("LLM generation failed: %w", err)}.ErrorLog()
 		return fmt.Errorf("LLM generation failed: %w", err)
 	}
 
+	log.Printf("LLM response: %s", rawResponse)
+
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
 	if err := json.Unmarshal([]byte(cleanedJSON), target); err != nil {
-		error_messages.ErrorLog(error_messages.ERR_LLM_MALFORMED_RESPONSE, err, logger.Error())
+		lg.ErrorLoggerType{Uid: &userCtx.UID, Service: &service, ErrorCode: &error_messages.ERR_LLM_MALFORMED_RESPONSE, Error: fmt.Errorf("failed to unmarshal LLM response: %w. Raw response: %s", err, rawResponse)}.ErrorLog()
 		return fmt.Errorf("failed to unmarshal LLM response: %w. Raw response: %s", err, rawResponse)
 	}
 

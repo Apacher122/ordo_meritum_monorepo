@@ -5,12 +5,14 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/lib/pq"
 	"github.com/ordo_meritum/database/models"
 	"github.com/ordo_meritum/features/application_tracking/models/domain"
+	request "github.com/ordo_meritum/features/application_tracking/models/requests"
 	"github.com/ordo_meritum/shared/contexts"
 	error_response "github.com/ordo_meritum/shared/types/errors"
 )
@@ -54,7 +56,7 @@ type Repository interface {
 	GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, error)
 	InsertFullJobPosting(ctx context.Context, jobRawText string, jobPost *domain.JobDescription, companyName string, properName string) (*models.JobRequirements, error)
 	GetAllUserJobPostings(ctx context.Context) ([]*UserJobPosting, error)
-	UpdateApplicationDetails(ctx context.Context, roleID int, status *models.AppStatus, applicationDate *time.Time) error
+	UpdateApplicationDetails(ctx context.Context, roleID int, req *request.ApplicationUpdateRequest) error
 	DeleteJobPostByID(ctx context.Context, roleID int) error
 }
 
@@ -200,40 +202,76 @@ func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context) ([]*User
 	return jobs, err
 }
 
-func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleID int, status *models.AppStatus, applicationDate *time.Time) error {
+func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleID int, req *request.ApplicationUpdateRequest) error {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
 		return error_response.ErrNoUserContext
 	}
 
-	tx, err := r.db.BeginTxx(ctx, nil)
+	payload := req.Payload
+
+	var exists bool
+	query := "SELECT EXISTS(SELECT 1 FROM resumes WHERE role_id = $1 AND firebase_uid = $2)"
+	err := r.db.QueryRow(query, roleID, userCtx.UID).Scan(&exists)
 	if err != nil {
-		return err
+		return fmt.Errorf("error checking user authorization for role %d: %w", roleID, err)
 	}
-	defer tx.Rollback()
+	if !exists {
+		return fmt.Errorf("user not authorized to update application for role ID %d", roleID)
+	}
 
-	authCheck := `EXISTS (SELECT 1 FROM resumes WHERE role_id = $2 AND firebase_uid = $3)`
+	tx, err := r.db.Begin()
+	if err != nil {
+		return fmt.Errorf("could not begin transaction: %w", err)
+	}
+	defer tx.Rollback() // Ensures transaction is rolled back on any subsequent error.
 
-	if status != nil {
-		query := fmt.Sprintf("UPDATE roles SET application_status = $1 WHERE id = $2 AND %s", authCheck)
-		result, err := tx.ExecContext(ctx, query, *status, roleID, roleID, userCtx.UID)
+	if payload.Link != nil {
+		var companyID int
+		err := tx.QueryRow("SELECT company_id FROM roles WHERE id = $1", roleID).Scan(&companyID)
 		if err != nil {
-			return fmt.Errorf("failed to update role status: %w", err)
+			if err == sql.ErrNoRows {
+				return fmt.Errorf("no role found with id %d", roleID)
+			}
+			return fmt.Errorf("could not query company for role %d: %w", roleID, err)
 		}
-		rowsAffected, _ := result.RowsAffected()
-		if rowsAffected == 0 {
-			return errors.New("no role was updated, possibly due to lack of authorization")
-		}
-	}
-
-	if applicationDate != nil {
-		query := "UPDATE resumes SET applied_on = $1 WHERE role_id = $2 AND firebase_uid = $3"
-		_, err := tx.ExecContext(ctx, query, *applicationDate, roleID, userCtx.UID)
+		_, err = tx.Exec("UPDATE companies SET website = $1, updated_at = NOW() WHERE id = $2", payload.Link, companyID)
 		if err != nil {
-			return fmt.Errorf("failed to update resume application date: %w", err)
+			return fmt.Errorf("failed to update company website: %w", err)
 		}
 	}
 
+	// --- 3. Handle Role Updates (roles table) ---
+	roleUpdates := make(map[string]interface{})
+	if payload.JobTitle != nil {
+		roleUpdates["job_title"] = *payload.JobTitle
+	}
+	if payload.ApplicationStatus != nil {
+		roleUpdates["application_status"] = *payload.ApplicationStatus
+	}
+
+	if len(roleUpdates) > 0 {
+		if err := executeUpdate(tx, "roles", roleUpdates, "id", roleID); err != nil {
+			return fmt.Errorf("failed to update role: %w", err)
+		}
+	}
+
+	// --- 4. Handle Job Requirement Updates (job_requirements table) ---
+	reqUpdates := make(map[string]interface{})
+	if payload.InterviewCount != nil {
+		reqUpdates["interview_count"] = *payload.InterviewCount
+	}
+	if payload.InitialApplicationDate != nil {
+		reqUpdates["initial_application_date"] = *payload.InitialApplicationDate
+	}
+
+	if len(reqUpdates) > 0 {
+		if err := executeUpdate(tx, "job_requirements", reqUpdates, "role_id", roleID); err != nil {
+			return fmt.Errorf("failed to update job requirements: %w", err)
+		}
+	}
+
+	// If all updates succeed, commit the transaction.
 	return tx.Commit()
 }
 
@@ -269,6 +307,41 @@ func (r *postgresRepository) DeleteJobPostByID(ctx context.Context, roleID int) 
 	}
 
 	return tx.Commit()
+}
+
+func executeUpdate(tx *sql.Tx, table string, updates map[string]interface{}, whereCol string, whereVal int) error {
+	var setClauses []string
+	args := make([]interface{}, 0, len(updates)+1)
+	i := 1
+
+	for key, val := range updates {
+		setClauses = append(setClauses, fmt.Sprintf("%s = $%d", key, i))
+		args = append(args, val)
+		i++
+	}
+
+	query := fmt.Sprintf("UPDATE %s SET %s, updated_at = NOW() WHERE %s = $%d",
+		table,
+		strings.Join(setClauses, ", "),
+		whereCol,
+		i,
+	)
+	args = append(args, whereVal)
+
+	result, err := tx.Exec(query, args...)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("no rows found to update in table %s for id %d", table, whereVal)
+	}
+
+	return nil
 }
 
 var _ Repository = (*postgresRepository)(nil)

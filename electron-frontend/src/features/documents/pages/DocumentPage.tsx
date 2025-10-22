@@ -8,6 +8,7 @@ import {
   useSetHeaderTitle,
 } from "@/components/Layouts/providers/HeaderProvider";
 
+import { AppliedJob } from "@/features/applications/types";
 import { CircleProgress } from "@/components/UI/loaders/CircleProgress";
 import { DocumentType } from "../types";
 import { ViewChangesModal } from "../components/ViewChangesModal";
@@ -15,9 +16,12 @@ import { useApplication } from "../../applications/providers/ApplicationProvider
 import { useDocumentManager } from "../hooks/useDocumentManager";
 
 export const DocumentPage: React.FC = () => {
-  const { selectedJob, loading: appLoading } = useApplication();
+  const { jobs, selectedJob, loading: appLoading } = useApplication();
+
   const [isChangesModalOpen, setIsChangesModalOpen] = useState(false);
-  const [docType, setDocType] = useState<DocumentType>();
+  const [docType, setDocType] = useState<DocumentType>("resume");
+  const [jobsWithDoc, setJobsWithDoc] = useState<AppliedJob[]>([]);
+  const [jobsWithoutDoc, setJobsWithoutDoc] = useState<AppliedJob[]>([]);
 
   const setHeaderTitle = useSetHeaderTitle();
   const setHeaderSubtitle = useSetHeaderSubtitle();
@@ -29,31 +33,58 @@ export const DocumentPage: React.FC = () => {
     localJsonData,
     generate,
     error,
+    doesFileExist,
   } = useDocumentManager(
     selectedJob?.RoleID ?? null,
     selectedJob?.CompanyName ?? "",
     selectedJob?.JobTitle ?? "",
-    docType ?? "resume"
+    docType
   );
 
   const isGenerating = displayStatus === 'generating';
 
+  useEffect(() => {
+    const sortJobs = async () => {
+      const withDoc: AppliedJob[] = [];
+      const withoutDoc: AppliedJob[] = [];
+
+      for (const job of jobs) {
+        const hasDoc = await doesFileExist(job.RoleID, docType, job.CompanyName, job.JobTitle);
+        if (hasDoc) {
+          withDoc.push(job);
+        } else {
+          withoutDoc.push(job);
+        }
+      }
+      setJobsWithDoc(withDoc);
+      setJobsWithoutDoc(withoutDoc);
+    };
+
+    if (jobs.length > 0) {
+      sortJobs();
+    }
+  }, [jobs, docType, doesFileExist]);
+  // --- END OF EDIT 6 ---
+
   const headerControls = useMemo(() => (
+
     <DocumentHeaderControls
-      selectedDocType={docType ?? "resume"}
+      selectedDocType={docType}
       onDocTypeChange={setDocType}
       isJobSelected={!!selectedJob}
       onCreate={generate}
       isGenerating={isGenerating}
       showViewChangesButton={displayStatus === 'present'}
-      isCreateDisabled={isGenerating} 
+      isCreateDisabled={isGenerating || !selectedJob}
       onViewChanges={() => setIsChangesModalOpen(true)}
+      jobsWithDoc={jobsWithDoc}
+      jobsWithoutDoc={jobsWithoutDoc}
     />
-  ), [docType, selectedJob, generate, isGenerating, displayStatus]);
+  ), [docType, selectedJob, generate, isGenerating, displayStatus, jobsWithDoc, jobsWithoutDoc]);
 
   useEffect(() => {
     if (selectedJob) {
-      setHeaderTitle(selectedJob.CompanyName);
+      setHeaderTitle(selectedJob.CompanyProperName);
       setHeaderSubtitle(selectedJob.JobTitle);
     } else {
       setHeaderTitle("No Job Selected");
@@ -129,4 +160,3 @@ export const DocumentPage: React.FC = () => {
     </div>
   );
 };
-

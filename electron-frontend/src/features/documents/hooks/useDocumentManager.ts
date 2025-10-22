@@ -8,27 +8,15 @@ import { useDocumentStatus } from "../providers/DocumentStatusProvider";
 import { useSettings } from "../../settings/hooks/useSettings";
 import { useUserInfo } from "@/features/user/hooks/useUserInfo";
 
-const getLocalPath = (
-  jobId: number,
-  docType: DocumentType,
-  company: string,
-  title: string
-): string => {
-  const baseName = `${company.toLowerCase().replace(/ /g, "_")}_${title
-    .toLowerCase()
-    .replace(/ /g, "_")}_${jobId}`;
-  return `${docType}/${baseName}_${docType}.pdf`;
-};
-
 const baseFileName = (
   jobId: number,
   docType: DocumentType,
   company: string,
   title: string
 ): string => {
-  const baseName = `${company.toLowerCase().replace(/ /g, "_")}_${title
+const baseName = `${company.toLowerCase().replaceAll(" ", "_")}_${title
     .toLowerCase()
-    .replace(/ /g, "_")}_${jobId}`;
+    .replaceAll(" ", "_")}_${jobId}`;
   return `/${baseName}_${docType}`;
 };
 
@@ -49,7 +37,6 @@ export const useDocumentManager = (
     null
   );
   const [isCheckingFile, setIsCheckingFile] = useState(true);
-  const [isApiLoading, setIsApiLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
 
   const serverStatus = useMemo(
@@ -92,16 +79,10 @@ export const useDocumentManager = (
   }, [checkFile]);
 
   useEffect(() => {
-    console.log("Effect triggered", {
-      serverStatus,
-      jobId,
-      downloadUrl: serverStatus?.downloadUrl,
-    });
     if (!serverStatus || serverStatus.status !== "COMPLETED") return;
     if (!serverStatus.downloadUrl || !serverStatus.changesUrl) return;
     if (!jobId) return;
     const downloadAndSave = async () => {
-      console.log("Downloading and saving file...");
       try {
         const token = await user?.getIdToken();
         const response = await downloadDocument(
@@ -125,8 +106,7 @@ export const useDocumentManager = (
       }
     };
     downloadAndSave();
-    console.log("File downloaded and saved.");
-  }, [serverStatus, jobId, docType, companyName, jobTitle, checkFile]);
+  }, [serverStatus, jobId, docType, companyName, jobTitle, checkFile, user]);
 
   const generate = useCallback(async () => {
     if (!jobId || !user || !settings || !userProfile) {
@@ -134,8 +114,8 @@ export const useDocumentManager = (
       return;
     }
 
-    setIsApiLoading(true);
     setApiError(null);
+    addPendingDocument(String(jobId), docType);
 
     try {
       const token = await user.getIdToken();
@@ -143,7 +123,7 @@ export const useDocumentManager = (
         docType === "resume" ? "resumeGeneration" : "coverLetterGeneration";
       const llmProvider = settings.featureAssignments[feature];
 
-      const response = await generateDocumentApi(
+      await generateDocumentApi(
         docType,
         userProfile,
         jobId,
@@ -151,8 +131,6 @@ export const useDocumentManager = (
         settings,
         token
       );
-
-      addPendingDocument(String(response.jobId), docType);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred.";
@@ -161,18 +139,36 @@ export const useDocumentManager = (
         errorMessage
       );
       setApiError(`API Error: ${errorMessage}`);
-    } finally {
-      setIsApiLoading(false);
     }
   }, [jobId, docType, user, settings, addPendingDocument, userProfile]);
 
   const displayStatus = useMemo(() => {
     if (isCheckingFile) return "checking";
-    if (isApiLoading || serverStatus?.status === "PENDING") return "generating";
+    if (serverStatus?.status === "PENDING") return "generating";
     if (serverStatus?.status === "FAILED") return "failed";
     if (fileExists) return "present";
     return "idle";
-  }, [isCheckingFile, isApiLoading, serverStatus, fileExists]);
+  }, [isCheckingFile, serverStatus, fileExists]);
+
+const doesFileExist = useCallback(
+    async (
+      checkJobId: number,
+      checkDocType: DocumentType,
+      checkCompanyName: string,
+      checkJobTitle: string
+    ): Promise<boolean> => {
+      const pdfPath =
+        baseFileName(checkJobId, checkDocType, checkCompanyName, checkJobTitle) + ".pdf";
+      try {
+        const exists = await window.appAPI.files.checkFileExists(pdfPath);
+        return exists;
+      } catch (err) {
+        console.error("Error in doesFileExist check:", err);
+        return false;
+      }
+    },
+    []
+  );
 
   return {
     displayStatus,
@@ -180,5 +176,6 @@ export const useDocumentManager = (
     localJsonData,
     generate,
     error: apiError || serverStatus?.error,
+    doesFileExist,
   };
 };

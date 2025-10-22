@@ -2,8 +2,6 @@ package error_messages
 
 import (
 	"fmt"
-
-	"github.com/rs/zerolog"
 )
 
 type ErrorBody struct {
@@ -41,6 +39,10 @@ var (
 
 	ERR_INVALID_REQUEST_FORMAT = "ERR_INVALID_REQUEST_FORMAT"
 	ERR_INVALID_SCHEMA         = "ERR_INVALID_SCHEMA"
+
+	ERR_KAFKA_FAILED_TO_WRITE    = "ERR_KAFKA_FAILED_TO_SEND"
+	ERR_KAFKA_FAILED_TO_READ     = "ERR_KAFKA_FAILED_TO_READ"
+	ERR_KAFKA_MALFORMED_RESPONSE = "ERR_KAFKA_MALFORMED_RESPONSE"
 )
 
 var (
@@ -49,14 +51,6 @@ var (
 	ErrPromptTemplate      = "failed to format prompt template"
 	ErrInstructionTemplate = "failed to format instruction template"
 )
-
-func ErrorLog(errorCode string, err error, event *zerolog.Event) *zerolog.Event {
-	if err == nil {
-		err = ErrorMessage((errorCode))
-	}
-	ctx := event.Str("error_code", errorCode).Err(err)
-	return ctx
-}
 
 func ErrorMessage(msg string) error {
 	switch msg {
@@ -115,6 +109,13 @@ func ErrorMessage(msg string) error {
 		return fmt.Errorf("invalid request format")
 	case ERR_INVALID_SCHEMA:
 		return fmt.Errorf("invalid schema")
+
+	case ERR_KAFKA_FAILED_TO_READ:
+		return fmt.Errorf("failed to read from kafka")
+	case ERR_KAFKA_FAILED_TO_WRITE:
+		return fmt.Errorf("failed to write to kafka")
+	case ERR_KAFKA_MALFORMED_RESPONSE:
+		return fmt.Errorf("malformed response from kafka")
 
 	default:
 		return fmt.Errorf("unknown error")

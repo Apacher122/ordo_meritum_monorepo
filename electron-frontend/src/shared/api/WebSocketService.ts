@@ -12,7 +12,9 @@ class WebSocketService {
 
     this.userId = userId;
     this.token = token;
-    const url = `${window.env.SERVER_URL}/ws?token=${this.token}`;
+    
+    const wsUrl = window.env.SERVER_URL.replace(/^http/, 'ws');
+    const url = `${wsUrl}/ws?user_id=${this.userId}&token=${this.token}`;
 
     this.ws = new WebSocket(url);
 

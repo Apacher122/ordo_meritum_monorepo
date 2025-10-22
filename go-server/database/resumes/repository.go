@@ -6,9 +6,11 @@ import (
 	"fmt"
 
 	"github.com/jmoiron/sqlx"
+	"github.com/ordo_meritum/database/models"
 	"github.com/ordo_meritum/features/documents/models/domain"
 	"github.com/ordo_meritum/shared/contexts"
 	error_response "github.com/ordo_meritum/shared/types/errors"
+	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	"golang.org/x/sync/errgroup"
 )
 
@@ -17,6 +19,7 @@ const dateFormat = "Jan. 2006"
 type Repository interface {
 	UpsertResume(ctx context.Context, roleID int, resume *domain.Resume, education *domain.EducationInfo) error
 	GetFullResume(ctx context.Context, roleID int) (*domain.Resume, error)
+	GetFullEducation(ctx context.Context, roleID int) ([]*domain.EducationInfo, error)
 }
 
 type postgresRepository struct {
@@ -81,6 +84,46 @@ func (r *postgresRepository) dropResume(ctx context.Context, tx *sqlx.Tx, resume
 	}
 
 	return nil
+}
+
+func (r *postgresRepository) GetFullEducation(
+	ctx context.Context,
+	jobID int,
+) ([]*domain.EducationInfo, error) {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
+	}
+
+	tx, err := r.db.Beginx()
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback()
+
+	query := `
+		SELECT e.*
+		FROM education e
+		JOIN resumes r ON e.resume_id = r.id
+		WHERE r.firebase_uid = $1 AND r.role_id = $2;
+	`
+
+	var educationModels []*models.Education
+	if err := tx.SelectContext(ctx, &educationModels, query, userCtx.UID, jobID); err != nil {
+		return nil, fmt.Errorf("failed to get education for user %s and job %d: %w", userCtx.UID, jobID, err)
+	}
+
+	var domainEducations []*domain.EducationInfo
+	for _, dbModel := range educationModels {
+		domainModel, err := transformEducationToDomainModel(dbModel)
+		if err != nil {
+			fmt.Printf("Warning: failed to transform education model for school %s: %v\n", dbModel.School, err)
+			continue
+		}
+		domainEducations = append(domainEducations, domainModel)
+	}
+
+	return domainEducations, nil
 }
 
 func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resume *domain.Resume, education *domain.EducationInfo) error {
@@ -170,6 +213,24 @@ func getIDs[T any](slice []T, getID func(T) int) []int {
 		ids[i] = getID(item)
 	}
 	return ids
+}
+
+func transformEducationToDomainModel(dbModel *models.Education) (*domain.EducationInfo, error) {
+	if dbModel == nil {
+		return nil, fmt.Errorf("database model cannot be nil")
+	}
+
+	domainModel := &domain.EducationInfo{
+		School:     dbModel.School,
+		Degree:     dbModel.Degree,
+		Location:   dbModel.Location,
+		StartEnd:   dbModel.Dates,
+		CourseWork: dbModel.Courses,
+		GPA:        dbModel.GPA,
+		Honors:     dbModel.Honors,
+	}
+
+	return domainModel, nil
 }
 
 var _ Repository = (*postgresRepository)(nil)

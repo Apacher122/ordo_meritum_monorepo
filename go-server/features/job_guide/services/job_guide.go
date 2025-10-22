@@ -4,11 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log"
 
 	"github.com/ordo_meritum/database/guides"
 	"github.com/ordo_meritum/database/jobs"
 	"github.com/ordo_meritum/database/resumes"
 	job_mappers "github.com/ordo_meritum/features/application_tracking/utils/mappers"
+	doc_domain "github.com/ordo_meritum/features/documents/models/domain"
 	"github.com/ordo_meritum/features/job_guide/models/domain"
 	"github.com/ordo_meritum/features/job_guide/models/requests"
 	"github.com/ordo_meritum/features/job_guide/models/schemas"
@@ -18,7 +20,10 @@ import (
 	"github.com/ordo_meritum/shared/templates/prompts"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	shared_formatters "github.com/ordo_meritum/shared/utils/formatters"
+	lg "github.com/ordo_meritum/shared/utils/logger"
 )
+
+var serviceName = "job-guide"
 
 type JobGuideService struct {
 	guideRepo  guides.Repository
@@ -50,25 +55,32 @@ func (s *JobGuideService) GetCompanyInfo(ctx context.Context, companyName string
 	return nil, nil
 }
 
-func (s *JobGuideService) GetMatchSummary(ctx context.Context, r *requests.JobGuideRequests) error {
+func (s *JobGuideService) GetMatchSummary(ctx context.Context, r *requests.JobGuideRequest) (*domain.MatchSummary, error) {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
+	}
+	lg.InfoLoggerType{Service: &serviceName, Uid: &userCtx.UID, JobID: &r.Payload.JobID, Message: "Getting Match Summary"}.InfoLog()
 
 	promptData, err := s.buildMatchSummaryPromptData(ctx, &r.Payload)
 	if err != nil {
-		return err
+		lg.ErrorLoggerType{Service: &serviceName, ErrorCode: &error_messages.ERR_LLM_PROMPT_FORMATTING, Error: err}.ErrorLog()
+		return nil, err
 	}
 
 	var matchSummary domain.MatchSummary
-	err = s.generateLLMContent(
+	_, err = s.generateLLMContent(
 		ctx,
 		r.Options.LLMProvider,
 		"matchsummary.txt",
 		promptData,
 		schemas.GeminiResumeSchema,
-		matchSummary,
+		&matchSummary,
 	)
 
 	if err != nil {
-		return err
+		lg.ErrorLoggerType{Service: &serviceName, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: fmt.Errorf("could not generate output for llm: %s | err: %w", r.Options.LLMProvider, err)}.ErrorLog()
+		return nil, err
 	}
 
 	// Instructions & prompts
@@ -101,7 +113,7 @@ func (s *JobGuideService) GetMatchSummary(ctx context.Context, r *requests.JobGu
 	// 	return fmt.Errorf("failed to save match summary to database: %w", err)
 	// }
 
-	return nil
+	return &matchSummary, nil
 }
 
 func (s *JobGuideService) GetGuidingAnswers(ctx context.Context, uid string, jobID int) (*domain.GuidingQuestions, error) {
@@ -129,33 +141,36 @@ func (s *JobGuideService) generateLLMContent(
 	promptData any,
 	schema any,
 	target interface{},
-) error {
+) (string, error) {
+	lg.InfoLoggerType{Service: &serviceName, Message: fmt.Sprintf("generating llm content with provider: %s", providerName)}.InfoLog()
 	llmProvider, err := llm.GetProvider(providerName)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	prompt, err := shared_formatters.FormatTemplate(prompts.Prompts, instructionsFile, promptData)
 	if err != nil {
-		return fmt.Errorf("failed to format prompt template: %w", err)
+		return "", fmt.Errorf("failed to format prompt template: %w", err)
 	}
 
 	instructionBytes, err := instructions.Instructions.ReadFile(instructionsFile)
 	if err != nil {
-		return fmt.Errorf("failed to read instructions file: %w", err)
+		return "", fmt.Errorf("failed to read instructions file: %w", err)
 	}
 
 	rawResponse, err := llmProvider.Generate(ctx, string(instructionBytes), prompt, schema)
 	if err != nil {
-		return fmt.Errorf("LLM generation failed: %w", err)
+		return "", fmt.Errorf("LLM generation failed: %w", err)
 	}
+
+	log.Println(rawResponse)
 
 	cleanedJSON := llm.FormatLLMResponse(rawResponse)
 	if err := json.Unmarshal([]byte(cleanedJSON), target); err != nil {
-		return fmt.Errorf("failed to unmarshal LLM response: %w. Raw response: %s", err, rawResponse)
+		return "", fmt.Errorf("failed to unmarshal LLM response: %w. Raw response: %s", err, rawResponse)
 	}
 
-	return nil
+	return cleanedJSON, nil
 }
 
 func (s *JobGuideService) buildMatchSummaryPromptData(ctx context.Context, payload *requests.JobGuidePayload) (map[string]any, error) {
@@ -173,14 +188,18 @@ func (s *JobGuideService) buildMatchSummaryPromptData(ctx context.Context, paylo
 		return nil, err
 	}
 
-	resume := r.FormatForLLM()
+	edu, err := s.resumeRepo.GetFullEducation(ctx, payload.JobID)
+	if err != nil {
+		return nil, err
+	}
+
 	jobPost := job_mappers.NewJobDescriptionFromPost(j)
 
 	return map[string]any{
 		"JobPost":     jobPost.FormatForLLM(),
 		"Applicants":  jobPost.ApplicantCount,
-		"Education":   payload.EducationInfo.FormatForLLM(),
-		"Resume":      resume,
+		"Education":   doc_domain.FormatEducationHistoryForLLM(edu),
+		"Resume":      r.FormatForLLM(),
 		"CoverLetter": payload.CoverLetter,
 	}, nil
 }

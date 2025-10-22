@@ -52,7 +52,7 @@ export const ApplicationListPage: React.FC = () => {
   if (error) return <div className="error-message">{error}</div>;
 
   return (
-    <div className="application-list-page">
+<div className="application-list-page cogitator-view">
       <ApplicationListView
         jobs={filteredJobs}
         onStatusUpdate={updateJobStatus}
