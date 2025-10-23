@@ -7,6 +7,9 @@ import (
 	"github.com/ordo_meritum/features/documents/models/requests"
 )
 
+// NewEducationInfoFromPayload takes a requests.EducationInfoPayload and returns a domain.EducationInfo.
+// If the payload is nil, or if the school, degree, or start_end fields are empty, it will return an error.
+// Otherwise, it will return a domain.EducationInfo with the fields populated from the payload.
 func NewEducationInfoFromPayload(payload *requests.EducationInfoPayload) (*domain.EducationInfo, error) {
 	if payload == nil {
 		return nil, errors.New("education payload cannot be nil")

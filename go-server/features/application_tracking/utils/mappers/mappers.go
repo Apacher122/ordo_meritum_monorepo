@@ -5,6 +5,9 @@ import (
 	"github.com/ordo_meritum/features/application_tracking/models/domain"
 )
 
+// NewJobDescriptionFromPost takes a full job posting and returns a domain.JobDescription
+// object containing the relevant information from the posting. It returns nil if the
+// input is nil.
 func NewJobDescriptionFromPost(post *jobs.FullJobPosting) *domain.JobDescription {
 	jd := &domain.JobDescription{
 		JobTitle:               post.JobTitle,

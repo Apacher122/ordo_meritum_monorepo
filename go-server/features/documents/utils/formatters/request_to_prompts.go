@@ -7,6 +7,13 @@ import (
 	"github.com/ordo_meritum/features/documents/models/requests"
 )
 
+// FormatResumeRequestForLLMWithXML formats a resume request for the LLM service based on
+// the XML schema provided by the LLM service. It takes a requests.DocumentPayload
+// object as an argument and returns a string representing the resume request
+// in the XML schema. The XML schema is the same as the one used for the LLM service.
+// The function formats the resume request with the provided information, including
+// experiences, projects, and skills. It returns an empty string if the
+// provided resume request does not contain any information.
 func FormatResumeRequestForLLMWithXML(request *requests.DocumentPayload) string {
 	var sb strings.Builder
 

@@ -23,6 +23,11 @@ func (c *Controller) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/login-or-register", c.HandleLoginOrRegister).Methods("POST")
 }
 
+// HandleLoginOrRegister is an HTTP handler that logs in a user with Firebase authentication.
+// If the user is not authenticated, it returns an HTTP 401 status with an error message.
+// If the user is authenticated, it attempts to login or register the user using the Auth service.
+// If the login or registration process fails, it returns an HTTP 500 status with an error message.
+// If the login or registration process is successful, it returns the user as JSON with an HTTP 200 status.
 func (c *Controller) HandleLoginOrRegister(
 	w http.ResponseWriter,
 	r *http.Request,
