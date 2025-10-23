@@ -35,6 +35,11 @@ func NewAppTrackerService(jobRepo jobs.Repository) *AppTrackerService {
 	}
 }
 
+// QueueApplicationTracking starts the application tracking process, given a job posting request.
+// It will return the ID of the job posting in the database and an error if any errors occur.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
+// If the job description cannot be parsed with LLM, it will return an error with ErrorCode set to ERR_LLM_NO_CONTENT.
+// If the database fails to insert the full job posting, it will return an error with ErrorCode set to ERR_DB_FAILED_TO_INSERT.
 func (s *AppTrackerService) QueueApplicationTracking(
 	ctx context.Context,
 	requestBody request.JobPostingRequest,
@@ -72,6 +77,9 @@ func (s *AppTrackerService) QueueApplicationTracking(
 	return res.ID, nil
 }
 
+// GetTrackedApplicationByID retrieves a job posting by its role ID.
+// If the role ID cannot be found, it will return an error with ErrorCode set to ERR_DB_FAILED_TO_GET.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
 func (s *AppTrackerService) GetTrackedApplicationByID(
 	ctx context.Context,
 	roleID int,
@@ -79,6 +87,11 @@ func (s *AppTrackerService) GetTrackedApplicationByID(
 	return s.jobRepo.GetFullJobPosting(ctx, roleID)
 }
 
+// UpdateApplicationStatus updates the application status for a given job posting.
+// It takes in a request which contains the role ID and the application status.
+// It will return an error if any errors occur.
+// If the role ID cannot be found, it will return an error with ErrorCode set to ERR_DB_FAILED_TO_GET.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
 func (s *AppTrackerService) UpdateApplicationStatus(
 	ctx context.Context,
 	request *request.ApplicationUpdateRequest,
@@ -94,12 +107,21 @@ func (s *AppTrackerService) UpdateApplicationStatus(
 	return nil
 }
 
+// ListTrackedApplications retrieves all job postings for a given user.
+// It will return an error if any errors occur.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
 func (s *AppTrackerService) ListTrackedApplications(
 	ctx context.Context,
 ) ([]*jobs.UserJobPosting, error) {
 	return s.jobRepo.GetAllUserJobPostings(ctx)
 }
 
+// parseJobDescriptionWithLLM generates a job description from a job posting request using an LLM.
+// It takes in a job posting request and returns a job description if successful.
+// If the LLM provider cannot be found, it will return an error with ErrorCode set to ERR_LLM_NO_CONTENT.
+// If the prompt cannot be formatted, it will return an error with ErrorCode set to ERR_LLM_PROMPT_FORMATTING.
+// If the instructions file cannot be read, it will return an error with ErrorCode set to ERR_LLM_INSTRUCTION_FORMATTING.
+// If the LLM response cannot be unmarshalled, it will return an error with ErrorCode set to ERR_LLM_MALFORMED_RESPONSE.
 func (s *AppTrackerService) parseJobDescriptionWithLLM(
 	ctx context.Context,
 	r *request.JobPostingRequest,

@@ -55,6 +55,11 @@ func (s *JobGuideService) GetCompanyInfo(ctx context.Context, companyName string
 	return nil, nil
 }
 
+// GetMatchSummary takes in a JobGuideRequest and returns a MatchSummary object.
+// It first checks if a user is authenticated and if not, it returns an HTTP 401 status with an error message.
+// Then, it attempts to decode the request body into a JobGuideRequest and if that fails, it returns an HTTP 400 status with an error message.
+// If the request body is successfully decoded, it attempts to generate the match summary from the service and if that fails, it returns an HTTP 500 status with an error message.
+// If the match summary is successfully generated, it returns the match summary as JSON with an HTTP 200 status.
 func (s *JobGuideService) GetMatchSummary(ctx context.Context, r *requests.JobGuideRequest) (*domain.MatchSummary, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
@@ -82,36 +87,6 @@ func (s *JobGuideService) GetMatchSummary(ctx context.Context, r *requests.JobGu
 		lg.ErrorLoggerType{Service: &serviceName, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: fmt.Errorf("could not generate output for llm: %s | err: %w", r.Options.LLMProvider, err)}.ErrorLog()
 		return nil, err
 	}
-
-	// Instructions & prompts
-
-	// Call llm
-
-	// Insert and Send data
-
-	// log.Printf("Generating match summary for user %s, role %d", firebaseUID, roleID)
-	// resumeJSON, _ := json.Marshal(resume)
-	// jobDescJSON, _ := json.Marshal(jobDesc)
-	// prompt := fmt.Sprintf(constants.MatchSummaryPrompt, string(resumeJSON), string(jobDescJSON))
-
-	// rawResponse, err := s.llmProvider.Generate(ctx, prompt)
-	// if err != nil {
-	// 	return fmt.Errorf("LLM generation for match summary failed: %w", err)
-	// }
-
-	// cleanedJSON := formatLLMResponse(rawResponse)
-
-	// // Unmarshal the complex, nested LLM response into the domain.
-	// var summaryPayload domain.MatchSummaryPayload
-	// if err := json.Unmarshal([]byte(cleanedJSON), &summaryPayload); err != nil {
-	// 	return fmt.Errorf("failed to unmarshal match summary payload from LLM: %w", err)
-	// }
-
-	// // Pass the entire domain to the repository, which handles the complex, multi-table insertion.
-	// err = s.guideRepo.InsertMatchSummary(ctx, firebaseUID, roleID, &summaryPayload)
-	// if err != nil {
-	// 	return fmt.Errorf("failed to save match summary to database: %w", err)
-	// }
 
 	return &matchSummary, nil
 }

@@ -1,9 +1,9 @@
-import { DocumentRequestBody, DocumentType } from '../types';
+import { DocumentRequestBody, DocumentType } from "../types";
 
-import { LlmProvider } from '@/shared/types';
-import { Settings } from '@/features/settings/types/types';
-import { apiRequest } from '@/shared/utils/requests';
-import { encryptData } from '@/shared/lib/encryption';
+import { LlmProvider } from "@/shared/types";
+import { Settings } from "@/features/settings/types/types";
+import { apiRequest } from "@/shared/utils/requests";
+import { encryptData } from "@/shared/lib/encryption";
 
 export interface QueueJobResponse {
   jobId: number;
@@ -26,21 +26,21 @@ export const generateDocument = async (
   const encryptedKey = await encryptData(apiKey);
 
   const headers: Record<string, string> = {
-    "Authorization": `Bearer ${token}`,
+    Authorization: `Bearer ${token}`,
     "X-Encrypted-API-Key": encryptedKey,
-    'Content-Type': 'application/json',
+    "Content-Type": "application/json",
   };
 
   const sanitizedResume = {
     ...documentRequest.resume,
-    experiences: documentRequest.resume.experiences?.map(exp => ({
-        ...exp,
-        bulletPoints: exp.bulletPoints?.map(bp => (bp.text))
+    experiences: documentRequest.resume.experiences?.map((exp) => ({
+      ...exp,
+      bulletPoints: exp.bulletPoints?.map((bp) => bp.text),
     })),
-    projects: documentRequest.resume.projects?.map(proj => ({
-        ...proj,
-        bulletPoints: proj.bulletPoints?.map(bp => (bp.text))
-    }))
+    projects: documentRequest.resume.projects?.map((proj) => ({
+      ...proj,
+      bulletPoints: proj.bulletPoints?.map((bp) => bp.text),
+    })),
   };
 
   let payload: any;
@@ -50,9 +50,14 @@ export const generateDocument = async (
       educationInfo: documentRequest.education,
       resume: sanitizedResume,
       additionalInfo: documentRequest.aboutMe,
+      writingSamples: documentRequest.writingSamples,
     };
   } else if (docType === "cover-letter") {
-    payload = { ...documentRequest.coverLetter, userInfo: documentRequest.userInfo };
+    payload = {
+      ...documentRequest.coverLetter,
+      userInfo: documentRequest.userInfo,
+      writingSamples: documentRequest.writingSamples,
+    };
   } else {
     throw new Error("Unsupported document type for generation.");
   }

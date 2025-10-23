@@ -64,7 +64,6 @@ export const DocumentPage: React.FC = () => {
       sortJobs();
     }
   }, [jobs, docType, doesFileExist]);
-  // --- END OF EDIT 6 ---
 
   const headerControls = useMemo(() => (
 

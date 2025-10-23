@@ -34,6 +34,12 @@ func parseIDFromVars(r *http.Request) (int, error) {
 	return strconv.Atoi(idStr)
 }
 
+// HandleTrackApplication queues a job for tracking based on the request body and returns the job ID of the queued job.
+// It takes in a request body and returns a job ID of the queued job and an error if any errors occur.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
+// If the request body is malformed, it will return an error with ErrorCode set to ERR_INVALID_REQUEST_BODY.
+// If the job cannot be queued, it will return an error with ErrorCode set to ERR_FAILED_TO_QUEUE_JOB.
+// It will log a message with the jobID and the status of the job.
 func (c *Controller) HandleTrackApplication(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -56,6 +62,11 @@ func (c *Controller) HandleTrackApplication(w http.ResponseWriter, r *http.Reque
 	middleware.JSON(w, http.StatusCreated, jobID)
 }
 
+// HandleListapplications returns a list of all tracked applications for the user.
+// It requires the user context to be present in the request context.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
+// If the applications cannot be retrieved, it will return an error with ErrorCode set to ERR_FAILED_TO_RETRIEVE_APPLICATIONS.
+// It will log a message with the applications and the status of the request.
 func (c *Controller) HandleListApplications(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -73,6 +84,12 @@ func (c *Controller) HandleListApplications(w http.ResponseWriter, r *http.Reque
 	middleware.JSON(w, http.StatusOK, applications)
 }
 
+// HandleGetTrackedApplication returns a single tracked application by ID.
+// It requires the user context to be present in the request context and the roleID to be present in the request variables.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
+// If the roleID is not present or cannot be parsed, it will return an error with ErrorCode set to ERR_INVALID_REQUEST_BODY.
+// If the application cannot be retrieved, it will return an error with ErrorCode set to ERR_FAILED_TO_RETRIEVE_APPLICATION.
+// It will log a message with the application and the status of the request.
 func (c *Controller) HandleGetTrackedApplication(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -91,6 +108,11 @@ func (c *Controller) HandleGetTrackedApplication(w http.ResponseWriter, r *http.
 	middleware.JSON(w, http.StatusOK, application)
 }
 
+// HandleUpdateApplication updates the status of an application based on the request body.
+// It requires the user context to be present in the request context.
+// If the request body is malformed, it will return an error with ErrorCode set to ERR_INVALID_REQUEST_BODY.
+// If the application status cannot be updated, it will return an error with ErrorCode set to ERR_FAILED_TO_UPDATE_STATUS.
+// It will log a message with the application and the status of the request.
 func (c *Controller) HandleUpdateApplication(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

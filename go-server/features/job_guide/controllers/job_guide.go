@@ -27,21 +27,19 @@ func (c *Controller) RegisterRoutes(secureRouter *mux.Router, authRouter *mux.Ro
 
 func (c *Controller) HandleGetCompanyInfo(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
-	// requestBody := requests.RequestBody{}
 
-	// if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-	// 	middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
-	// 	return
-	// }
-
-	// info, err := c.service.GetCompanyInfo(r.Context(), requestBody.Payload.CompanyName, requestBody.Payload.JobID)
-	// if err != nil {
-	// 	middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-	// 	return
-	// }
-	// middleware.JSON(w, http.StatusOK, info)
+	var requestBody request.JobGuideRequest
+	if webrender.DecodeJSONBody(w, r, &requestBody) != nil {
+		return
+	}
+	// TODO
 }
 
+// getMatchSummaryHandler is an HTTP handler that takes in a JobGuideRequest and returns a match summary.
+// It first checks if a user is authenticated and if not, it returns an HTTP 401 status with an error message.
+// Then, it attempts to decode the request body into a JobGuideRequest and if that fails, it returns an HTTP 400 status with an error message.
+// If the request body is successfully decoded, it attempts to retrieve the match summary from the service and if that fails, it returns an HTTP 500 status with an error message.
+// If the match summary is successfully retrieved, it returns the match summary as JSON with an HTTP 200 status.
 func (c *Controller) getMatchSummaryHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	_, ok := contexts.FromContext(r.Context())
@@ -62,45 +60,8 @@ func (c *Controller) getMatchSummaryHandler(w http.ResponseWriter, r *http.Reque
 	}
 
 	middleware.JSON(w, http.StatusOK, summary)
-	// verifiedToken, ok := r.Context().Value(middleware.VerifiedTokenKey).(*auth.Token)
-	// if !ok {
-	// 	middleware.JSON(w, http.StatusUnauthorized, map[string]string{"error": "No authenticated user found"})
-	// 	return
-	// }
-
-	// requestBody := requests.RequestBody{}
-	// if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-	// 	middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
-	// 	return
-	// }
-
-	// err := c.service.GetMatchSummary(r.Context(), verifiedToken.UID, requestBody.Payload.JobID)
-	// if err != nil {
-	// 	middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-	// 	return
-	// }
-
-	// middleware.JSON(w, http.StatusOK, map[string]string{"message": "Match summary generated and saved successfully."})
 }
 
 func (c *Controller) HandleGetGuidingAnswers(w http.ResponseWriter, r *http.Request) {
-	// verifiedToken, ok := r.Context().Value(middleware.VerifiedTokenKey).(*auth.Token)
-	// if !ok {
-	// 	middleware.JSON(w, http.StatusUnauthorized, map[string]string{"error": "No authenticated user found"})
-	// 	return
-	// }
-
-	// requestBody := requests.RequestBody{}
-	// if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
-	// 	middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
-	// 	return
-	// }
-
-	// answers, err := c.service.GetGuidingAnswers(r.Context(), verifiedToken.UID, requestBody.Payload.JobID)
-	// if err != nil {
-	// 	middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": err.Error()})
-	// 	return
-	// }
-
-	// middleware.JSON(w, http.StatusOK, answers)
+	// TODO
 }

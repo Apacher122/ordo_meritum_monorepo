@@ -33,6 +33,12 @@ func (c *Controller) RegisterRoutes(router *mux.Router) {
 	router.HandleFunc("/documents/cover-letter", c.generateDocumentHandler(c.docService.QueueCoverLetterGeneration)).Methods("POST")
 }
 
+// generateDocumentHandler generates a handler function for queuing a document for generation based on the generationFunc provided.
+// It takes in a request body and returns a jobID of the queued document and an error if any errors occur.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
+// If the request body is malformed, it will return an error with ErrorCode set to ERR_INVALID_REQUEST_BODY.
+// If the document cannot be queued, it will return an error with ErrorCode set to ERR_FAILED_TO_QUEUE_DOCUMENT.
+// It will log a message with the jobID and the status of the document.
 func (c *Controller) generateDocumentHandler(
 	generationFunc func(
 		ctx context.Context,
@@ -69,6 +75,8 @@ func (c *Controller) generateDocumentHandler(
 	}
 }
 
+// decodeDocumentRequest is a helper function that decodes a JSON request body into a DocumentRequest.
+// If the decoding fails, it returns an error with the relevant error message.
 func decodeDocumentRequest(r *http.Request) (requests.DocumentRequest, error) {
 	var requestBody requests.DocumentRequest
 	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
@@ -77,6 +85,9 @@ func decodeDocumentRequest(r *http.Request) (requests.DocumentRequest, error) {
 	return requestBody, nil
 }
 
+// handleDecodeError is a helper function that handles the decoding of a JSON request body.
+// It checks if the error is a SyntaxError or an UnmarshalTypeError and returns a JSON response with a relevant error message.
+// If the error is of neither type, it returns a generic error message.
 func handleDecodeError(w http.ResponseWriter, err error) {
 	var syntaxError *json.SyntaxError
 	var unmarshalTypeError *json.UnmarshalTypeError

@@ -21,6 +21,11 @@ func NewAuthService(userRepo users.Repository) *AuthService {
 	}
 }
 
+// LoginOrRegister checks if a user already exists in the database by
+// fetching the user by Firebase UID. If the user does not exist, it
+// creates a new user in the database. If the user already exists, it
+// returns the existing user. If an error occurs during the fetching or
+// creation of the user, it returns the error.
 func (s *AuthService) LoginOrRegister(
 	ctx context.Context,
 	authUser *auth_models.User,
