@@ -10,6 +10,19 @@ interface ApplicationListViewProps {
     onDelete: (roleId: number) => void;
 }
 
+/**
+ * A component that displays a list of job applications.
+ *
+ * It takes in an array of job applications, and a set of callback functions to update the job status and delete the job.
+ *
+ * It also takes in a reference to an HTML element that it will attach a scroll event to.
+ * @param {AppliedJob[]} jobs - The array of job applications to be displayed.
+ * @param {(roleId: number, newStatus: ApplicationStatus) => void} onStatusUpdate - The callback function to update the job status.
+ * @param {(roleId: number, newDate: Date) => void} onDateUpdate - The callback function to update the job date.
+ * @param {(roleId: number) => void} onDelete - The callback function to delete the job.
+ * @param {React.MutableRefObject<HTMLDivElement | null>} scrollContainerRef - The reference to the HTML element that the component will attach a scroll event to.
+ * @returns {React.ReactElement} - The rendered React component.
+ */
 export const ApplicationListView: React.FC<ApplicationListViewProps> = ({ 
     jobs, 
     onStatusUpdate,

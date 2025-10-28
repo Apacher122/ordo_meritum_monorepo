@@ -5,6 +5,8 @@ import (
 	"strings"
 )
 
+// Resume represents the structured content of a resume, including summaries,
+// skills, work experiences, and projects.
 type Resume struct {
 	Summary     []SummaryBody `json:"summary,omitempty"`
 	Skills      []Skills      `json:"skills"`
@@ -12,18 +14,22 @@ type Resume struct {
 	Projects    []Project     `json:"projects"`
 }
 
+// SummaryBody represents a single sentence or point within a resume summary,
+// optionally including justification for changes or suggestions.
 type SummaryBody struct {
 	Sentence               string `json:"sentence"`
 	JustificationForChange string `json:"justification_for_change,omitempty"`
 	NewSuggestion          bool   `json:"is_new_suggestion,omitempty"`
 }
 
+// Skills represents a category of skills within a resume.
 type Skills struct {
 	Category                string   `json:"category,omitempty"`
 	SkillItem               []string `json:"skill"`
 	JustificationForChanges string   `json:"justification_for_changes,omitempty"`
 }
 
+// Experience represents a single work experience entry in a resume.
 type Experience struct {
 	BulletPoints []BulletPoint `json:"bulletPoints"`
 	Company      string        `json:"company"`
@@ -33,6 +39,7 @@ type Experience struct {
 	End          string        `json:"end"`
 }
 
+// Project represents a single project entry in a resume.
 type Project struct {
 	BulletPoints []BulletPoint `json:"bulletPoints"`
 	Role         string        `json:"role"`
@@ -41,12 +48,17 @@ type Project struct {
 	Status       string        `json:"status"`
 }
 
+// BulletPoint represents a single descriptive point for an experience or project,
+// often including metadata about whether it's a new suggestion and the reasoning behind it.
 type BulletPoint struct {
 	Text                   string `json:"text"`
 	IsNewSuggestion        bool   `json:"is_new_suggestion"`
 	JustificationForChange string `json:"justification_for_change"`
 }
 
+// FormatForLLM converts the Resume struct into an XML-like string format.
+// This structured string is designed to be easily parsed and understood by a
+// large language model (LLM) as part of a prompt.
 func (r *Resume) FormatForLLM() string {
 	var sb strings.Builder
 

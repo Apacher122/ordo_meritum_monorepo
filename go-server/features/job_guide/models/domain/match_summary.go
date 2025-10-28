@@ -2,6 +2,8 @@ package domain
 
 import "github.com/ordo_meritum/database/models"
 
+// MatchSummary encapsulates a comprehensive analysis of a candidate's fit for a
+// specific job, including a recommendation, detailed metrics, and an overall summary.
 type MatchSummary struct {
 	MatchSummary struct {
 		ShouldApply          models.ShouldApply `json:"should_apply"`

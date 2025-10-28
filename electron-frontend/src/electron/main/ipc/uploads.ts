@@ -9,6 +9,10 @@ const writingSamplesPath = path.join(
   "writingSamples.json"
 );
 
+/**
+ * Handles the "upload-writing-samples" IPC event. Opens a dialog for the user
+ * to select text files, reads their content, and returns the samples.
+ */
 ipcMain.handle("upload-writing-samples", async () => {
   const mainWindow = getMainWindow();
   if (!mainWindow) {
@@ -37,6 +41,10 @@ ipcMain.handle("upload-writing-samples", async () => {
   }
 });
 
+/**
+ * Handles the "save-writing-samples" IPC event. Saves the provided writing
+ * samples to a local JSON file.
+ */
 ipcMain.handle("save-writing-samples", (_event, samples) => {
   try {
     fs.writeFileSync(writingSamplesPath, JSON.stringify(samples, null, 2));

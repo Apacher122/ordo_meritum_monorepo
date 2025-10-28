@@ -18,6 +18,14 @@ type apiKeyContextKey string
 
 const APIKeyContextKey apiKeyContextKey = "apiKey"
 
+// Decrypt is a middleware factory that returns an http.Handler middleware.
+// The returned middleware decrypts an API key from the "X-Encrypted-API-Key"
+// header using the provided RSA private key. The decrypted key is then added
+// to the request's context within a UserContext struct.
+//
+// This middleware reads and replaces the request body, so it should be placed
+// early in the middleware chain. It handles various failure cases by logging
+// the error and sending an appropriate HTTP error response.
 func Decrypt(privateKey *rsa.PrivateKey) func(http.Handler) http.Handler {
 	log.Info().
 		Str("middleware", "decryption").

@@ -9,6 +9,12 @@ import (
 	"log"
 )
 
+// main generates a pair of RSA keys and prints them to the console.
+//
+// It prints the private key as a base64-encoded string, prefixed with "PRIVATE_KEY=".
+// It prints the public key as a base64-encoded string, prefixed with "PUBLIC_KEY=".
+//
+// It is intended to be copied and pasted into a .env file.
 func main() {
 	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {

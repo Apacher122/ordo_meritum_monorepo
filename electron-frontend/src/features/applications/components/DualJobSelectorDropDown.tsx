@@ -9,6 +9,16 @@ interface DualJobSelectorDropdownProps {
   jobsWithoutDoc: AppliedJob[];
 }
 
+/**
+ * A component that displays a dropdown selector
+ * for the user to select a job. The dropdown selector is divided into two
+ * groups: jobs with a document and jobs without a document.
+ * 
+ * @param {DualJobSelectorDropdownProps} props - The props object
+ * @param {AppliedJob[]} props.jobsWithDoc - The list of jobs with a document
+ * @param {AppliedJob[]} props.jobsWithoutDoc - The list of jobs without a document
+ * @returns {React.ReactElement} - A React element representing the dropdown selector
+ */
 export const DualJobSelectorDropdown: React.FC<DualJobSelectorDropdownProps> = ({
   jobsWithDoc,
   jobsWithoutDoc,

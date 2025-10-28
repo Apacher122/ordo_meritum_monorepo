@@ -18,10 +18,21 @@ const SIDEBAR_ITEMS: { id: string; label: string }[] = [
   { id: "signout", label: "Sign Out" },
 ];
 
+/**
+ * Renders the main application layout, including the sidebar, header,
+ * main content area (`Outlet`), and footer. It provides the primary
+ * structure for all authenticated pages.
+ * @returns {React.FC}
+ */
 export const MainShell: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
+  /**
+   * Handles navigation when a sidebar item is selected. Also handles the
+   * sign-out logic.
+   * @param {string} id - The ID of the selected sidebar item.
+   */
   const handleSidebarSelect = async (id: string) => {
     if (id === "signout") {
       await signOut(getAuth());

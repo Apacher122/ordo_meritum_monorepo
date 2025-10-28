@@ -3,6 +3,9 @@ import path from "path";
 
 let mainWindow: BrowserWindow | null = null;
 
+/**
+ * Creates and configures the main application window.
+ */
 export const createWindow = () => {
   mainWindow = new BrowserWindow({
     width: 1200,
@@ -23,6 +26,10 @@ export const createWindow = () => {
   mainWindow.on("closed", () => (mainWindow = null));
 };
 
+/**
+ * Returns the main application window instance.
+ * @returns {BrowserWindow | null} The main window instance, or null if it has been closed.
+ */
 export const getMainWindow = (): BrowserWindow | null => {
     return mainWindow;
 }

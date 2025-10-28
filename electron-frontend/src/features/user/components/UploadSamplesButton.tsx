@@ -1,5 +1,10 @@
 import React from "react";
 
+/**
+ * A button component that triggers the file system to upload writing samples.
+ * It handles the full upload and save flow, showing alerts on success or failure.
+ * @returns {React.FC}
+ */
 export const UploadSamplesButton: React.FC = () => {
   const handleUpload = async () => {
     const result = await window.appAPI.writingSamples.upload();

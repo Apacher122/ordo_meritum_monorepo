@@ -18,6 +18,18 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+type DownloadRequest struct {
+	DownloadURL string `json:"download_url"`
+	ChangesURL  string `json:"changes_url"`
+}
+
+// ServeWs handles WebSocket upgrade requests.
+// It verifies the Firebase ID token provided in the "token" query parameter.
+// If the token is valid, it upgrades the HTTP connection to a WebSocket connection
+// using the gorilla/websocket library and registers the new client with the provided Hub.
+// It then starts the client's read and write pumps as separate goroutines.
+// If token verification fails or the upgrade fails, it responds with an appropriate
+// HTTP error status.
 func ServeWs(
 	hub *ordows.Hub,
 	w http.ResponseWriter,
@@ -46,6 +58,8 @@ func ServeWs(
 	userID := verifiedToken.UID
 
 	upgrader := websocket.Upgrader{
+		// Allow all origins for WebSocket connections.
+		// TODO:Consider restricting this in production for security.
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
 
@@ -62,15 +76,18 @@ func ServeWs(
 	go client.ReadPump()
 }
 
-type DownloadRequest struct {
-	DownloadURL string `json:"download_url"`
-	ChangesURL  string `json:"changes_url"`
-}
-
+// HandleDownload handles requests to download both a PDF document and its associated JSON changes file.
+// It expects a JSON request body conforming to the DownloadRequest struct, containing URLs for both files.
+// It reads both files from the local filesystem (assuming URLs map to local paths after stripping the prefix)
+// and streams them back to the client as a multipart/form-data response with appropriate Content-Disposition headers
+// for attachment downloads.
+// Returns HTTP errors if the request body is invalid or if either file cannot be opened.
 func HandleDownload(
 	w http.ResponseWriter,
 	r *http.Request,
 ) {
+	defer r.Body.Close()
+
 	var req DownloadRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		http.Error(w, "Invalid request body", http.StatusBadRequest)
@@ -103,14 +120,30 @@ func HandleDownload(
 	pdfHeader := textproto.MIMEHeader{}
 	pdfHeader.Set("Content-Disposition", `attachment; filename="`+filepath.Base(pdfPath)+`"`)
 	pdfHeader.Set("Content-Type", "application/pdf")
-	pdfPart, _ := mw.CreatePart(pdfHeader)
-	io.Copy(pdfPart, pdfFile)
+	pdfPart, err := mw.CreatePart(pdfHeader)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create PDF multipart part")
+		return
+	}
+	if _, err := io.Copy(pdfPart, pdfFile); err != nil {
+		log.Error().Err(err).Msg("Failed to copy PDF content to multipart")
+		return
+	}
 
 	jsonHeader := textproto.MIMEHeader{}
 	jsonHeader.Set("Content-Disposition", `attachment; filename="`+filepath.Base(jsonPath)+`"`)
 	jsonHeader.Set("Content-Type", "application/json")
-	jsonPart, _ := mw.CreatePart(jsonHeader)
-	io.Copy(jsonPart, jsonFile)
+	jsonPart, err := mw.CreatePart(jsonHeader)
+	if err != nil {
+		log.Error().Err(err).Msg("Failed to create JSON multipart part")
+		return
+	}
+	if _, err := io.Copy(jsonPart, jsonFile); err != nil {
+		log.Error().Err(err).Msg("Failed to copy JSON content to multipart")
+		return
+	}
 
-	mw.Close()
+	if err := mw.Close(); err != nil {
+		log.Error().Err(err).Msg("Failed to close multipart writer")
+	}
 }

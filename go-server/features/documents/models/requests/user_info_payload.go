@@ -1,5 +1,7 @@
 package requests
 
+// UserInfoPayload holds the personal and contact details of a user as
+// provided in a request payload.
 type UserInfoPayload struct {
 	FirstName       string `json:"first_name"`
 	LastName        string `json:"last_name"`

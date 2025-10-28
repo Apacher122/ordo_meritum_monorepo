@@ -41,7 +41,8 @@ export const usePublicKeyStream = (user: User | null) => {
     const eventSource = new EventSource(`${window.env.SERVER_URL}/public-key-stream`);
 
     eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      const data = event.data;
+      console.log(data);
       if (data.key) {
         setPublicKey(data.key);
       }

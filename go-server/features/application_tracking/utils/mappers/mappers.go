@@ -22,6 +22,7 @@ func NewJobDescriptionFromPost(post *jobs.FullJobPosting) *domain.JobDescription
 		IndustryKeywords:       post.IndustryKeywords,
 		SoftSkills:             post.SoftSkills,
 		Certifications:         post.Certifications,
+		CompanyProperName:      &post.CompanyProperName,
 	}
 
 	if post.YearsOfExp != nil {

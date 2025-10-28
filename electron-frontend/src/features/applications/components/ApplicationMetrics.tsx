@@ -22,6 +22,13 @@ interface ApplicationMetricsProps {
   onClose: () => void; 
 }
 
+/**
+ * A component that displays application metrics.
+ *
+ * @param {ApplicationMetricsProps} props Props for the component.
+ * @param {ApplicationMetricsData} props.metrics The application metrics data to be displayed.
+ * @param {() => void} props.onClose A function to be called when the modal is closed.
+ */
 export const ApplicationMetrics: React.FC<ApplicationMetricsProps> = ({ metrics, onClose }) => {
   return (
     <div className="metrics-modal-overlay">

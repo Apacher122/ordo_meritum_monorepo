@@ -2,6 +2,14 @@ import '@/assets/styles/Components/UI/loaders/CircleProgress.css';
 
 import React, { useEffect, useState } from 'react';
 
+/**
+ * @interface CircleProgressProps
+ * @property {number} [percentage] - The progress percentage (0-100). If undefined, an indeterminate loader is shown.
+ * @property {number} [size=200] - The width and height of the component in pixels.
+ * @property {number} [strokeWidth=6] - The width of the progress indicator stroke.
+ * @property {number} [tickCount=100] - The number of ticks in the circular gauge.
+ * @property {boolean} [isGenerating=false] - If true, displays a "Generating..." message.
+ */
 interface CircleProgressProps {
   percentage?: number;
   size?: number;
@@ -10,6 +18,12 @@ interface CircleProgressProps {
   isGenerating?: boolean;
 }
 
+/**
+ * A circular progress indicator component. It can display a specific percentage
+ * with an animated fill or an indeterminate loading spinner if no percentage is provided.
+ * @param {CircleProgressProps} props The props for the component.
+ * @returns {React.FC<CircleProgressProps>}
+ */
 export const CircleProgress: React.FC<CircleProgressProps> = ({
   percentage,
   size = 200,

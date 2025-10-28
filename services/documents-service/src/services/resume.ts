@@ -10,6 +10,14 @@ import paths from "@shared/constants/paths.js";
 
 dotenv.config();
 
+/**
+ * Compile a resume document based on the provided request payload.
+ *
+ * @param {schemas.CompilationRequest} docRequest - The compilation request.
+ * @returns {Promise<schemas.CompilationResult>} - The compilation result.
+ *
+ * @throws {Error} - If the compilation fails.
+ */
 export const compileResume = async (
   docRequest: schemas.CompilationRequest
 ): Promise<schemas.CompilationResult> => {

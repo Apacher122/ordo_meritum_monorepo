@@ -42,11 +42,11 @@ func NewAppTrackerService(jobRepo jobs.Repository) *AppTrackerService {
 // If the database fails to insert the full job posting, it will return an error with ErrorCode set to ERR_DB_FAILED_TO_INSERT.
 func (s *AppTrackerService) QueueApplicationTracking(
 	ctx context.Context,
-	requestBody request.JobPostingRequest,
-) (any, error) {
+	requestBody *request.JobPostingRequest,
+) (int, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
+		return 0, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
 	}
 	l := log.With().
 		Str("service", serviceName).
@@ -57,12 +57,12 @@ func (s *AppTrackerService) QueueApplicationTracking(
 
 	parsedJob, err := s.parseJobDescriptionWithLLM(
 		ctx,
-		&requestBody,
+		requestBody,
 	)
 
 	if err != nil {
 		lg.ErrorLoggerType{Service: &serviceName, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: err}.ErrorLog()
-		return nil, err
+		return 0, err
 	}
 
 	l.Info().Msg("Persisting full job posting to database...")
@@ -70,10 +70,10 @@ func (s *AppTrackerService) QueueApplicationTracking(
 	res, err := s.jobRepo.InsertFullJobPosting(ctx, requestBody.JobDescription, parsedJob, cn, parsedJob.CompanyName)
 	if err != nil {
 		lg.ErrorLoggerType{Service: &serviceName, ErrorCode: &error_messages.ERR_DB_FAILED_TO_INSERT, Error: err}.ErrorLog()
-		return nil, err
+		return 0, err
 	}
 
-	l.Info().Msg("Successfully tracked new job.")
+	l.Info().Msg(fmt.Sprintf("Successfully created job posting with ID: %d and Company Name: %s", res.ID, parsedJob.CompanyName))
 	return res.ID, nil
 }
 

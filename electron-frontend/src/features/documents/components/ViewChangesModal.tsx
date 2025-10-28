@@ -10,6 +10,13 @@ interface ViewChangesModalProps {
     changes: ResumeChanges;
 }
 
+/**
+ * A modal component that displays a detailed view of changes and justifications
+ * for different sections of a resume (Summary, Experience, Projects, Skills).
+ *
+ * @param {ViewChangesModalProps} props The props for the component.
+ * @returns {React.FC<ViewChangesModalProps>}
+ */
 export const ViewChangesModal: React.FC<ViewChangesModalProps> = ({ isOpen, onClose, changes }) => {
     useEffect(() => {
         const handleKeyDown = (event: KeyboardEvent) => {

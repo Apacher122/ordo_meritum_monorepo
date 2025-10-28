@@ -16,15 +16,30 @@ const paths = {
   json: path.join(basePublicDir, "json"),
 };
 
+/**
+ * Ensures that a directory exists, creating it recursively if it does not.
+ * @param {string} dir - The directory path to ensure existence of.
+ */
 const ensureDir = (dir: string) => {
   if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 };
 
+/**
+ * Creates a safe, sanitized absolute file path.
+ * @param {string} base - The base directory.
+ * @param {string} relativePath - The user-provided relative path.
+ * @returns {string} The sanitized, absolute file path.
+ */
 const getSafePath = (base: string, relativePath: string): string => {
   const safeName = sanitize(relativePath);
   return path.join(base, safeName);
 };
 
+/**
+ * Writes data to a file at the specified absolute path.
+ * @param {string} absolutePath - The absolute path to the file.
+ * @param {string | Buffer} data - The data to write.
+ */
 const writeFile = (absolutePath: string, data: string | Buffer) => {
   ensureDir(path.dirname(absolutePath));
   fs.writeFileSync(absolutePath, data);

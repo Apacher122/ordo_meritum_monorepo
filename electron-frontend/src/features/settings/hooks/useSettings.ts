@@ -11,6 +11,13 @@ const initialSettingsState: Settings = {
   },
 };
 
+/**
+ * Custom hook for managing application settings.
+ * It handles loading settings from a persistent source on mount and provides
+ * a function to save updated settings. It also manages loading and error states.
+ * @returns {UseSettingsReturn} An object containing the settings state and management functions.
+ */
+
 export const useSettings = () => {
   const [settings, setSettings] = useState<Settings | null>(null);
   const [loading, setLoading] = useState(true);

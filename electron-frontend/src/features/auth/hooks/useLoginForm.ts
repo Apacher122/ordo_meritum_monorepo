@@ -7,21 +7,10 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
-
-
 /**
- * A hook that provides the state and functions for handling login and registration forms.
- *
- * @returns An object with the following properties:
- *   - mode: The mode of the form ('login' or 'register')
- *   - email: The email address of the user
- *   - password: The password of the user
- *   - error: The error message if the form submission failed
- *   - loading: Whether the form is currently submitting
- *   - setEmail: A function to set the email address of the user
- *   - setPassword: A function to set the password of the user
- *   - handleSubmit: A function to handle the form submission
- *   - toggleMode: A function to toggle the mode of the form between 'login' and 'register'
+ * Custom hook to manage the state and logic for a login/registration form.
+ * It handles Firebase authentication for both signing in and creating new users.
+ * @returns {UseLoginFormReturn} An object containing form state and handler functions.
  */
 export const useLoginForm = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');

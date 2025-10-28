@@ -30,10 +30,19 @@ interface Metric {
   score_reason: string;
 }
 
+/**
+ * @interface RadarChartOverviewProps
+ * @property {ScoreMetric[]} metrics - An array of metric objects to plot on the chart.
+ */
 interface RadarChartOverviewProps {
   metrics: ScoreMetric[];
 }
 
+/**
+ * Renders a radar chart to visualize weighted and raw scores for various job match metrics.
+ * @param {RadarChartOverviewProps} props The props for the component.
+ * @returns {JSX.Element}
+ */
 const RadarChartOverview: React.FC<RadarChartOverviewProps> = ({ metrics }) => {
   const weightedData = metrics.map((m) => Number(m.weighted_score));
   const unweightedData = metrics.map((m) => Number(m.raw_score));

@@ -4,6 +4,8 @@ import (
 	cohere "github.com/cohere-ai/cohere-go/v2"
 )
 
+// CohereJobDescriptionSchema defines the JSON schema for extracting structured
+// data from a job description using the Cohere API.
 var CohereJobDescriptionSchema = map[string]any{
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type":    "object",

@@ -21,6 +21,7 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 	return &postgresRepository{db: db}
 }
 
+// CreateOrUpdate deletes all existing writing samples for a user and inserts new ones.
 func (r *postgresRepository) CreateOrUpdate(ctx context.Context, firebaseUID string, samples []models.CandidateWritingSample) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
@@ -45,6 +46,7 @@ func (r *postgresRepository) CreateOrUpdate(ctx context.Context, firebaseUID str
 	return tx.Commit()
 }
 
+// GetByFirebaseUID retrieves all writing samples for a user.
 func (r *postgresRepository) GetByFirebaseUID(ctx context.Context, firebaseUID string) ([]models.CandidateWritingSample, error) {
 	var samples []models.CandidateWritingSample
 	query := "SELECT * FROM candidate_writing_samples WHERE firebase_uid = $1"

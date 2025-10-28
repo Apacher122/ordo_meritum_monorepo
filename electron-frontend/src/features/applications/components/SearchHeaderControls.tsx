@@ -7,6 +7,13 @@ interface SearchHeaderControlsProps {
   initialQuery?: string;
 }
 
+/**
+ * A component for searching job applications by company or title.
+ * @param {SearchHeaderControlsProps} props - The props for the SearchHeaderControls component.
+ * @param {function} props.onSearch - A callback function that is called when the user submits the search query.
+ * @param {string} [props.initialQuery] - The initial value of the search input field.
+ * @returns {React.ReactElement} - A React element representing the SearchHeaderControls component.
+ */
 export const SearchHeaderControls: React.FC<SearchHeaderControlsProps> = ({
   onSearch,
   initialQuery = "",

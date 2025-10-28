@@ -14,6 +14,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// RouteDependencies holds the controller instances required for registering API routes.
+// This struct centralizes the dependencies needed by the RegisterRoutes function, making it
+// easier to manage and pass around the necessary controller instances during application setup.
 type RouteDependencies struct {
 	AuthController       *auth_controllers.Controller
 	UserController       *user_controllers.Controller
@@ -41,6 +44,17 @@ func NewRouteDependencies(
 	}
 }
 
+// RegisterRoutes sets up all the application's HTTP routes using the provided routers and dependencies.
+// It attaches handlers for various features like WebSocket connections, file downloads, public key retrieval,
+// and delegates feature-specific routing (auth, user, app tracking, documents, job guide) to their
+// respective controllers' RegisterRoutes methods.
+//
+// Parameters:
+//   - mainRouter: The main mux.Router instance, used for routes without specific middleware.
+//   - authenticatedRouter: A custom router wrapper (*AuthenticatedRouter assumed) that applies authentication middleware.
+//   - secureRouter: A custom router wrapper (*SecureRouter assumed) that applies security/decryption middleware.
+//   - deps: A pointer to the RouteDependencies struct containing all necessary controller instances.
+//   - hub: The WebSocket hub instance, passed to the WebSocket handler.
 func RegisterRoutes(
 	mainRouter *mux.Router,
 	authenticatedRouter *AuthenticatedRouter,

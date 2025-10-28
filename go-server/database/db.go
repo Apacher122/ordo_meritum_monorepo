@@ -10,6 +10,10 @@ import (
 	"go.uber.org/fx"
 )
 
+// NewDB establishes a database connection using the DATABASE_URL environment variable and
+// returns it as *sqlx.DB. If the DATABASE_URL environment variable is not set, it
+// logs a fatal error and exits the program. It also registers a hook with the given
+// fx.Lifecycle to close the database connection when the lifecycle is stopped.
 func NewDB(lc fx.Lifecycle) (*sqlx.DB, error) {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {

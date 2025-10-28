@@ -1,9 +1,18 @@
 import { apiRequest } from "@/shared/utils/requests";
 
+/**
+ * @class PublicKeyService
+ * A singleton service to fetch and cache the server's public RSA key.
+ */
 class PublicKeyService {
   private publicKeyPem: string | null = null;
   private fetchPromise: Promise<void> | null = null;
 
+  /**
+   * Fetches the server's public RSA key.
+   * It throws an error if the key could not be loaded.
+   * @returns {Promise<void>} A promise that resolves when the key has been loaded.
+   */
   private async fetchKey(): Promise<void> {
     try {
 
@@ -20,6 +29,12 @@ class PublicKeyService {
     }
   }
 
+  /**
+   * Retrieves the public RSA key in PEM format.
+   * It fetches the key on the first call and caches it for subsequent requests.
+   * @returns {Promise<string>} A promise that resolves to the public key in PEM format.
+   * @throws {Error} If the key is unavailable after the fetch attempt.
+   */
   public async getPublicKey(): Promise<string> {
     if (this.publicKeyPem) {
       return this.publicKeyPem;
@@ -35,6 +50,11 @@ class PublicKeyService {
 
 const keyService = new PublicKeyService();
 
+/**
+ * Converts a PEM-formatted public key string into an ArrayBuffer.
+ * @param {string} pem The PEM string.
+ * @returns {ArrayBuffer} The key as an ArrayBuffer.
+ */
 function pemToArrayBuffer(pem: string): ArrayBuffer {
   const b64 = pem
     .replace(/-----BEGIN RSA PUBLIC KEY-----/, "")
@@ -48,6 +68,11 @@ function pemToArrayBuffer(pem: string): ArrayBuffer {
   return buf.buffer;
 }
 
+/**
+ * Converts an ArrayBuffer to a Base64 encoded string.
+ * @param {ArrayBuffer} buffer The ArrayBuffer to convert.
+ * @returns {string} The Base64 encoded string.
+ */
 function arrayBufferToBase64(buffer: ArrayBuffer): string {
   let binary = "";
   const bytes = new Uint8Array(buffer);
@@ -58,6 +83,11 @@ function arrayBufferToBase64(buffer: ArrayBuffer): string {
   return btoa(binary);
 }
 
+/**
+ * Encrypts a string using the server's public RSA key with RSA-OAEP padding.
+ * @param {string} data The plain text string to encrypt.
+ * @returns {Promise<string>} A promise that resolves to the Base64 encoded encrypted string.
+ */
 export async function encryptData(data: string): Promise<string> {
   const pem = await keyService.getPublicKey();
   const key = await crypto.subtle.importKey(

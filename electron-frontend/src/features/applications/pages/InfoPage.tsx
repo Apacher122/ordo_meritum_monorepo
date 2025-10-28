@@ -16,10 +16,12 @@ const llmProviderOptions: LlmProvider[] = [
   "Cerebras",
 ];
 
+/**
+ * Renders a form for users to input and submit new job posting details for analysis.
+ * It handles form state, validation, and submission to the backend.
+ * @returns {React.FC} The InfoPage component.
+ */
 export const InfoPage: React.FC = () => {
-  
-  
-  
   const setHeaderTitle = useSetHeaderTitle();
   const setHeaderSubtitle = useSetHeaderSubtitle();
   const setHeaderControls = useSetHeaderControls();

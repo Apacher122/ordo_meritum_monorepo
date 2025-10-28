@@ -5,6 +5,10 @@ import path from "path";
 
 const settingsFilePath = path.join(app.getPath("userData"), "settings.json");
 
+/**
+ * Handles saving user settings to a local file. API keys within the settings
+ * are encrypted using Electron's `safeStorage`.
+ */
 ipcMain.handle("save-settings", (event, settings) => {
   try {
     const encrypted = { ...settings };
@@ -24,6 +28,10 @@ ipcMain.handle("save-settings", (event, settings) => {
   }
 });
 
+/**
+ * Handles loading user settings from a local file. Encrypted API keys are
+ * decrypted using Electron's `safeStorage`.
+ */
 ipcMain.handle("load-settings", () => {
   try {
     if (!fs.existsSync(settingsFilePath)) return { success: true, data: null };

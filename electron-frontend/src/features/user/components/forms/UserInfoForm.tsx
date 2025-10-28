@@ -6,6 +6,11 @@ interface FormProps {
   setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
 }
 
+/**
+ * A form component for editing the user's personal and contact information.
+ * @param {FormProps} props The props for the component.
+ * @returns {React.FC<FormProps>}
+ */
 export const UserInfoForm: React.FC<FormProps> = ({ profile, setProfile }) => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

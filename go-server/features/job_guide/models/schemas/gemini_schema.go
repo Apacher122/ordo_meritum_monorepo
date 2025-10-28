@@ -4,6 +4,8 @@ import (
 	"google.golang.org/genai"
 )
 
+// GeminiResumeSchema defines the genai.Schema for generating a job match summary
+// using the Gemini API.
 var GeminiResumeSchema = &genai.Schema{
 	Type: genai.TypeObject,
 	Properties: map[string]*genai.Schema{

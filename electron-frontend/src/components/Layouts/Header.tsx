@@ -3,8 +3,12 @@ import '../../assets/styles/Components/UI/Header.css';
 import React from 'react';
 import { useHeaderContext } from './providers/HeaderProvider';
 
-export const Header: React.FC = () => {
-  
+/**
+ * Renders the main application header. It consumes the HeaderContext to display
+ * a dynamic title, subtitle, and set of controls provided by the active page.
+ * @returns {React.FC}
+ */
+export const Header: React.FC = () => {  
   const { title, subtitle, controls } = useHeaderContext();
 
   return (

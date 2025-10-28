@@ -7,6 +7,9 @@ import (
 	"google.golang.org/genai"
 )
 
+// BuildResumeSchema dynamically constructs a genai.Schema for resume generation.
+// It takes a slice of experience payloads to populate the 'enum' fields for
+// 'position' and 'company', ensuring the LLM's output aligns with the provided experiences.
 func BuildResumeSchema(data any) (any, error) {
 	experiences, ok := data.([]requests.ExperiencePayload)
 	if !ok {
@@ -101,6 +104,8 @@ func BuildResumeSchema(data any) (any, error) {
 	}, nil
 }
 
+// GeminiResumeSchema defines a static genai.Schema for resume generation
+// used with the Gemini API.
 var GeminiResumeSchema = &genai.Schema{
 	Type: genai.TypeObject,
 	Properties: map[string]*genai.Schema{
@@ -180,6 +185,8 @@ var GeminiResumeSchema = &genai.Schema{
 	Required: []string{"summary", "skills", "experiences", "projects"},
 }
 
+// GeminiCoverLetterSchema defines the genai.Schema for cover letter generation
+// used with the Gemini API.
 var GeminiCoverLetterSchema = &genai.Schema{
 	Type: genai.TypeObject,
 	Properties: map[string]*genai.Schema{
@@ -199,6 +206,8 @@ var GeminiCoverLetterSchema = &genai.Schema{
 	Required: []string{"about", "experience", "whatIBring", "revisionSummary"},
 }
 
+// GeminiSummarySchema defines the genai.Schema for generating only the summary
+// section of a resume with the Gemini API.
 var GeminiSummarySchema = &genai.Schema{
 	Type: genai.TypeObject,
 	Properties: map[string]*genai.Schema{
@@ -217,6 +226,9 @@ var GeminiSummarySchema = &genai.Schema{
 	},
 }
 
+// BuildExperienceSchema dynamically constructs a genai.Schema for generating
+// only the experiences section of a resume. It populates 'enum' fields for
+// 'position' and 'company' based on the input data.
 func BuildExperienceSchema(data any) (any, error) {
 	experiences, ok := data.([]requests.ExperiencePayload)
 	if !ok {
@@ -267,6 +279,8 @@ func BuildExperienceSchema(data any) (any, error) {
 
 }
 
+// GeminiProjectSchema defines the genai.Schema for generating only the projects
+// section of a resume with the Gemini API.
 var GeminiProjectSchema = &genai.Schema{
 	Type: genai.TypeObject,
 	Properties: map[string]*genai.Schema{
@@ -300,6 +314,8 @@ var GeminiProjectSchema = &genai.Schema{
 	},
 }
 
+// GeminiSkillSchema defines the genai.Schema for generating only the skills
+// section of a resume with the Gemini API.
 var GeminiSkillSchema = &genai.Schema{
 	Type: genai.TypeObject,
 	Properties: map[string]*genai.Schema{

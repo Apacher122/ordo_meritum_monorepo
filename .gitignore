@@ -9,6 +9,7 @@ Thumbs.db
 *.bak
 *.orig
 
+
 # =====================================
 # Node / Electron / TypeScript
 # =====================================
@@ -78,6 +79,9 @@ logs/
 *.log
 tmp/
 temp/
+references/
+public/
+shared_pdfs/
 *.cache
 *.pid
 *.seed

@@ -8,7 +8,7 @@ import (
 	"github.com/ordo_meritum/features/candidate_forms/models/requests"
 	"github.com/ordo_meritum/features/candidate_forms/services"
 	"github.com/ordo_meritum/shared/middleware"
-	"github.com/ordo_meritum/shared/utils/validators"
+	"github.com/ordo_meritum/shared/webrender"
 )
 
 type Controller struct {
@@ -27,21 +27,16 @@ func (c *Controller) RegisterRoutes(router *mux.Router) {
 	// router.HandleFunc("/writings", c.GetWritingSamples).Methods("GET")
 }
 
-// func getUserID(r *http.Request) (string, error) {
-// 	verifiedToken, ok := r.Context().Value(middleware.VerifiedTokenKey).(*auth.Token)
-// 	if !ok || verifiedToken == nil {
-// 		return "", errors.New("no authenticated user found in context")
-// 	}
-// 	return verifiedToken.UID, nil
-// }
-
+// PostQuestionnare handles the submission of a candidate's questionnaire answers.
+// It decodes the request body, retrieves user and API key information from the context,
+// and calls the service to save the questionnaire data.
 func (c *Controller) PostQuestionnare(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 	apiKey := r.Context().Value(middleware.APIKeyContextKey)
 	verifiedToken, _ := r.Context().Value(middleware.VerifiedTokenKey).(*auth.Token)
 
 	requestBody := requests.QuestionnaireRequest{}
-	err := validators.DecodeJSON(w, r, &requestBody)
+	err := webrender.DecodeJSONBody(w, r, &requestBody)
 	if err != nil {
 		middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 	}

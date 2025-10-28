@@ -9,6 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// UpsertSkills inserts new skills and their items for a given resume.
 func (r *postgresRepository) UpsertSkills(
 	ctx context.Context,
 	tx *sqlx.Tx,
@@ -40,6 +41,7 @@ func (r *postgresRepository) UpsertSkills(
 	return nil
 }
 
+// GetResumeSkills retrieves all skills and their items for a given resume.
 func (r *postgresRepository) GetResumeSkills(ctx context.Context, resumeID int) ([]domain.Skills, error) {
 	var skills []models.Skill
 	if err := r.db.SelectContext(ctx, &skills, "SELECT * FROM skills WHERE resume_id = $1", resumeID); err != nil {

@@ -13,6 +13,7 @@ import (
 	"github.com/ordo_meritum/shared/middleware"
 )
 
+// GenerateKeys creates a new RSA private key of a specified bit size.
 func GenerateKeys(bits int) (*rsa.PrivateKey, error) {
 	privateKey, err := rsa.GenerateKey(rand.Reader, bits)
 	if err != nil {
@@ -21,6 +22,7 @@ func GenerateKeys(bits int) (*rsa.PrivateKey, error) {
 	return privateKey, nil
 }
 
+// PrivateKeyToPEM encodes an RSA private key into PEM format.
 func PrivateKeyToPEM(priv *rsa.PrivateKey) []byte {
 	return pem.EncodeToMemory(
 		&pem.Block{
@@ -30,6 +32,7 @@ func PrivateKeyToPEM(priv *rsa.PrivateKey) []byte {
 	)
 }
 
+// PublicKeyToPEM encodes an RSA public key into PEM format.
 func PublicKeyToPEM(pub *rsa.PublicKey) ([]byte, error) {
 	pubBytes, err := x509.MarshalPKIXPublicKey(pub)
 	if err != nil {
@@ -43,6 +46,10 @@ func PublicKeyToPEM(pub *rsa.PublicKey) ([]byte, error) {
 	), nil
 }
 
+// GetPublicKeyHandler is an http.HandlerFunc that responds with the application's
+// public key as a JSON object. It retrieves the key from the "PUBLIC_KEY"
+// environment variable. If the variable is not set, it returns a 500 Internal
+// Server Error.
 func GetPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
 	log.Println("Getting public key")
 	publicKeyStr := os.Getenv("PUBLIC_KEY")

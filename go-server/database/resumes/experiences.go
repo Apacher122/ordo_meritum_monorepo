@@ -10,6 +10,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// UpsertExperiences inserts new experiences and their descriptions for a given resume.
 func (r *postgresRepository) UpsertExperiences(
 	ctx context.Context,
 	tx *sqlx.Tx,
@@ -43,6 +44,7 @@ func (r *postgresRepository) UpsertExperiences(
 	return nil
 }
 
+// GetResumeExperiences retrieves all experiences and their descriptions for a given resume.
 func (r *postgresRepository) GetResumeExperiences(ctx context.Context, resumeID int) ([]domain.Experience, error) {
 	var experiences []models.Experience
 	if err := r.db.SelectContext(ctx, &experiences, "SELECT * FROM experiences WHERE resume_id = $1", resumeID); err != nil {

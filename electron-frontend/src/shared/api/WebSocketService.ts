@@ -1,3 +1,8 @@
+/**
+ * @class WebSocketService
+ * Manages a persistent WebSocket connection, including automatic reconnection logic.
+ * This service is designed to be a singleton.
+ */
 class WebSocketService {
   private ws: WebSocket | null = null;
   private onMessageCallback: ((data: any) => void) | null = null;
@@ -5,6 +10,13 @@ class WebSocketService {
   private userId: string | null = null;
   private token: string | null = null;
 
+  /**
+   * Establishes a WebSocket connection to the server. If an existing connection is active,
+   * it will be closed before the new one is established. The connection will automatically
+   * attempt to reconnect on close.
+   * @param {string} userId The user's unique identifier.
+   * @param {string} token The authentication token for the user.
+   */
   connect(userId: string, token: string) {
     if (this.ws) {
       this.ws.close();
@@ -12,8 +24,8 @@ class WebSocketService {
 
     this.userId = userId;
     this.token = token;
-    
-    const wsUrl = window.env.SERVER_URL.replace(/^http/, 'ws');
+
+    const wsUrl = window.env.SERVER_URL.replace(/^http/, "ws");
     const url = `${wsUrl}/ws?user_id=${this.userId}&token=${this.token}`;
 
     this.ws = new WebSocket(url);
@@ -47,10 +59,18 @@ class WebSocketService {
     };
   }
 
+  /**
+   * Registers a callback function to be executed when a message is received
+   * from the WebSocket server.
+   * @param {(data: any) => void} callback The function to execute on message receipt.
+   */
   onMessage(callback: (data: any) => void) {
     this.onMessageCallback = callback;
   }
 
+  /**
+   * Closes the WebSocket connection and prevents automatic reconnection.
+   */
   disconnect() {
     if (this.ws) {
       this.ws.onclose = null;

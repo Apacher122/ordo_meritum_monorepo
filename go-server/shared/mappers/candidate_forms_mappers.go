@@ -5,6 +5,8 @@ import (
 	"github.com/ordo_meritum/features/candidate_forms/models/domain"
 )
 
+// MapDBToDTO converts database models for OCEAN and DISC personality profiles
+// into a single, combined domain.PersonalitySummary DTO.
 func MapDBToDTO(dbOcean db_models.OceanProfile, dbDisc db_models.DiscProfile) domain.PersonalitySummary {
 	oceanScores := []domain.OCEANScore{
 		{Category: domain.Openness, Score: dbOcean.OpennessScore, Reasoning: dbOcean.OpennessReasoning},
@@ -36,6 +38,8 @@ func MapDBToDTO(dbOcean db_models.OceanProfile, dbDisc db_models.DiscProfile) do
 	}
 }
 
+// MapDTOToDB converts a domain.PersonalitySummary DTO back into the separate
+// database models for OCEAN and DISC profiles.
 func MapDTOToDB(summary domain.PersonalitySummary) (db_models.OceanProfile, db_models.DiscProfile) {
 	var dbOcean db_models.OceanProfile
 	var dbDisc db_models.DiscProfile

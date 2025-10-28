@@ -3,6 +3,10 @@ import { ipcMain } from "electron";
 
 let pollingInterval: NodeJS.Timeout | null = null;
 
+/**
+ * Fetches the latest job data from the backend.
+ * @returns {Promise<any[]>} A promise that resolves to an array of jobs.
+ */
 async function fetchJobsFromBackend() {
   console.log("Polling for new jobs...");
   return [];

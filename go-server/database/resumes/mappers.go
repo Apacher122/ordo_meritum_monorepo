@@ -5,6 +5,7 @@ import (
 	"github.com/ordo_meritum/features/documents/models/domain"
 )
 
+// MapExperiencesToDomain transforms database experience models to domain models.
 func MapExperiencesToDomain(experiences []models.Experience, descs []models.ExperienceDescription) []domain.Experience {
 	expMap := make(map[int][]models.ExperienceDescription)
 	for _, d := range descs {
@@ -39,6 +40,7 @@ func MapExperiencesToDomain(experiences []models.Experience, descs []models.Expe
 	return domainExperiences
 }
 
+// MapProjectsToDomain transforms database project models to domain models.
 func MapProjectsToDomain(projects []models.Project, descs []models.ProjectDescription) []domain.Project {
 	projMap := make(map[int][]models.ProjectDescription)
 	for _, d := range descs {
@@ -65,6 +67,7 @@ func MapProjectsToDomain(projects []models.Project, descs []models.ProjectDescri
 	return domainProjects
 }
 
+// MapSkillsToDomain transforms database skill models to domain models.
 func MapSkillsToDomain(skills []models.Skill, items []models.SkillItem) []domain.Skills {
 	skillMap := make(map[int][]models.SkillItem)
 	for _, i := range items {
@@ -87,6 +90,7 @@ func MapSkillsToDomain(skills []models.Skill, items []models.SkillItem) []domain
 	return domainSkills
 }
 
+// MapSummaryToDomain transforms a database summary string to a domain summary model.
 func MapSummaryToDomain(overviewSummary string) []domain.SummaryBody {
 	if overviewSummary == "" {
 		return nil

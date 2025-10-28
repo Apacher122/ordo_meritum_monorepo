@@ -8,6 +8,7 @@ import (
 	"github.com/ordo_meritum/features/documents/models/domain"
 )
 
+// GetResumeSummary retrieves the summary for a given resume.
 func (r *postgresRepository) GetResumeSummary(ctx context.Context, resumeID int) ([]domain.SummaryBody, error) {
 	var matchSummary models.MatchSummary
 	err := r.db.GetContext(ctx, &matchSummary, "SELECT * FROM match_summaries WHERE resume_id = $1 LIMIT 1", resumeID)

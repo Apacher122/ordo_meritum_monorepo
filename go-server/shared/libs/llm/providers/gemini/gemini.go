@@ -13,6 +13,10 @@ import (
 	"google.golang.org/genai"
 )
 
+var Temperature = float32(0.0)
+var TopP = float32(0.1)
+var TopK = float32(1)
+
 type GeminiClient struct {
 	model string
 }
@@ -23,6 +27,16 @@ func NewClient() *GeminiClient {
 	}
 }
 
+// Generate generates content using the Gemini AI model.
+//
+// It takes in a context, the instructions file path, the prompt data to format into the instructions,
+// the type of schema to use, and the target to unmarshal the Gemini response into.
+//
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
+// If the Gemini provider cannot be found, it will return an error with ErrorCode set to ERR_LLM_NO_CONTENT.
+// If the prompt cannot be formatted, it will return an error with ErrorCode set to ERR_LLM_PROMPT_FORMATTING.
+// If the instructions file cannot be read, it will return an error with ErrorCode set to ERR_LLM_INSTRUCTION_FORMATTING.
+// If the Gemini response cannot be unmarshalled, it will return an error with ErrorCode set to ERR_LLM_MALFORMED_RESPONSE.
 func (c *GeminiClient) Generate(
 	ctx context.Context,
 	instructions string,
@@ -82,6 +96,10 @@ func (c *GeminiClient) Generate(
 	return c.callWithRetries(ctx, client, prompt, config, 2, 30*time.Second)
 }
 
+// callWithRetries makes a call to the Gemini API with the given prompt and config.
+// If the call fails, it will retry up to maxRetries times with a delay of baseDelay * 2^i seconds.
+// If the call still fails after maxRetries attempts, it will return an error with ErrorCode set to ERR_LLM_NO_CONTENT.
+// If the Gemini response does not contain any content, it will return an error with ErrorCode set to ERR_LLM_NO_CONTENT.
 func (c *GeminiClient) callWithRetries(
 	ctx context.Context,
 	client *genai.Client,

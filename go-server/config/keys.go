@@ -9,6 +9,11 @@ import (
 	"strings"
 )
 
+// NewPrivateKey returns a new RSA private key from the PRIVATE_KEY environment variable.
+// The private key is expected to be a PEM-encoded string.
+// If the environment variable is not set, it returns an error.
+// If the PEM block cannot be parsed, it returns an error.
+// If the private key cannot be parsed, it returns an error.
 func NewPrivateKey() (*rsa.PrivateKey, error) {
 	pemKey := os.Getenv("PRIVATE_KEY")
 	if pemKey == "" {

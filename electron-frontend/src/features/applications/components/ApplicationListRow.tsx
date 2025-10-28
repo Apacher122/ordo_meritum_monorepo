@@ -13,6 +13,14 @@ interface ApplicationListRowProps {
 
 const statusOptions: ApplicationStatus[] = ['Rejected', 'Offered', 'Open', 'Closed', 'Moved', 'Not applied', 'Ghosted', 'Interviewing'];
 
+/**
+ * A modal component that asks the user to confirm an action.
+ *
+ * @param {string} message The message to be displayed to the user.
+ * @param {() => void} onConfirm The function to be called when the user confirms the action.
+ * @param {() => void} onCancel The function to be called when the user cancels the action.
+ * @returns {React.FC} A React component that displays a confirmation modal.
+ */
 const ConfirmationModal: React.FC<{ message: string; onConfirm: () => void; onCancel: () => void }> = ({ message, onConfirm, onCancel }) => (
     <div className="confirmation-modal-overlay">
         <div className="confirmation-modal">
@@ -26,7 +34,15 @@ const ConfirmationModal: React.FC<{ message: string; onConfirm: () => void; onCa
     </div>
 );
 
-// The component function signature now includes 'className'
+/**
+ * A component that displays a row of information about an application job.
+ *
+ * @param {AppliedJob} application The application job to be displayed.
+ * @param {(roleId: number, newStatus: ApplicationStatus) => void} onStatusUpdate A function to be called when the user updates the status of the application.
+ * @param {(roleId: number, newDate: Date) => void} onDateUpdate A function to be called when the user updates the date of the application.
+ * @param {(roleId: number) => void} onDelete A function to be called when the user deletes the application.
+ * @param {string} className An optional class name to be applied to the component.
+ */
 export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ application, onStatusUpdate, onDateUpdate, onDelete, className }) => {
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);

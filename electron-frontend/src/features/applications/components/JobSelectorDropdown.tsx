@@ -8,6 +8,15 @@ interface JobSelectorDropdownProps {
   jobs?: AppliedJob[];
 }
 
+/**
+ * A component that displays a dropdown selector
+ * for the user to select a job.
+ * 
+ * @param {JobSelectorDropdownProps} props - The props object
+ * @param {AppliedJob[]} [props.jobs] - The list of jobs to display in the dropdown selector
+ * @returns {React.ReactElement} - A React element representing the dropdown selector
+ */
+
 export const JobSelectorDropdown: React.FC<JobSelectorDropdownProps> = ({ jobs: jobsProp }) => {
   const { jobs: jobsFromContext, selectedId, setSelectedId } = useApplication();
 

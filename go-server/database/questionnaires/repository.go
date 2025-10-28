@@ -24,6 +24,8 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 	return &postgresRepository{db: db}
 }
 
+// CreateOrUpdate inserts a new candidate questionnaire or updates an existing one
+// if a questionnaire with the same firebase_uid already exists.
 func (r *postgresRepository) CreateOrUpdate(ctx context.Context, questionnaire *models.CandidateQuestionnaire) (*models.CandidateQuestionnaire, error) {
 	query := `
         INSERT INTO candidate_questionnaires (firebase_uid, title, brief_history, questions)
@@ -52,6 +54,8 @@ func (r *postgresRepository) CreateOrUpdate(ctx context.Context, questionnaire *
 	return &createdOrUpdated, nil
 }
 
+// GetByFirebaseUID retrieves a candidate questionnaire by their Firebase UID.
+// It returns nil if no questionnaire is found.
 func (r *postgresRepository) GetByFirebaseUID(ctx context.Context, firebaseUID string) (*models.CandidateQuestionnaire, error) {
 	var questionnaire models.CandidateQuestionnaire
 	query := "SELECT * FROM candidate_questionnaires WHERE firebase_uid = $1"
@@ -67,6 +71,7 @@ func (r *postgresRepository) GetByFirebaseUID(ctx context.Context, firebaseUID s
 	return &questionnaire, nil
 }
 
+// Delete removes a candidate questionnaire from the database.
 func (r *postgresRepository) Delete(ctx context.Context, firebaseUID string) error {
 	query := "DELETE FROM candidate_questionnaires WHERE firebase_uid = $1"
 	result, err := r.db.ExecContext(ctx, query, firebaseUID)

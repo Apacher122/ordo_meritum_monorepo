@@ -5,6 +5,10 @@ import path from "path";
 
 const userInfoFilePath = path.join(app.getPath("userData"), "userInfo.json");
 
+/**
+ * Handles the "save-user-info" IPC event. Saves the user's profile data
+ * to a local JSON file.
+ */
 ipcMain.handle("save-user-info", (event, userInfo) => {
   try {
     fs.writeFileSync(userInfoFilePath, JSON.stringify(userInfo, null, 2));
@@ -15,6 +19,10 @@ ipcMain.handle("save-user-info", (event, userInfo) => {
   }
 });
 
+/**
+ * Handles the "load-user-info" IPC event. Loads the user's profile data
+ * from a local JSON file.
+ */
 ipcMain.handle("load-user-info", () => {
   try {
     if (fs.existsSync(userInfoFilePath)) {

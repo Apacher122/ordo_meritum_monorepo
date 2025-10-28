@@ -26,26 +26,8 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 	return &postgresRepository{db: db}
 }
 
-func (r *postgresRepository) getResumeID(ctx context.Context, tx *sqlx.Tx, roleID int) (int, error) {
-	var resumeID int
-
-	userCtx, ok := contexts.FromContext(ctx)
-	if !ok {
-		return 0, error_response.ErrNoUserContext
-	}
-
-	query := "SELECT id FROM resumes WHERE firebase_uid = $1 AND role_id = $2"
-	err := tx.GetContext(ctx, &resumeID, query, userCtx.UID, roleID)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return 0, fmt.Errorf("no resume found for user %s and role %d", userCtx.UID, roleID)
-		}
-		return 0, err
-	}
-	return resumeID, nil
-}
-
 /* -- WILL NEED TO REFACTOR THIS -- */
+// UpsertMatchSummary creates or updates a job match summary in a transaction.
 func (r *postgresRepository) UpsertMatchSummary(ctx context.Context, summaryPayload *domain.MatchSummary) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
@@ -130,6 +112,8 @@ func (r *postgresRepository) UpsertMatchSummary(ctx context.Context, summaryPayl
 	return tx.Commit()
 }
 
+// GetMatchSummary retrieves a complete job match summary, including overviews
+// and metrics, for a specific role and user.
 func (r *postgresRepository) GetMatchSummary(ctx context.Context, roleID int) (*domain.MatchSummary, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {

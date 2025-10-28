@@ -6,6 +6,12 @@ import { useApplication } from "@/features/applications/providers/ApplicationPro
 import { useAuth } from "@/features/auth/providers/AuthProvider";
 import { useSettings } from "@/features/settings/hooks/useSettings";
 
+/**
+ * Custom hook to manage fetching and caching for a job match summary.
+ * It first attempts to load a summary from the local file system. If not found,
+ * it provides a function to fetch a new summary from the API and save it locally.
+ * @returns {UseMatchSummaryReturn} An object containing the match summary state and management functions.
+ */
 export const useMatchSummary = () => {
   const { selectedId, selectedJob } = useApplication();
   const { settings } = useSettings();

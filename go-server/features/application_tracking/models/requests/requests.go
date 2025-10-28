@@ -9,8 +9,10 @@ import (
 )
 
 type JobPostingRequestV1 = requests.RequestBody[JobPostingPayload, JobPostingOptions]
+
 type ApplicationUpdateRequest = requests.RequestBody[ApplicationUpdatePayload, struct{}]
 
+// JobPostingPayload defines the raw data extracted or provided for a job posting.
 type JobPostingPayload struct {
 	CompanyName    string `json:"company"`
 	JobTitle       string `json:"job_title"`
@@ -20,11 +22,14 @@ type JobPostingPayload struct {
 	JobDescription string `json:"job_description"`
 }
 
+// JobPostingOptions specifies parameters for processing the job posting payload, like the LLM to use.
 type JobPostingOptions struct {
 	LlmProvider string `json:"llm"`
 	LlmModel    string `json:"llmModel"`
 }
 
+// ApplicationUpdatePayload defines the fields that can be updated for an existing job application.
+// Fields are pointers to allow partial updates (only non-nil fields are updated).
 type ApplicationUpdatePayload struct {
 	JobID                  int                  `json:"job_id"`
 	JobTitle               *string              `json:"job_title,omitempty"`
@@ -34,8 +39,9 @@ type ApplicationUpdatePayload struct {
 	InitialApplicationDate *time.Time           `json:"initial_application_date,omitempty"`
 }
 
+// JobPostingRequest defines the structure for submitting a job posting.
 type JobPostingRequest struct {
-	CompanyName    string `json:"company"`
+	CompanyName    string `json:"company_name"`
 	JobTitle       string `json:"job_title"`
 	Link           string `json:"website"`
 	ApplicantCount string `json:"applicant_count"`
@@ -43,6 +49,8 @@ type JobPostingRequest struct {
 	JobDescription string `json:"job_description"`
 }
 
+// JobPostingEvent represents the structured data extracted from a job posting,
+// typically after processing by an LLM.
 type JobPostingEvent struct {
 	JobTitle               string   `json:"job_title"`
 	Company                string   `json:"company_name"`
@@ -66,6 +74,8 @@ type JobPostingEvent struct {
 	SalaryRange            string   `json:"salary_range"`
 }
 
+// FormatJobPostingRequest converts a JobPostingRequest into a plain text format,
+// likley intended for use in LLM prompts.
 func FormatJobPostingRequest(jp *JobPostingRequest) string {
 	return fmt.Sprintf(`
 Company: %s

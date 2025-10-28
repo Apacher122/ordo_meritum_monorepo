@@ -4,6 +4,16 @@ export class ResumeBuilderError extends Error {
   file?: string;
   line?: number;
 
+/**
+ * Constructor for ResumeBuilderError.
+ *
+ * @param {string} message - The error message.
+ * @param {Record<string, any>} details - Optional details about the error.
+ *
+ * This constructor sets the error message, timestamp, and details.
+ * It also captures the current stack trace if available.
+ * If details.captureStackTrace is true, it sets the file and line number where the error occurred.
+ */
   constructor(message: string, details: Record<string, any> = {}) {
     super(message);
     this.name = this.constructor.name;
