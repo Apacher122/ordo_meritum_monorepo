@@ -17,6 +17,8 @@ import (
 	error_response "github.com/ordo_meritum/shared/types/errors"
 )
 
+// FullJobPosting represents a comprehensive view of a job posting, aggregating
+// data from multiple tables.
 type FullJobPosting struct {
 	JobTitle               string         `db:"job_title"`
 	Description            *string        `db:"description"`
@@ -40,6 +42,8 @@ type FullJobPosting struct {
 	SalaryRange            *string        `db:"salary_range"`
 }
 
+// UserJobPosting represents a user-specific view of a job posting, including
+// application status and interview details.
 type UserJobPosting struct {
 	RoleID                 int               `db:"role_id"`
 	JobTitle               string            `db:"job_title"`
@@ -68,6 +72,7 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 	return &postgresRepository{db: db}
 }
 
+// GetFullJobPosting retrieves a complete job posting by its role ID.
 func (r *postgresRepository) GetFullJobPosting(ctx context.Context, roleID int) (*FullJobPosting, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
@@ -99,6 +104,8 @@ func (r *postgresRepository) GetFullJobPosting(ctx context.Context, roleID int) 
 	return &job, nil
 }
 
+// InsertFullJobPosting inserts a new job posting, including company, role,
+// and job requirements, in a single transaction.
 func (r *postgresRepository) InsertFullJobPosting(
 	ctx context.Context,
 	jobRawText string,
@@ -176,6 +183,8 @@ func (r *postgresRepository) InsertFullJobPosting(
 	return &createdReqs, tx.Commit()
 }
 
+// GetAllUserJobPostings retrieves a list of all job postings associated with the
+// currently authenticated user.
 func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context) ([]*UserJobPosting, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
@@ -202,6 +211,8 @@ func (r *postgresRepository) GetAllUserJobPostings(ctx context.Context) ([]*User
 	return jobs, err
 }
 
+// UpdateApplicationDetails updates various fields of a job application in a
+// single transaction.
 func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleID int, req *request.ApplicationUpdateRequest) error {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
@@ -224,7 +235,7 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 	if err != nil {
 		return fmt.Errorf("could not begin transaction: %w", err)
 	}
-	defer tx.Rollback() // Ensures transaction is rolled back on any subsequent error.
+	defer tx.Rollback()
 
 	if payload.Link != nil {
 		var companyID int
@@ -241,7 +252,6 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 		}
 	}
 
-	// --- 3. Handle Role Updates (roles table) ---
 	roleUpdates := make(map[string]interface{})
 	if payload.JobTitle != nil {
 		roleUpdates["job_title"] = *payload.JobTitle
@@ -256,7 +266,6 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 		}
 	}
 
-	// --- 4. Handle Job Requirement Updates (job_requirements table) ---
 	reqUpdates := make(map[string]interface{})
 	if payload.InterviewCount != nil {
 		reqUpdates["interview_count"] = *payload.InterviewCount
@@ -271,10 +280,10 @@ func (r *postgresRepository) UpdateApplicationDetails(ctx context.Context, roleI
 		}
 	}
 
-	// If all updates succeed, commit the transaction.
 	return tx.Commit()
 }
 
+// DeleteJobPostByID deletes a job posting and its associated records in a transaction.
 func (r *postgresRepository) DeleteJobPostByID(ctx context.Context, roleID int) error {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {

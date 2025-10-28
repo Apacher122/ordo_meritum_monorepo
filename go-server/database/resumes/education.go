@@ -9,6 +9,8 @@ import (
 	"github.com/ordo_meritum/features/documents/models/domain"
 )
 
+// UpsertEducation inserts a new education record or updates an existing one
+// based on a composite key of resume_id, school, and degree.
 func (r *postgresRepository) UpsertEducation(
 	ctx context.Context,
 	tx *sqlx.Tx,

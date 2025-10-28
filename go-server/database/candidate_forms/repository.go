@@ -28,6 +28,8 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 
 var ErrUserNotFound = errors.New("user not found")
 
+// UpsertPersonalityProfilee creates or updates a user's OCEAN and DISC profiles
+// within a single transaction.
 func (r *postgresRepository) UpsertPersonalityProfilee(
 	ctx context.Context,
 	firebaseUID string,
@@ -103,6 +105,7 @@ func (r *postgresRepository) UpsertPersonalityProfilee(
 	return tx.Commit()
 }
 
+// GetPersonalityProfile retrieves a user's OCEAN and DISC profiles from the database.
 func (r *postgresRepository) GetPersonalityProfile(
 	ctx context.Context,
 	firebaseUID string,
@@ -132,6 +135,8 @@ func (r *postgresRepository) GetPersonalityProfile(
 	return &profile.OceanProfile, &profile.DiscProfile, nil
 }
 
+// UpsertQuestionnaire creates or updates a candidate's questionnaire and its
+// associated questions in a single transaction.
 func (r *postgresRepository) UpsertQuestionnaire(
 	ctx context.Context,
 	firebaseUID string,
@@ -201,6 +206,8 @@ func (r *postgresRepository) getCompleteQuestionnaire(
 	return &questionnaire, nil
 }
 
+// GetQuestionnaireByFirebaseUID retrieves a candidate's full questionnaire,
+// including all associated questions, by their Firebase UID.
 func (r *postgresRepository) GetQuestionnaireByFirebaseUID(
 	ctx context.Context,
 	firebaseUID string,

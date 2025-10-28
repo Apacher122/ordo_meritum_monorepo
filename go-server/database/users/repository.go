@@ -31,8 +31,10 @@ func NewPostgresRepository(db *sqlx.DB) Repository {
 	return &postgresRepository{db: db}
 }
 
+// TODO: use the new error types defined under shared/types/errors.go
 var ErrUserNotFound = errors.New("user not found")
 
+// CreateUser inserts a new user into the database.
 func (r *postgresRepository) CreateUser(ctx context.Context, firebaseUID string) (*db_models.User, error) {
 	var user db_models.User
 	query := "INSERT INTO users (firebase_uid) VALUES ($1) RETURNING *"
@@ -44,6 +46,7 @@ func (r *postgresRepository) CreateUser(ctx context.Context, firebaseUID string)
 	return &user, nil
 }
 
+// GetUserByFirebaseUID retrieves a user by their Firebase UID.
 func (r *postgresRepository) GetUserByFirebaseUID(ctx context.Context, firebaseUID string) (*db_models.User, error) {
 	var user db_models.User
 	query := "SELECT * FROM users WHERE firebase_uid = $1"
@@ -58,6 +61,7 @@ func (r *postgresRepository) GetUserByFirebaseUID(ctx context.Context, firebaseU
 	return &user, nil
 }
 
+// UpdateUser updates a user's information in the database.
 func (r *postgresRepository) UpdateUser(ctx context.Context, firebaseUID string, updates *UserUpdate) (*db_models.User, error) {
 	var setClauses []string
 	var args []interface{}
@@ -91,6 +95,7 @@ func (r *postgresRepository) UpdateUser(ctx context.Context, firebaseUID string,
 	return &updatedUser, nil
 }
 
+// DeleteUser removes a user from the database.
 func (r *postgresRepository) DeleteUser(ctx context.Context, firebaseUID string) error {
 	query := "DELETE FROM users WHERE firebase_uid = $1"
 	result, err := r.db.ExecContext(ctx, query, firebaseUID)

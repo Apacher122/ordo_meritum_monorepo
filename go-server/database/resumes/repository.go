@@ -86,6 +86,7 @@ func (r *postgresRepository) dropResume(ctx context.Context, tx *sqlx.Tx, resume
 	return nil
 }
 
+// GetFullEducation retrieves all education records for a user and job.
 func (r *postgresRepository) GetFullEducation(
 	ctx context.Context,
 	jobID int,
@@ -126,6 +127,7 @@ func (r *postgresRepository) GetFullEducation(
 	return domainEducations, nil
 }
 
+// UpsertResume creates or updates a resume and all its sections in a transaction.
 func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resume *domain.Resume, education *domain.EducationInfo) error {
 	tx, err := r.db.BeginTxx(ctx, nil)
 	if err != nil {
@@ -161,6 +163,7 @@ func (r *postgresRepository) UpsertResume(ctx context.Context, roleID int, resum
 	return tx.Commit()
 }
 
+// GetFullResume retrieves a complete resume by fetching all its sections concurrently.
 func (r *postgresRepository) GetFullResume(
 	ctx context.Context,
 	roleID int,

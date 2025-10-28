@@ -9,6 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// UpsertProjects inserts new projects and their descriptions for a given resume.
 func (r *postgresRepository) UpsertProjects(
 	ctx context.Context,
 	tx *sqlx.Tx,
@@ -40,6 +41,7 @@ func (r *postgresRepository) UpsertProjects(
 	return nil
 }
 
+// GetResumeProjects retrieves all projects and their descriptions for a given resume.
 func (r *postgresRepository) GetResumeProjects(ctx context.Context, resumeID int) ([]domain.Project, error) {
 	var projects []models.Project
 	if err := r.db.SelectContext(ctx, &projects, "SELECT * FROM projects WHERE resume_id = $1", resumeID); err != nil {
