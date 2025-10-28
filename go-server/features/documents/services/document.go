@@ -68,7 +68,8 @@ func (s *DocumentService) QueueDocumentGeneration(
 ) (int, error) {
 	userCtx, ok := contexts.FromContext(ctx)
 	if !ok {
-		return s.handleError(error_messages.ERR_USER_NO_CONTEXT, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT))
+		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
+		return 0, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
 	}
 
 	lg.InfoLoggerType{Service: &service, Uid: &userCtx.UID, Message: fmt.Sprintf("Starting %s generation process", requestBody.Options.DocType)}.InfoLog()
@@ -142,14 +143,7 @@ func (s *DocumentService) updateResumeWithLLM(
 	ctx context.Context,
 	r *requests.DocumentRequest,
 ) (*events.DocumentEvent, error) {
-
-	userCtx, ok := contexts.FromContext(ctx)
-	if !ok {
-		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
-		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
-	}
-
-	j, err := s.jobRepo.GetFullJobPosting(ctx, r.Options.JobID)
+	userCtx, j, err := s.prepareGenerationData(ctx, r.Options.JobID)
 	if err != nil {
 		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_DB_FAILED_TO_GET, Error: err}.ErrorLog()
 		return nil, error_messages.ErrorMessage(error_messages.ERR_DB_FAILED_TO_GET)
@@ -207,14 +201,7 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	r *requests.DocumentRequest,
 	currentResume *domain.Resume,
 ) (*events.DocumentEvent, error) {
-	userCtx, ok := contexts.FromContext(ctx)
-	if !ok {
-		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_USER_NO_CONTEXT}.ErrorLog()
-		return nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
-	}
-
-	jobID := r.Options.JobID
-	j, err := s.jobRepo.GetFullJobPosting(ctx, jobID)
+	userCtx, j, err := s.prepareGenerationData(ctx, r.Options.JobID)
 	if err != nil {
 		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_DB_FAILED_TO_GET, Error: err}.ErrorLog()
 		return nil, error_messages.ErrorMessage(error_messages.ERR_DB_FAILED_TO_GET)
@@ -247,7 +234,7 @@ func (s *DocumentService) updateCoverLetterWithLLM(
 	}
 
 	load := events.DocumentEvent{
-		JobID:       jobID,
+		JobID:       r.Options.JobID,
 		UserId:      userCtx.UID,
 		CompanyName: j.CompanyName,
 		DocType:     "cover-letter",
@@ -310,6 +297,26 @@ func (s *DocumentService) generateLLMContent(
 	return nil
 }
 
+// prepareGenerationData prepares the necessary data for document generation.
+// It retrieves the user context and a full job posting from the database.
+// If either the user context or job posting cannot be fetched, it returns an error.
+// The returned user context and job posting are used to generate the document content using an LLM.
+//
+// It returns a pointer to a UserContext, a pointer to a FullJobPosting, and an error if any part of the process fails.
+func (s *DocumentService) prepareGenerationData(ctx context.Context, jobID int) (*contexts.UserContext, *jobs.FullJobPosting, error) {
+	userCtx, ok := contexts.FromContext(ctx)
+	if !ok {
+		return nil, nil, error_messages.ErrorMessage(error_messages.ERR_USER_NO_CONTEXT)
+	}
+
+	jobPosting, err := s.jobRepo.GetFullJobPosting(ctx, jobID)
+	if err != nil {
+		return nil, nil, error_messages.ErrorMessage(error_messages.ERR_DB_FAILED_TO_GET)
+	}
+
+	return userCtx, jobPosting, nil
+}
+
 // buildResumePromptData constructs the data map needed to populate the resume generation prompt.
 // It combines formatted data from the job posting and the user's document request payload.
 func buildResumePromptData(
@@ -349,9 +356,4 @@ func buildCoverLetterPromptData(j *jobs.FullJobPosting, payload *requests.Docume
 		"Corrections":    strings.Join(opts.Corrections, "\n- "),
 		"WritingSamples": strings.Join(opts.WritingSamples, "\n- "),
 	}, nil
-}
-
-func (s *DocumentService) handleError(errCode string, err error) (int, error) {
-	lg.ErrorLoggerType{Service: &service, ErrorCode: &errCode, Error: err}.ErrorLog()
-	return 0, err
 }
