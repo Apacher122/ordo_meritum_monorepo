@@ -24,6 +24,8 @@ func NewCandidateFormService(
 	}
 }
 
+// SaveCandidateQuestionnaire saves the submitted questionnaire data for a user.
+// It currently directly passes the request body to the repository layer.
 func (s *CandidateFormsService) SaveCandidateQuestionnaire(
 	ctx context.Context,
 	firebaseUID string,
@@ -51,6 +53,8 @@ func (s *CandidateFormsService) SaveCandidateQuestionnaire(
 	return nil
 }
 
+// SavePersonalityProfile maps the domain PersonalitySummary DTO to database models
+// and upserts them into the database for the specified user.
 func (s *CandidateFormsService) SavePersonalityProfile(
 	ctx context.Context,
 	firebaseUID string,
@@ -67,6 +71,8 @@ func (s *CandidateFormsService) SavePersonalityProfile(
 	return &summary, nil
 }
 
+// GetPersonalityProfile retrieves the OCEAN and DISC profiles from the database
+// for the specified user and maps them to a domain.PersonalitySummary DTO.
 func (s *CandidateFormsService) GetPersonalityProfile(ctx context.Context, firebaseUID string) (*domain.PersonalitySummary, error) {
 	dbOcean, dbDisc, err := s.candidateFormRepo.GetPersonalityProfile(ctx, firebaseUID)
 	if err != nil {
@@ -79,6 +85,8 @@ func (s *CandidateFormsService) GetPersonalityProfile(ctx context.Context, fireb
 	return &summaryDTO, nil
 }
 
+// CreatePersonalityProfile is currently a placeholder and does not perform any action.
+// TODO: Implement the logic for creating a personality profile.
 func (s *CandidateFormsService) CreatePersonalityProfile(ctx context.Context, firebaseUID string) error {
 	return nil
 }

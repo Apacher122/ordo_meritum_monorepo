@@ -6,6 +6,7 @@ import (
 	"github.com/ordo_meritum/shared/utils/formatters"
 )
 
+// EducationInfoPayload represents a single educational entry in a request payload.
 type EducationInfoPayload struct {
 	CourseWork *string  `json:"coursework,omitempty"`
 	Degree     string   `json:"degree"`
@@ -16,6 +17,8 @@ type EducationInfoPayload struct {
 	Honors     *string  `json:"honors,omitempty"`
 }
 
+// FormatForLLM converts the EducationInfoPayload struct into a plain text format
+// suitable for inclusion in a prompt for a large language model.
 func (e *EducationInfoPayload) FormatForLLM() string {
 	return fmt.Sprintf(`
 School: %s

@@ -8,6 +8,14 @@ import (
 	"time"
 )
 
+// PublicKeyStreamHandler handles HTTP requests for a Server-Sent Events (SSE)
+// stream of the application's public key. It sets the appropriate SSE headers
+// and immediately sends the public key, retrieved from the "PUBLIC_KEY"
+// environment variable.
+//
+// It then sends the same public key every 15 seconds as a keep-alive mechanism.
+// The stream is terminated when the client disconnects. If the PUBLIC_KEY
+// environment variable is not set, it logs an error and the handler exits.
 func PublicKeyStreamHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")

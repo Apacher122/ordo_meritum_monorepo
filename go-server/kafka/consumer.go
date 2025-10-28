@@ -20,6 +20,9 @@ type consumer struct {
 	hub    *websocket.Hub
 }
 
+// DocumentCompletionEvent represents the structure of a message received from the
+// "latex-compilation-results" topic, indicating the outcome of a document
+// generation task.
 type DocumentCompletionEvent struct {
 	UserID       string `json:"user_id"`
 	JobID        int    `json:"job_id"`
@@ -78,6 +81,16 @@ func (c *consumer) handleMessage(msg kafka.Message) {
 		return
 	}
 
+	if event.Error != "" {
+		log.Info().
+			Str("user_id", event.UserID).
+			Str("job_id", strconv.Itoa(event.JobID)).
+			Str("error", event.Error).
+			Msg("Received error event")
+		c.broadcastEvent(&event, msg.Value)
+		return
+	}
+
 	log.Info().
 		Str("user_id", event.UserID).
 		Str("job_id", strconv.Itoa(event.JobID)).
@@ -105,6 +118,11 @@ func (c *consumer) broadcastEvent(event *DocumentCompletionEvent, rawMsg []byte)
 	}
 }
 
+// RegisterCompletionConsumer sets up and manages the lifecycle of a Kafka consumer
+// that listens for document completion events. It is intended for use as an fx provider.
+//
+// The consumer is started in a background goroutine on application start and is
+// gracefully closed on application stop.
 func RegisterCompletionConsumer(lc fx.Lifecycle, hub *websocket.Hub) {
 	consumer := newConsumer(hub)
 

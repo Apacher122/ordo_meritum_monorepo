@@ -9,6 +9,13 @@ import (
 	"go.uber.org/fx"
 )
 
+// NewLatexWriter creates and configures a new kafka.Writer for producing messages
+// to the "latex-compilation-requests" topic. It reads the Kafka broker URL from
+// the "KAFKA_BROKER_URL" environment variable, falling back to a default if not set.
+//
+// This function is intended for use as an fx provider. It integrates with the fx.Lifecycle
+// to manage the writer's connection, logging its initialization on start and closing
+// it gracefully on stop.
 func NewLatexWriter(lc fx.Lifecycle) *kafka.Writer {
 	broker := os.Getenv("KAFKA_BROKER_URL")
 	if broker == "" {

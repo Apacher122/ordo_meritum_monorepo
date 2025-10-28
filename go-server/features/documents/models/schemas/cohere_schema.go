@@ -4,6 +4,8 @@ import (
 	cohere "github.com/cohere-ai/cohere-go/v2"
 )
 
+// CohereResumeSchema defines the JSON schema for generating a resume
+// specifically for the Cohere API.
 var CohereResumeSchema = map[string]any{
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type":    "object",
@@ -120,10 +122,13 @@ var CohereResumeSchema = map[string]any{
 	"required": []string{"resume", "summary", "experiences", "projects", "skills"},
 }
 
+// CohereResumeSchemaFormat wraps the resume schema in the format required
+// by the Cohere API's JSON mode.
 var CohereResumeSchemaFormat = cohere.JsonResponseFormatV2{
 	JsonSchema: CohereResumeSchema,
 }
 
+// CoverLetterSchema defines the JSON schema for generating a cover letter.
 var CoverLetterSchema = map[string]any{
 	"$schema": "http://json-schema.org/draft-07/schema#",
 	"type":    "object",
@@ -136,6 +141,8 @@ var CoverLetterSchema = map[string]any{
 	"required": []string{"about", "experience", "whatIBring", "revisionSummary"},
 }
 
+// CohereCoverLetterSchemaFormat wraps the cover letter schema in the format
+// required by the Cohere API's JSON mode.
 var CohereCoverLetterSchemaFormat = cohere.JsonResponseFormatV2{
 	JsonSchema: CoverLetterSchema,
 }

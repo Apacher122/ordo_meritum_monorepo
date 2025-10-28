@@ -6,6 +6,7 @@ import (
 	"strings"
 )
 
+// JobDescription represents the structured data extracted from a job posting.
 type JobDescription struct {
 	JobTitle               string   `json:"job_title"`
 	CompanyName            string   `json:"company_name"`
@@ -27,8 +28,11 @@ type JobDescription struct {
 	CompanyCulture         string   `json:"company_culture"`
 	CompanyValues          string   `json:"company_values"`
 	SalaryRange            string   `json:"salary_range"`
+	CompanyProperName      *string  `json:"company_proper_name"`
 }
 
+// FormatForLLM converts the JobDescription struct into a plain text,
+// human-readable format suitable for inclusion in prompts for large language models.
 func (jd *JobDescription) FormatForLLM() string {
 	var builder strings.Builder
 
@@ -46,7 +50,7 @@ func (jd *JobDescription) FormatForLLM() string {
 
 	builder.WriteString("--- Job Description ---\n")
 	appendString("Job Title", jd.JobTitle)
-	appendString("Company Name", jd.CompanyName)
+	appendString("Company Name", *jd.CompanyProperName)
 	appendString("Years of Experience Required", jd.YearsOfExp)
 	appendString("Education Level", jd.EducationLevel)
 	appendString("Salary Range", jd.SalaryRange)

@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// UserInfo holds the personal and contact details of a user.
 type UserInfo struct {
 	FirstName       string `json:"first_name"`
 	LastName        string `json:"last_name"`
@@ -16,6 +17,7 @@ type UserInfo struct {
 	Summary         string `json:"summary,omitempty"`
 }
 
+// EducationInfo represents a single educational entry for a user.
 type EducationInfo struct {
 	CourseWork *string  `json:"coursework,omitempty"`
 	Degree     string   `json:"degree"`
@@ -26,6 +28,8 @@ type EducationInfo struct {
 	Honors     *string  `json:"honors,omitempty"`
 }
 
+// FormatForLLM converts the EducationInfo struct into a structured, XML-like
+// string format designed for easy parsing by a large language model.
 func (e *EducationInfo) FormatForLLM() string {
 	var sb strings.Builder
 
@@ -53,6 +57,8 @@ func (e *EducationInfo) FormatForLLM() string {
 	return sb.String()
 }
 
+// FormatEducationHistoryForLLM formats a slice of EducationInfo structs into
+// a single XML-like string for consumption by an LLM.
 func FormatEducationHistoryForLLM(educations []*EducationInfo) string {
 	if len(educations) == 0 {
 		return "<education_section></education_section>"
