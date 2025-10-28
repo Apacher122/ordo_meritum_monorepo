@@ -32,9 +32,16 @@ func InitializeFirebase(lifecycle fx.Lifecycle) {
 	})
 }
 
-// NewHTTPServer creates a new http.Server and integrates it with the application's
-// lifecycle using fx.Lifecycle hooks. It starts the server on application start
-// and gracefully shuts it down on application stop.
+// NewHTTPServer creates a new http.Server instance configured with the main application router
+// and integrates its lifecycle (start/stop) with the provided fx.Lifecycle.
+// It listens on the address specified within the function (currently ":8080").
+//
+// Parameters:
+//   - lc: The fx.Lifecycle instance used to manage application startup and shutdown hooks.
+//   - router: The main mux.Router containing all application routes and middleware.
+//
+// Returns:
+//   - A configured *http.Server instance.
 func NewHTTPServer(lc fx.Lifecycle, router *mux.Router) *http.Server {
 
 	server := &http.Server{
@@ -67,8 +74,16 @@ func NewHTTPServer(lc fx.Lifecycle, router *mux.Router) *http.Server {
 	return server
 }
 
-// NewAuthenticatedRouter creates a subrouter from the main router under the "/api/auth" path
-// and attaches authentication middleware to it. It is intended for use as an fx provider.
+// NewAuthenticatedRouter creates and configures a subrouter specifically for authenticated endpoints.
+// It mounts under the "/api/auth" path prefix relative to the main router and applies
+// the authentication middleware (middleware.Authenticate) to all routes defined under it.
+// Intended for use as an fx provider to inject an AuthenticatedRouter instance.
+//
+// Parameters:
+//   - mainRouter: The root mux.Router of the application.
+//
+// Returns:
+//   - An *AuthenticatedRouter instance wrapping the configured subrouter.
 func NewAuthenticatedRouter(mainRouter *mux.Router) *AuthenticatedRouter {
 	log.Info().
 		Str("service", "startup").
@@ -78,8 +93,18 @@ func NewAuthenticatedRouter(mainRouter *mux.Router) *AuthenticatedRouter {
 	return &AuthenticatedRouter{Router: authenticatedRouter}
 }
 
-// NewSecureRouter creates a subrouter from the main router under the "/api/secure" path
-// and attaches both decryption and authentication middleware. It is intended for use as an fx provider.
+// NewSecureRouter creates and configures a subrouter for endpoints requiring both decryption and authentication.
+// It mounts under the "/api/secure" path prefix relative to the main router.
+// It applies decryption middleware (middleware.Decrypt) first, followed by authentication
+// middleware (middleware.Authenticate) to all routes defined under it.
+// Intended for use as an fx provider to inject a SecureRouter instance.
+//
+// Parameters:
+//   - mainRouter: The root mux.Router of the application.
+//   - privateKey: The RSA private key used for the decryption middleware.
+//
+// Returns:
+//   - A *SecureRouter instance wrapping the configured subrouter.
 func NewSecureRouter(mainRouter *mux.Router, privateKey *rsa.PrivateKey) *SecureRouter {
 	log.Info().
 		Str("service", "startup").
