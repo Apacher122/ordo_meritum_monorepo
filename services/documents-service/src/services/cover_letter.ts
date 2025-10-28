@@ -10,6 +10,14 @@ import paths from "@shared/constants/paths.js";
 
 dotenv.config();
 
+/**
+ * Compile a cover letter document based on the provided request payload.
+ *
+ * @param {schemas.CompilationRequest} docRequest - The compilation request.
+ * @returns {Promise<schemas.CompilationResult>} - The compilation result.
+ *
+ * @throws {Error} - If the compilation fails.
+ */
 export const compileCoverLetter = async (
   docRequest: schemas.CompilationRequest
 ): Promise<schemas.CompilationResult> => {

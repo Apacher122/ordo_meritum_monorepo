@@ -11,6 +11,14 @@ export const sectionToLatexEnvMap: Record<
   coverletter: "cvletter",
 };
 
+/**
+ * Replace the content of a specific LaTeX environment in a given TeX file.
+ * @param {string} texContent - The TeX file content.
+ * @param {string[]} newContent - The new content to replace the old content.
+ * @param {"cvskills" | "cventries" | "cvletter" | "cvparagraph"} sectionType - The type of LaTeX environment to replace.
+ * @returns {string} The modified TeX file content.
+ * @throws {ResumeSectionNotFoundError} If the section type is not found in the TeX file.
+ */
 export const replaceSectionContent = (
   texContent: string,
   newContent: string[],

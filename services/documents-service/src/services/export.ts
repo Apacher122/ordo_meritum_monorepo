@@ -5,6 +5,16 @@ import { logger } from "@shared/utils/logger.js";
 import { spawn } from "child_process";
 import { validatePath } from "@shared/utils/documents/file.helpers.js";
 
+/**
+ * Export a compiled PDF from latex to the output path.
+ * @param {string} jobNameSuffix - The suffix of the job name.
+ * @param {string} outputPath - The path where the compiled PDF should be exported.
+ * @param {string} compiledPdfPath - The path to the compiled PDF.
+ * @param {string} companyName - The name of the company.
+ * @param {number} jobId - The ID of the job.
+ * @param {string} docType - The type of the document (e.g. resume, cover-letter).
+ * @returns {Promise<string>} - A promise that resolves with the path of the exported PDF.
+ */
 export const exportLatex = async ({
   jobNameSuffix,
   outputPath,
