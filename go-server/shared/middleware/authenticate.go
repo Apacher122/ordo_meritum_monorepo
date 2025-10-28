@@ -15,6 +15,13 @@ type tokenContextKey string
 
 const VerifiedTokenKey tokenContextKey = "verifiedToken"
 
+// Authenticate is a middleware that verifies a Firebase ID token from the Authorization header.
+// It expects a "Bearer <token>" format. If the token is valid, it retrieves the user's
+// UID and attaches a UserContext to the request's context before passing it to the next handler.
+//
+// If the Authorization header is missing, the token is invalid or expired, or the Firebase
+// client fails to initialize, it writes an appropriate HTTP error (401 or 500) and stops
+// the request chain.
 func Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		log.Info().

@@ -14,10 +14,9 @@ type LLMProvider interface {
 	Generate(ctx context.Context, instructions string, prompt string, schema any) (string, error)
 }
 
-// GetProvider returns a new LLMProvider based on the given LLM provider name.
-// If the given LLM provider is not supported, it returns an error.
-// Supported LLM providers are "cohere", "gemini", and "anthropic".
-// The "anthropic" provider is not supported and will return an error.
+// GetProvider is a factory function that returns an LLMProvider based on the
+// provided llm name. It returns an error if the specified provider is
+// unsupported or not implemented.
 func GetProvider(llm string) (LLMProvider, error) {
 	switch llm {
 	// case "openai":

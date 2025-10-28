@@ -54,10 +54,12 @@ Always keep experiences and projects listed on the user's original resume separa
 - Explain and justify revisions made where applicable.
 
 [TECHNICAL SKILLS SECTION REVISION INSTRUCTIONS]
-- Skills displayed must have already been mentioned in the revised bullet points above.
-- Categorize logically for human readability and order by relevancy then proficiency.
+- Only present skills that follow BOTH of the following criteria:
+  1. CRITERIA 1: They must have already been mentioned in the revised bullet points for the experience and projects section.
+  2. CRITERIA 2: They must not be oddly specific unless the job requirement strongly and directly mentions them.
+- STRICT: You may only select 6-10 skills for entry level roles,  6-10 skills for roles of unspecified experience level, and 8-15 skills for mid-level roles.
+- Categorize logically for human readability and order by relevancy then proficiency. The categories must make sense and not be too oddly specific unless strongly and directly mentioned in the job description.
 - Order skills by relevancy then proficiency.
-- Only display 6-10 skills for entry level roles and 8-15 skills for mid-level roles.
 - Do not include the proficiency number in the output.
 - Explain and justify revisions made where applicable.
 
@@ -84,7 +86,7 @@ Always keep experiences and projects listed on the user's original resume separa
     {
       "position": "iOS Engineer",
       "company": "WEX Health",
-      "start": "2023-01",
+      "start": "Jul. 2024",
       "end": "Present",
       "description": [
         {

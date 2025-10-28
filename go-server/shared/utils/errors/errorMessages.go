@@ -43,6 +43,8 @@ var (
 	ERR_KAFKA_FAILED_TO_WRITE    = "ERR_KAFKA_FAILED_TO_SEND"
 	ERR_KAFKA_FAILED_TO_READ     = "ERR_KAFKA_FAILED_TO_READ"
 	ERR_KAFKA_MALFORMED_RESPONSE = "ERR_KAFKA_MALFORMED_RESPONSE"
+
+	ERR_PROCESS_FAILED = "ERR_PROCESS_FAILED"
 )
 
 var (
@@ -116,6 +118,9 @@ func ErrorMessage(msg string) error {
 		return fmt.Errorf("failed to write to kafka")
 	case ERR_KAFKA_MALFORMED_RESPONSE:
 		return fmt.Errorf("malformed response from kafka")
+
+	case ERR_PROCESS_FAILED:
+		return fmt.Errorf("process failed")
 
 	default:
 		return fmt.Errorf("unknown error")

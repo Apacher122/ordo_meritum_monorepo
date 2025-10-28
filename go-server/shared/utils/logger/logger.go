@@ -24,6 +24,7 @@ type ErrorLoggerType struct {
 	Error      error
 }
 
+// InfoLog logs a message with the service name, user ID, job ID, and doc type (if provided)
 func (l InfoLoggerType) InfoLog() {
 	lg := log.Info()
 	if l.Service != nil {
@@ -44,6 +45,8 @@ func (l InfoLoggerType) InfoLog() {
 	lg.Msg(l.Message)
 }
 
+// ErrorLog logs a message with the service name, user ID, job ID, and doc type (if provided)
+// It also logs the error code and error message if provided. If no error message is provided, it will use the default error message from error_messages.
 func (l ErrorLoggerType) ErrorLog() {
 	var event *zerolog.Event
 	if l.ErrorLevel == log.Warn() {
