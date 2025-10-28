@@ -59,7 +59,7 @@ func ServeWs(
 
 	upgrader := websocket.Upgrader{
 		// Allow all origins for WebSocket connections.
-		// Consider restricting this in production for security.
+		// TODO:Consider restricting this in production for security.
 		CheckOrigin: func(r *http.Request) bool { return true },
 	}
 
