@@ -23,7 +23,13 @@ interface ApplicationContextType {
 }
 const ApplicationContext = createContext<ApplicationContextType | undefined>(undefined);
 
-
+/**
+ * Provides application-related state and actions to its children components.
+ * This context centralizes the management of job application data.
+ * @param {object} props - The component props.
+ * @param {ReactNode} props.children - The child components to render.
+ * @returns {JSX.Element}
+ */
 export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
   const {
     jobs,
@@ -72,7 +78,13 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+/**
+ * Custom hook to access the ApplicationContext.
+ * @returns {ApplicationContextType} The application context.
+ * @throws {Error} If used outside of an `ApplicationProvider`.
+ */
 export const useApplication = () => {
+  // TODO: MOVE THIS TO A HOOK
   const context = useContext(ApplicationContext);
   if (!context) {
     throw new Error("useApplication must be used within an ApplicationProvider");

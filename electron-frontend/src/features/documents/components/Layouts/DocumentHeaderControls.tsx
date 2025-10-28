@@ -19,6 +19,21 @@ interface DocumentHeaderControlsProps {
   jobsWithoutDoc: AppliedJob[];
 }
 
+/**
+ * DocumentHeaderControls is a component that displays a header for the document page
+ * 
+ * @param {DocumentHeaderControlsProps} props - The props object
+ * @param {DocumentType} props.selectedDocType - The selected document type
+ * @param {(docType: DocumentType) => void} props.onDocTypeChange - The callback function when the document type changes
+ * @param {boolean} props.isJobSelected - Whether a job is selected or not
+ * @param {() => void} props.onCreate - The callback function when the user clicks on the create button
+ * @param {() => void} props.onViewChanges - The callback function when the user clicks on the view changes button
+ * @param {boolean} props.showViewChangesButton - Whether to show the view changes button or not
+ * @param {boolean} props.isGenerating - Whether the document is being generated or not
+ * @param {boolean} props.isCreateDisabled - Whether the create button is disabled or not
+ * @param {AppliedJob[]} props.jobsWithDoc - The list of jobs with a document
+ * @param {AppliedJob[]} props.jobsWithoutDoc - The list of jobs without a document
+ */
 export const DocumentHeaderControls: React.FC<DocumentHeaderControlsProps> = ({
   selectedDocType,
   onDocTypeChange,

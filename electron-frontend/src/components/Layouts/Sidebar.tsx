@@ -27,8 +27,10 @@ interface SidebarProps {
 }
 
 /**
- * A reusable navigation sidebar component.
- * It is responsible for displaying navigation links and highlighting the active page.
+ * A reusable navigation sidebar component that displays a list of items
+ * and highlights the currently active one.
+ * @param {SidebarProps} props The props for the component.
+ * @returns {React.FC<SidebarProps>}
  */
 export const Sidebar: React.FC<SidebarProps> = ({
   items,

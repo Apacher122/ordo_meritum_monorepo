@@ -35,6 +35,12 @@ const cleanBulletPoints = <T extends Experience | Project>(items: T[] | undefine
     return itemsWithCleanedBullets.filter(hasValidBulletPoints) as T[];
 };
 
+/**
+ * Renders the main user information page, which is composed of multiple tabs
+ * for editing different sections of the user's profile (e.g., User Info, Resume).
+ * It orchestrates data loading, state management for forms, and saving the profile.
+ * @returns {React.FC} The UserInfoPage component.
+ */
 export const UserInfoPage: React.FC = () => {
   const { userProfile, loading, error, saveUserProfile } = useUserInfo();
   const [activeTab, setActiveTab] = useState<ProfileTab>("User Info");
@@ -129,6 +135,10 @@ export const UserInfoPage: React.FC = () => {
     }
   };
   
+  /**
+   * Renders the form component corresponding to the currently active tab.
+   * @returns {JSX.Element | null} The form component for the active tab.
+   */
   const renderActiveTab = () => {
     if (!formState) return null;
     

@@ -6,6 +6,11 @@ interface FormProps {
   setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
 }
 
+/**
+ * A form component for editing the distinct sections of a generic cover letter.
+ * @param {FormProps} props The props for the component.
+ * @returns {React.FC<FormProps>}
+ */
 export const CoverLetterForm: React.FC<FormProps> = ({ profile, setProfile }) => {
     const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const { name, value } = e.target;

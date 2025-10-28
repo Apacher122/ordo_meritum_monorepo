@@ -10,6 +10,12 @@ export interface ApplicationUpdatePayload {
   initial_application_date: Date | null;
 }
 
+/**
+ * Sends a PATCH request to the backend to update a job application.
+ * @param {string} token The Bearer token for API requests.
+ * @param {ApplicationUpdatePayload} payload The request body containing the updated job application information.
+ * @returns {Promise<Response>} A promise resolving to the response from the backend.
+ */
 export const updateApplication = (
   token: string,
   payload: ApplicationUpdatePayload

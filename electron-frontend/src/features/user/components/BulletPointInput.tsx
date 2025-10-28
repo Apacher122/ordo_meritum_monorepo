@@ -13,6 +13,13 @@ interface BulletPointInputProps {
 
 const generateId = () => Math.random().toString(36).slice(2, 11);
 
+/**
+ * A dynamic list of auto-resizing textareas for inputting bullet points.
+ * Supports adding new bullets with "Enter", deleting empty bullets with "Backspace",
+ * and pasting multi-line text to create multiple bullets.
+ * @param {BulletPointInputProps} props The props for the component.
+ * @returns {React.FC<BulletPointInputProps>}
+ */
 export const BulletPointInput: React.FC<BulletPointInputProps> = ({
   bullets,
   onChange,

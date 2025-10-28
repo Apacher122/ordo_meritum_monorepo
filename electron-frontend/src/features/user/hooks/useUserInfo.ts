@@ -82,13 +82,10 @@ const wasDataCleaned = (
 };
 
 /**
- * A hook that provides the user profile and functions to save and load it.
- *
- * It returns an object with the following properties:
- * - `userProfile`: The current user profile.
- * - `setUserProfile`: A function to save the user profile.
- * - `loading`: A boolean indicating whether the user profile is currently being loaded or saved.
- * - `error`: A string indicating any error that occurred while loading or saving the user profile.
+ * Custom hook to manage the user's profile data.
+ * Handles fetching the profile from a persistent source, merging it with initial state,
+ * cleaning potentially corrupted data, and providing a function to save updates.
+ * @returns {UseUserInfoReturn} An object containing the user profile state and management functions.
  */
 export const useUserInfo = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);

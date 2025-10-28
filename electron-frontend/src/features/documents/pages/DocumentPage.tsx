@@ -15,6 +15,12 @@ import { ViewChangesModal } from "../components/ViewChangesModal";
 import { useApplication } from "../../applications/providers/ApplicationProvider";
 import { useDocumentManager } from "../hooks/useDocumentManager";
 
+/**
+ * Renders the main page for viewing, generating, and managing documents (resumes and cover letters)
+ * associated with a selected job application. It handles different display states like loading,
+ * generating, displaying the document, or showing an error.
+ * @returns {React.FC} The DocumentPage component.
+ */
 export const DocumentPage: React.FC = () => {
   const { jobs, selectedJob, loading: appLoading } = useApplication();
 

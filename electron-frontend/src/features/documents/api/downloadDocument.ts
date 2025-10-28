@@ -80,6 +80,17 @@ const processParts = (
   return { pdf, jsonData };
 };
 
+/**
+ * Downloads a PDF document and its associated JSON changes file from the server.
+ * 
+ * @param {string} downloadUrl - The URL for the PDF document.
+ * @param {string} changesUrl - The URL for the JSON changes file.
+ * @param {string} [token] - The authentication token for the request.
+ * @returns {Promise<{ pdf: Blob, jsonData: ResumeChanges | CoverLetterChanges | undefined >}}
+ * A promise that resolves to an object containing the PDF document as a Blob and
+ * the JSON changes data as an object of type ResumeChanges | CoverLetterChanges | undefined.
+ * If the server response does not contain a PDF file, an Error is thrown.
+ */
 export const downloadDocument = async (
   downloadUrl: string,
   changesUrl: string,

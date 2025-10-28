@@ -8,6 +8,12 @@ interface FormProps {
   setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
 }
 
+/**
+ * A form for editing the core components of a resume, including skills,
+ * work experiences, and projects.
+ * @param {FormProps} props The props for the component.
+ * @returns {React.FC<FormProps>}
+ */
 export const ResumeForm: React.FC<FormProps> = ({ profile, setProfile }) => {
 
   const handleSkillsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -15,6 +21,12 @@ export const ResumeForm: React.FC<FormProps> = ({ profile, setProfile }) => {
       setProfile(prev => prev && { ...prev, resume: { ...prev.resume, skills: value as any }});
   };
 
+  /**
+   * Updates a specific field for a given work experience entry.
+   * @param {number} index - The index of the experience entry to update.
+   * @param {keyof Experience} field - The field of the experience to update.
+   * @param {*} value - The new value for the field.
+   */
   const handleExperienceChange = (index: number, field: keyof Experience, value: any) => {
     setProfile(prev => {
         if (!prev) return null;
@@ -25,6 +37,9 @@ export const ResumeForm: React.FC<FormProps> = ({ profile, setProfile }) => {
     });
   };
 
+  /**
+   * Adds a new, empty work experience entry to the profile.
+   */
   const addExperience = () => {
     setProfile(prev => {
         if (!prev) return null;
@@ -34,7 +49,12 @@ export const ResumeForm: React.FC<FormProps> = ({ profile, setProfile }) => {
     });
   };
 
-  
+  /**
+   * Updates a specific field for a given project entry.
+   * @param {number} index - The index of the project entry to update.
+   * @param {keyof Project} field - The field of the project to update.
+   * @param {*} value - The new value for the field.
+   */  
   const handleProjectChange = (index: number, field: keyof Project, value: any) => {
     setProfile(prev => {
         if (!prev) return null;
@@ -46,6 +66,9 @@ export const ResumeForm: React.FC<FormProps> = ({ profile, setProfile }) => {
     });
   };
 
+  /**
+   * Adds a new, empty project entry to the profile.
+   */
   const addProject = () => {
     setProfile(prev => {
         if (!prev) return null;

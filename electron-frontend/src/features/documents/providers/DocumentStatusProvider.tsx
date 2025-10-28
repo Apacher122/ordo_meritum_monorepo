@@ -31,6 +31,14 @@ interface DocumentStatusContextType {
 
 const DocumentStatusContext = createContext<DocumentStatusContextType | undefined>(undefined);
 
+/**
+ * A React Context Provider that manages the status of documents for a user.
+ * It uses the WebSocketService to receive updates from the server and stores the
+ * status of documents in a Map of Maps, where the outer Map keys are the job IDs
+ * and the inner Map keys are the document types.
+ * The Context Provider also provides an addPendingDocument function that can be used to
+ * add a pending document to the state.
+ */
 export const DocumentStatusProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
   const [documentStatuses, setDocumentStatuses] = useState<DocumentStatusState>(new Map());
@@ -60,6 +68,8 @@ export const DocumentStatusProvider = ({ children }: { children: React.ReactNode
             changesUrl: data.changes_url,
             error: data.error,
           });
+
+          console.log('data received', data);
 
           newStatuses.set(String(data.job_id), currentJob);
           return newStatuses;
@@ -95,6 +105,15 @@ export const DocumentStatusProvider = ({ children }: { children: React.ReactNode
     </DocumentStatusContext.Provider>
   );
 };
+
+/**
+ * Hook that provides the document status context.
+ * This hook returns the current document status and a function to add a pending document.
+ * It must be used within a DocumentStatusProvider.
+ * @returns {object} An object containing the following properties:
+ *   - documentStatuses: A map of job IDs to their corresponding document status.
+ *   - addPendingDocument: A function that adds a pending document to the context.
+ */
 
 export const useDocumentStatus = () => {
   const context = useContext(DocumentStatusContext);

@@ -19,14 +19,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 /**
- * A React context provider that provides the state and functions
- * for managing the user state and sync with the backend.
- *
- * The provider wraps the `useAuth` hook and provides
- * the following values to its children:
- *
- *   - `user`: The currently signed-in user.
- *   - `loading`: A boolean indicating whether the user is currently being fetched.
+ * Provides authentication state to its children components. It listens for
+ * Firebase auth state changes and syncs the user with the backend upon login.
+ * @param {object} props - The component props.
+ * @param {ReactNode} props.children - The child components to render.
+ * @returns {JSX.Element}
  */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -73,6 +70,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   );
 };
 
+/**
+ * Custom hook to access the authentication context.
+ * @returns {AuthContextType} The authentication context, including the user and loading state.
+ * @throws {Error} If used outside of an `AuthProvider`.
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

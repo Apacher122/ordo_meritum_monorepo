@@ -3,6 +3,15 @@ import '@/assets/styles/views/LoginView.css';
 import React from 'react';
 import { useLoginForm } from '../hooks/useLoginForm';
 
+/**
+ * A reusable input component for the login/register form.
+ * @param {object} props - The component props.
+ * @param {string} props.label - The label for the input field.
+ * @param {string} props.type - The input type (e.g., 'email', 'password').
+ * @param {string} props.value - The current value of the input.
+ * @param {(value: string) => void} props.onChange - Callback function to handle value changes.
+ * @returns {JSX.Element}
+ */
 const LoginInput = ({ label, type, value, onChange }: any) => (
   <div>
     <label className="block text-sm font-medium">{label}</label>
@@ -16,6 +25,12 @@ const LoginInput = ({ label, type, value, onChange }: any) => (
   </div>
 );
 
+/**
+ * Renders a user interface for both login and registration, allowing users to
+ * switch between the two modes. It handles user input, form submission, and
+ * displays loading or error states.
+ * @returns {React.FC} The LoginView component.
+ */
 export const LoginView: React.FC = () => {
   const {
     mode,

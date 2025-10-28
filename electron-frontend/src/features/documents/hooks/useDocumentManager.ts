@@ -8,18 +8,6 @@ import { useDocumentStatus } from "../providers/DocumentStatusProvider";
 import { useSettings } from "../../settings/hooks/useSettings";
 import { useUserInfo } from "@/features/user/hooks/useUserInfo";
 
-const baseFileName = (
-  jobId: number,
-  docType: DocumentType,
-  company: string,
-  title: string
-): string => {
-  const baseName = `${company.toLowerCase().replaceAll(" ", "_")}_${title
-    .toLowerCase()
-    .replaceAll(" ", "_")}_${jobId}`;
-  return `/${baseName}_${docType}`;
-};
-
 const getSafeFilename = (
   jobId: number,
   docType: DocumentType,
@@ -45,6 +33,20 @@ const getSafeFilename = (
   return `${baseName}_${docType}`;
 };
 
+/**
+ * Hook that provides document management functionality.
+ * @param {number | null} jobId - The ID of the job.
+ * @param {string} companyName - The name of the company.
+ * @param {string} jobTitle - The title of the job.
+ * @param {DocumentType} docType - The type of the document.
+ * @returns {object} An object containing the following properties:
+ *   - displayStatus: The status of the document ("checking", "pending", "failed", "present", or "idle").
+ *   - localPdfPath: The path to the locally saved PDF document if it exists.
+ *   - localJsonData: The locally saved JSON data of the document if it exists.
+ *   - generate: A function that generates the document using the API.
+ *   - error: An error message if the document generation failed.
+ *   - doesFileExist: A function that checks if a document with the given parameters exists.
+ */
 export const useDocumentManager = (
   jobId: number | null,
   companyName: string,
@@ -170,7 +172,7 @@ export const useDocumentManager = (
   const displayStatus = useMemo(() => {
     if (isCheckingFile) return "checking";
     if (serverStatus?.status === "PENDING") return "generating";
-    if (serverStatus?.status === "FAILED") return "failed";
+    if (serverStatus?.status === "FAILED" || apiError) return "failed";
     if (fileExists) return "present";
     return "idle";
   }, [isCheckingFile, serverStatus, fileExists]);

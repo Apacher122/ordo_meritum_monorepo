@@ -4,6 +4,18 @@ import { Settings } from "@/features/settings/types/types";
 import { apiRequest } from "@/shared/utils/requests";
 import { encryptData } from "@/shared/lib/encryption";
 
+/**
+ * Fetches a job match summary from the server for a given job ID.
+ * It encrypts the user's API key for the specified LLM provider and includes it
+ * in the request header for secure, server-side processing.
+ *
+ * @param {number} jobId - The unique identifier for the job.
+ * @param {LlmProvider} llmProvider - The LLM provider designated to generate the summary.
+ * @param {Settings} settings - The application settings object containing API keys.
+ * @param {string} token - The user's authentication token.
+ * @returns {Promise<MatchSummaryResponse>} A promise that resolves to the match summary response.
+ * @throws {Error} If the API key for the specified provider is not set.
+ */
 export const getMatchSummary = async (
   jobId: number,
   llmProvider: LlmProvider,

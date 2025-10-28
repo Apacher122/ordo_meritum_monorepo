@@ -7,6 +7,11 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { ApplicationMetricsData } from "../components/ApplicationMetrics";
 import { useAuth } from "@/app/appProviders";
 
+/**
+ * Custom hook to manage the state and operations for the user's list of job applications.
+ * It handles fetching, updating, deleting, and calculating metrics for the applications.
+ * @returns {UseApplicationListReturn} An object containing the application list state and management functions.
+ */
 export const useApplicationList = () => {
   const { user } = useAuth();
   const [jobs, setJobs] = useState<AppliedJob[]>([]);

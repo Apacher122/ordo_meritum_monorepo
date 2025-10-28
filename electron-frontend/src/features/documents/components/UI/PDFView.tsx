@@ -11,10 +11,11 @@ interface PDFViewProps {
   file: Blob | string | null;
 }
 
-interface PDFViewProps {
-  file: Blob | string | null;
-}
-
+/**
+ * A React component for viewing PDF documents with controls for pagination and zooming.
+ * @param {PDFViewProps} props - The props for the PDFView component.
+ * @returns {React.FC<PDFViewProps>}
+ */
 export const PDFView: React.FC<PDFViewProps> = ({ file }) => {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);

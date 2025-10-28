@@ -1,9 +1,10 @@
-import "@/assets/styles/pages/SettingsPage.css"; 
+import "@/assets/styles/pages/SettingsPage.css";
+
 import { AssignableFeature, Settings } from "../types/types";
 import React, { useEffect, useState } from "react";
-import { LlmProvider } from "@/shared/types/index.js";
+import { useSetHeaderControls, useSetHeaderSubtitle, useSetHeaderTitle } from "@/components/Layouts/providers/HeaderProvider";
 
-import { useSetHeaderTitle, useSetHeaderSubtitle, useSetHeaderControls } from "@/components/Layouts/providers/HeaderProvider";
+import { LlmProvider } from "@/shared/types/index.js";
 import { useSettings } from "../hooks/useSettings";
 
 const llmProviderOptions: LlmProvider[] = [ "Gemini", "Cohere", "OpenAI", "Groq", "Anthropic", "Cerebras" ];
@@ -13,10 +14,13 @@ const assignableFeatures: { key: AssignableFeature, label: string }[] = [
     { key: 'coverLetterGeneration', label: 'Cover Letter Generation' },
 ];
 
+/**
+ * Renders the settings page for the application. This component allows users
+ * to manage their API keys for various LLM providers and assign which provider
+ * is used for specific features.
+ * @returns {React.FC} The SettingsPage component.
+ */
 export const SettingsPage: React.FC = () => {
-  
-  
-  
   const setHeaderTitle = useSetHeaderTitle();
   const setHeaderSubtitle = useSetHeaderSubtitle();
   const setHeaderControls = useSetHeaderControls();

@@ -28,6 +28,12 @@ const getSummarySymbol = (temperature: number) => {
   return '-';
 };
 
+/**
+ * Renders the Job Match Summary page. This page displays a detailed analysis
+ * of how a candidate's resume matches a selected job posting, including an
+ * overall score, detailed metrics, and AI-generated summaries.
+ * @returns {React.FC} The MatchSummaryPage component.
+ */
 export const MatchSummaryPage: React.FC = () => {
   const { jobs, selectedJob } = useApplication();
   const { matchSummary, loading, error, getMatchSummary, hasLocalSummary } = useMatchSummary();

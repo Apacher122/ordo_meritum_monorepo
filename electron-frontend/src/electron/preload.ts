@@ -9,6 +9,10 @@ export interface WritingSample {
   content: string;
 }
 
+/**
+ * Defines the API that will be exposed from the Electron main process
+ * to the renderer process.
+ */
 export interface IElectronAPI {
   user: {
     saveUserInfo: (
@@ -65,6 +69,9 @@ export interface IElectronAPI {
   };
 }
 
+/**
+ * Exposes a secure API from the Electron main process to the renderer process.
+ */
 contextBridge.exposeInMainWorld("appAPI", {
   user: {
     saveUserInfo: (userInfo: UserProfile) =>
@@ -101,6 +108,9 @@ contextBridge.exposeInMainWorld("appAPI", {
   },
 });
 
+/**
+ * Exposes environment variables to the renderer process.
+ */
 contextBridge.exposeInMainWorld("env", {
   FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
   FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,

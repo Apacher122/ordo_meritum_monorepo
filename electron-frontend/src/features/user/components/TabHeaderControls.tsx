@@ -22,6 +22,11 @@ interface TabHeaderControlsProps {
   onTabChange: (tab: ProfileTab) => void;
 }
 
+/**
+ * Renders a set of tab buttons for navigating different sections of a form or page.
+ * @param {TabHeaderControlsProps} props The props for the component.
+ * @returns {React.FC<TabHeaderControlsProps>}
+ */
 export const TabHeaderControls: React.FC<TabHeaderControlsProps> = ({
   activeTab,
   onTabChange,

@@ -8,6 +8,11 @@ import { ApplicationMetrics } from "../components/ApplicationMetrics";
 import { SearchHeaderControls } from "../components/SearchHeaderControls";
 import { useApplication } from "../providers/ApplicationProvider";
 
+/**
+ * Renders the main page for viewing and managing all tracked job applications.
+ * It includes a list view of applications, search functionality, and an option to view metrics.
+ * @returns {React.FC} The ApplicationListPage component.
+ */
 export const ApplicationListPage: React.FC = () => {
   const { jobs, metrics, loading, error, updateJobStatus, updateJobDate, removeJob } = useApplication();
   const [searchQuery, setSearchQuery] = useState("");

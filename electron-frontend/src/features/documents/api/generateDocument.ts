@@ -10,6 +10,18 @@ export interface QueueJobResponse {
   status: string;
 }
 
+/**
+ * Generates a document of the specified type using an LLM.
+ *
+ * @param {DocumentType} docType The type of document to generate.
+ * @param {DocumentRequestBody} documentRequest The request body containing user information, resume content, and other relevant data.
+ * @param {number} jobId The job ID for the generated document.
+ * @param {LlmProvider} llmProvider The LLM provider to use for generation.
+ * @param {Settings} settings The application settings containing API keys for LLM providers.
+ * @param {string} token The Bearer token for API requests.
+ *
+ * @returns {Promise<QueueJobResponse>} A promise resolving to a QueueJobResponse containing the job ID and status of the generated document.
+ */
 export const generateDocument = async (
   docType: DocumentType,
   documentRequest: DocumentRequestBody,

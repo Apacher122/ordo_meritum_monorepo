@@ -17,7 +17,10 @@ const initialState: FormState = {
   llmProvider: "Gemini",
 };
 
-
+/**
+ * Custom hook to manage the state and submission logic for the new job information form.
+ * @returns {UseJobInfoFormReturn} An object containing form state and handlers.
+ */
 export const useJobInfoForm = () => {
   const [formState, setFormState] = useState<FormState>(initialState);
   const [loading, setLoading] = useState(false);
