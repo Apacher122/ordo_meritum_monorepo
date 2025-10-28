@@ -94,7 +94,7 @@ func (s *DocumentService) QueueDocumentGeneration(
 			Service:   &service,
 			ErrorCode: &error_messages.ERR_PROCESS_FAILED,
 			Error:     err,
-			JobID:     &kafkaRequest.JobID,
+			JobID:     &requestBody.Options.JobID,
 			Uid:       &userCtx.UID,
 		}.ErrorLog()
 	}
