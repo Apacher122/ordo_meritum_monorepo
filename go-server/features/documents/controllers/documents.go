@@ -29,8 +29,8 @@ func NewDocumentController(docService *services.DocumentService) *Controller {
 }
 
 func (c *Controller) RegisterRoutes(router *mux.Router) {
-	router.HandleFunc("/documents/resume", c.generateDocumentHandler(c.docService.QueueResumeGeneration)).Methods("POST")
-	router.HandleFunc("/documents/cover-letter", c.generateDocumentHandler(c.docService.QueueCoverLetterGeneration)).Methods("POST")
+	router.HandleFunc("/documents/resume", c.generateDocumentHandler(c.docService.QueueDocumentGeneration)).Methods("POST")
+	router.HandleFunc("/documents/cover-letter", c.generateDocumentHandler(c.docService.QueueDocumentGeneration)).Methods("POST")
 }
 
 // generateDocumentHandler is a factory function that creates an http.HandlerFunc for handling
@@ -58,7 +58,7 @@ func (c *Controller) RegisterRoutes(router *mux.Router) {
 func (c *Controller) generateDocumentHandler(
 	generationFunc func(
 		ctx context.Context,
-		requestBody requests.DocumentRequest,
+		requestBody *requests.DocumentRequest,
 	) (int, error),
 ) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -90,7 +90,7 @@ func (c *Controller) generateDocumentHandler(
 			}
 			ctxWithUser := context.WithValue(bgCtx, contexts.UserContextKey, bgUserCtx)
 
-			jobID, err := generationFunc(ctxWithUser, requestBody)
+			jobID, err := generationFunc(ctxWithUser, &requestBody)
 			if err != nil {
 				lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: err}.ErrorLog()
 				return
