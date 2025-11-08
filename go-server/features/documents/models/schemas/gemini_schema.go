@@ -73,7 +73,7 @@ func BuildResumeSchema(data any) (any, error) {
 							},
 						},
 					},
-					Required: []string{"position", "company", "start", "end"},
+					Required: []string{"position", "company", "start", "end", "bulletPoints"},
 				},
 			},
 			"projects": {
@@ -97,6 +97,7 @@ func BuildResumeSchema(data any) (any, error) {
 							},
 						},
 					},
+					Required: []string{"name", "role", "status", "bulletPoints"},
 				},
 			},
 		},
@@ -156,7 +157,7 @@ var GeminiResumeSchema = &genai.Schema{
 						},
 					},
 				},
-				Required: []string{"position", "company", "start", "end"},
+				Required: []string{"position", "company", "start", "end", "bulletPoints"},
 			},
 		},
 		"projects": {

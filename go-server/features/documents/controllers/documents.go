@@ -14,10 +14,8 @@ import (
 	"github.com/ordo_meritum/shared/middleware"
 	error_messages "github.com/ordo_meritum/shared/utils/errors"
 	lg "github.com/ordo_meritum/shared/utils/logger"
-	"github.com/rs/zerolog/log"
 )
 
-var logger = log.With().Str("service", "documents-controller").Logger()
 var service = "documents-controller"
 
 type Controller struct {
@@ -95,7 +93,7 @@ func (c *Controller) generateDocumentHandler(
 				lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: err}.ErrorLog()
 				return
 			}
-			logger.Info().Int("jobID", jobID).Msg("Document successfully queued for generation in background")
+			lg.InfoLoggerType{Service: &service, Uid: &userCtx.UID, JobID: &jobID, Message: "Document successfully queued for generation in background"}.InfoLog()
 		}()
 	}
 }

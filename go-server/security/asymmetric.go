@@ -6,7 +6,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 
@@ -51,7 +50,6 @@ func PublicKeyToPEM(pub *rsa.PublicKey) ([]byte, error) {
 // environment variable. If the variable is not set, it returns a 500 Internal
 // Server Error.
 func GetPublicKeyHandler(w http.ResponseWriter, r *http.Request) {
-	log.Println("Getting public key")
 	publicKeyStr := os.Getenv("PUBLIC_KEY")
 	if publicKeyStr == "" {
 		middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": "Public key not found on server"})
