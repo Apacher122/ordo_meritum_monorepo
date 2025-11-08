@@ -99,6 +99,7 @@ func (s *DocumentService) QueueDocumentGeneration(
 			Uid:       &userCtx.UID,
 		}.ErrorLog()
 	}
+
 	if err := s.sendKafkaMessage(ctx, kafkaRequest); err != nil {
 		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_KAFKA_FAILED_TO_WRITE, Error: err}.ErrorLog()
 		return 0, err
@@ -180,6 +181,8 @@ func (s *DocumentService) updateResumeWithLLM(
 		lg.ErrorLoggerType{Service: &service, ErrorCode: &error_messages.ERR_DB_FAILED_TO_UPSERT, Error: err}.ErrorLog()
 		return nil, error_messages.ErrorMessage(error_messages.ERR_DB_FAILED_TO_UPSERT)
 	}
+
+	lg.InfoLoggerType{Service: &service, Uid: &userCtx.UID, JobID: &r.Options.JobID, Message: llmResume.FormatForLLM()}.InfoLog()
 
 	return &events.DocumentEvent{
 		JobID:         r.Options.JobID,

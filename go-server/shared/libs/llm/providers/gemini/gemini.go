@@ -4,18 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
 	"github.com/ordo_meritum/shared/contexts"
 	llmErrors "github.com/ordo_meritum/shared/libs/llm/errors"
+	error_messages "github.com/ordo_meritum/shared/utils/errors"
+	lg "github.com/ordo_meritum/shared/utils/logger"
 	"google.golang.org/genai"
 )
 
 var Temperature = float32(0.0)
 var TopP = float32(0.1)
 var TopK = float32(1)
+var Service = "gemini"
 
 type GeminiClient struct {
 	model string
@@ -23,7 +27,7 @@ type GeminiClient struct {
 
 func NewClient() *GeminiClient {
 	return &GeminiClient{
-		model: "gemini-2.5-flash",
+		model: "gemini-2.5-pro",
 	}
 }
 
@@ -55,7 +59,7 @@ func (c *GeminiClient) Generate(
 		}
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
+	ctx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
 
 	config := &genai.GenerateContentConfig{
@@ -111,6 +115,7 @@ func (c *GeminiClient) callWithRetries(
 	var err error
 	var resp *genai.GenerateContentResponse
 	for i := range maxRetries {
+		lg.InfoLoggerType{Service: &Service, Message: "Attempting to generate content"}.InfoLog()
 		resp, err = client.Models.GenerateContent(
 			ctx,
 			c.model,
@@ -119,14 +124,15 @@ func (c *GeminiClient) callWithRetries(
 		)
 
 		if err == nil {
+			lg.InfoLoggerType{Service: &Service, Message: "Successfully generated content"}.InfoLog()
 			break
 		}
 
 		log.Printf("Gemini API call failed (attempt %d/%d): %v", i+1, maxRetries, err)
+		lg.ErrorLoggerType{Service: &Service, ErrorCode: &error_messages.ERR_LLM_NO_CONTENT, Error: fmt.Errorf("gemini API call failed (attempt %d/%d): %v", i+1, maxRetries, err)}.ErrorLog()
 
 		var googleErr genai.APIError
 		if errors.As(err, &googleErr) {
-			log.Printf("Google API error code: %d", googleErr.Code)
 			if googleErr.Code == http.StatusTooManyRequests || googleErr.Code >= 500 {
 				delay := baseDelay * time.Duration(1<<i)
 				log.Printf("Retrying in %v...", delay)

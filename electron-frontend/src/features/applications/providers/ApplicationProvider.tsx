@@ -6,18 +6,16 @@ import React, {
   useMemo,
 } from "react";
 
-import { ApplicationMetricsData } from "../components/ApplicationMetrics";
 import { useApplicationList } from "../hooks/useApplicationList";
 
 interface ApplicationContextType {
-  jobs: AppliedJob[];
+jobs: AppliedJob[];
   selectedId: number | null;
   setSelectedId: (id: number | null) => void;
-  selectedJob: AppliedJob | null;
+  selectedJob: AppliedJob | null; // <-- This is correctly KEPT
   updateJobStatus: (roleId: number, newStatus: ApplicationStatus) => void;
   updateJobDate: (roleId: number, newDate: Date) => void;
   removeJob: (roleId: number) => void;
-  metrics: ApplicationMetricsData;
   loading: boolean;
   error: string | null;
 }
@@ -38,7 +36,6 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
     updateJobStatus,
     updateJobDate,
     removeJob,
-    metrics,
     loading,
     error,
   } = useApplicationList();
@@ -55,7 +52,6 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
     updateJobStatus,
     updateJobDate,
     removeJob,
-    metrics,
     loading,
     error,
   }), [
@@ -66,7 +62,6 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
     updateJobStatus,
     updateJobDate,
     removeJob,
-    metrics,
     loading,
     error
   ]);
@@ -84,7 +79,6 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
  * @throws {Error} If used outside of an `ApplicationProvider`.
  */
 export const useApplication = () => {
-  // TODO: MOVE THIS TO A HOOK
   const context = useContext(ApplicationContext);
   if (!context) {
     throw new Error("useApplication must be used within an ApplicationProvider");
