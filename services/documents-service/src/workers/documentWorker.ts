@@ -21,12 +21,13 @@ export async function startDocumentWorker() {
   await kafka.consumer.run({
     eachMessage: async ({ message }) => {
       if (!message.value) return;
-      logger.info("Received Kafka message:", message.value.toString());
+
       let request;
       try {
         request = CompilationRequestSchema.parse(
           JSON.parse(message.value.toString())
         );
+        logger.info(`Received compilation request from user: ${request.userID}`);
       } catch (err) {
         logger.error("Invalid Kafka message:", err);
         await kafka.producer.send({
@@ -34,15 +35,15 @@ export async function startDocumentWorker() {
           messages: [
             {
               key: "error",
-              value: JSON.stringify({error: "Invalid Kafka message"}),
+              value: JSON.stringify({ error: "Invalid Kafka message" }),
             },
           ],
         });
-        return
+        return;
       }
 
       const resultPayload = await services.generateIfNeeded(request);
-      logger.info("Generated document:", resultPayload);
+      logger.info(`Successfully generated document for user: ${request.userID}`);
 
       await kafka.producer.send({
         topic: kafka.Topics.LATEX_COMPILATION_RESULT,
