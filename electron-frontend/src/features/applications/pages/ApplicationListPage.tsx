@@ -7,15 +7,27 @@ import { ApplicationListView } from "../components/ApplicationListView";
 import { ApplicationMetrics } from "../components/ApplicationMetrics";
 import { SearchHeaderControls } from "../components/SearchHeaderControls";
 import { useApplication } from "../providers/ApplicationProvider";
+import { useDebounce } from "../hooks/useDebounce";
 
 /**
- * Renders the main page for viewing and managing all tracked job applications.
- * It includes a list view of applications, search functionality, and an option to view metrics.
- * @returns {React.FC} The ApplicationListPage component.
+ * Renders the main page for viewing and managing tracked job applications.
+ *
+ * This component orchestrates the application tracking view. It:
+ * - Fetches application data (jobs, loading state, etc.) via the `useApplication` hook.
+ * - Manages header content, setting the title and adding controls for search
+ * and toggling the metrics modal.
+ * - Implements a debounced search to filter the applications list by company
+ * or job title without lagging on user input.
+ * - Passes the filtered list to `ApplicationListView` for rendering.
+ * - Conditionally renders `ApplicationMetrics` for an on-demand metrics overview,
+ * passing the complete (unfiltered) jobs list for calculation.
+ *
+ * @returns {React.ReactElement} The rendered ApplicationListPage component.
  */
 export const ApplicationListPage: React.FC = () => {
-  const { jobs, metrics, loading, error, updateJobStatus, updateJobDate, removeJob } = useApplication();
-  const [searchQuery, setSearchQuery] = useState("");
+  const { jobs, loading, error, updateJobStatus, updateJobDate, removeJob } = useApplication();
+  const [inputValue, setInputValue] = useState("");
+  const searchQuery = useDebounce(inputValue, 300);
   const [showMetrics, setShowMetrics] = useState(false);
   
   const setHeaderTitle = useSetHeaderTitle();
@@ -24,12 +36,15 @@ export const ApplicationListPage: React.FC = () => {
   
   const headerControls = useMemo(() => (
     <>
-      <SearchHeaderControls onSearch={setSearchQuery} initialQuery={searchQuery} />
+      <SearchHeaderControls 
+        value={inputValue} 
+        onSearch={setInputValue} 
+      />
       <button onClick={() => setShowMetrics(true)} className="button">
         Show Metrics
       </button>      
     </>
-  ), [searchQuery]); 
+  ), [inputValue]);
   
   useEffect(() => {
     setHeaderTitle("My Applications");
@@ -63,7 +78,12 @@ export const ApplicationListPage: React.FC = () => {
         onDateUpdate={updateJobDate}
         onDelete={removeJob}
       />
-      {showMetrics && <ApplicationMetrics metrics={metrics} onClose={() => setShowMetrics(false)} />}
+      {showMetrics && (
+        <ApplicationMetrics 
+          jobs={jobs} 
+          onClose={() => setShowMetrics(false)} 
+        />
+      )}    
     </div>
   );
 };
