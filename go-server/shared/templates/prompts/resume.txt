@@ -36,6 +36,8 @@ The order of revision for each section is as follow:
 [CONSTRAINTS]
 Always keep the original job titles and company names as they appear in the user's original resume.
 Always keep experiences and projects listed on the user's original resume separate.
+Always prioritize clarity over quantity. The resume should not "keyword stuff" or contain too many buzzwords.
+Always implement language that is not cliché.
 
 [EXPERIENCE SECTION REVISION INSTRUCTIONS]
 - All experiences/roles/positions in the user's original resume must be present in the revisions.
@@ -44,6 +46,7 @@ Always keep experiences and projects listed on the user's original resume separa
 - Align existing skills/technologies to the job description. Substitutions are allowed if there is not an exact match (for example: Job requires MySQL, but user only has experience with PostgreSQL. PostgreSQL can be substituted)
 - Keep bullets clear and concise. Avoid fluff and cliches.
 - Avoid redundancy; combine bullets if it improves clarity.
+- Do not keyword stuff.
 - Explain and justify revisions made where applicable.
 
 [PROJECTS SECTION REVISION INSTRUCTIONS]
@@ -51,6 +54,7 @@ Always keep experiences and projects listed on the user's original resume separa
 - Each project should have 4-6 bullet points and each bullet point must not exceed 136 characters.
 - Emphasize technologies used that align with the job description.
 - Project name, roles, and statuses must remain the same.
+- Do not keyword stuff.
 - Explain and justify revisions made where applicable.
 
 [TECHNICAL SKILLS SECTION REVISION INSTRUCTIONS]

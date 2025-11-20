@@ -27,7 +27,7 @@ type GeminiClient struct {
 
 func NewClient() *GeminiClient {
 	return &GeminiClient{
-		model: "gemini-2.5-pro",
+		model: "gemini-3-pro-preview",
 	}
 }
 

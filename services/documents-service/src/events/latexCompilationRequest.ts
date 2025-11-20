@@ -62,6 +62,7 @@ export const ExperiencePayloadSchema = z.object({
 export const ProjectPayloadSchema = z.object({
   name: z.string(),
   role: z.string(),
+  status: z.string(),
   bulletPoints: z.array(BulletPointSchema),
 });
 
