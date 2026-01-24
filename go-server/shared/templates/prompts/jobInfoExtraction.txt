@@ -1,13 +1,12 @@
 <request> 
-    Extract information from the following job posting. 
+    Extract information from the following job posting HTML. 
 </request>
 
-<job_posting>
+<job_posting_html>
     {{.JobPost}}
-</job_posting>
+</job_posting_html>
 
 <output>
-
 {
   "type": "object",
   "properties": {
@@ -15,6 +14,9 @@
       "type": "string"
     },
     "company_name": {
+      "type": "string"
+    },
+    "full_job_description" : {
       "type": "string"
     },
     "years_of_exp": {

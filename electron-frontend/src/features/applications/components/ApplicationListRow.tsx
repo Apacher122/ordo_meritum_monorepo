@@ -1,7 +1,12 @@
 import '@/assets/styles/Components/Layouts/ApplicationListRow.css';
 
-import { ApplicationStatus, AppliedJob } from '../types';
-import React, { useState } from 'react';
+import { ApplicationStatus, AppliedJob, statusOptions } from '../types';
+import React, { useEffect, useState } from 'react';
+
+import { createPortal } from 'react-dom';
+import { useApplication } from '@/app/appProviders';
+import { useDocumentManager } from '@/features/documents/hooks';
+import { useNavigate } from 'react-router-dom';
 
 interface ApplicationListRowProps {
   application: AppliedJob;
@@ -10,8 +15,6 @@ interface ApplicationListRowProps {
   onDelete: (roleId: number) => void;
   className?: string;
 }
-
-const statusOptions: ApplicationStatus[] = ['Rejected', 'Offered', 'Open', 'Closed', 'Moved', 'Not applied', 'Ghosted', 'Interviewing'];
 
 /**
  * A modal component that asks the user to confirm an action.
@@ -44,15 +47,41 @@ const ConfirmationModal: React.FC<{ message: string; onConfirm: () => void; onCa
  * @param {string} className An optional class name to be applied to the component.
  */
 export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ application, onStatusUpdate, onDateUpdate, onDelete, className }) => {
+  const navigate = useNavigate()
+	const { setSelectedId } = useApplication();
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
+	const [hasResume, setHasResume] = useState(false);
+  const [hasCoverLetter, setHasCoverLetter] = useState(false);
 
+	const { doesFileExist } = useDocumentManager(
+    application.RoleID,
+    application.CompanyName,
+    application.JobTitle,
+    "resume"
+  );
+
+	useEffect(() => {
+    const checkDocs = async () => {
+      const resumeExists = await doesFileExist(application.RoleID, "resume", application.CompanyName, application.JobTitle);
+      const clExists = await doesFileExist(application.RoleID, "cover-letter", application.CompanyName, application.JobTitle);
+      setHasResume(resumeExists);
+      setHasCoverLetter(clExists);
+    };
+    checkDocs();
+  }, [application, doesFileExist]);
+	
   const handleStatusChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newFrontendStatus = event.target.value as ApplicationStatus;
     setIsUpdating(true);
     await onStatusUpdate(application.RoleID, newFrontendStatus);
     setIsUpdating(false);
+  };
+
+	const handleOpenDocument = (docType: 'resume' | 'cover-letter') => {
+    setSelectedId(application.RoleID);
+    navigate('/documents', { state: { initialDocType: docType } });
   };
   
   const handleDelete = () => {
@@ -101,6 +130,24 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ applicat
                             <option key={status} value={status}>{status}</option>
                         ))}
                     </select>
+										{hasResume && (
+                        <button 
+                            className="doc-shortcut-button" 
+                            onClick={() => handleOpenDocument('resume')}
+                            title="View Resume"
+                        >
+                            Resume
+                        </button>
+                    )}
+                    {hasCoverLetter && (
+                        <button 
+                            className="doc-shortcut-button" 
+                            onClick={() => handleOpenDocument('cover-letter')}
+                            title="View Cover Letter"
+                        >
+                            Cover Letter
+                        </button>
+                    )}
                 </div>
             </div>
 
@@ -134,12 +181,13 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ applicat
             </div>
         </div>
 
-        {showDeleteConfirm && (
-            <ConfirmationModal
-                message="This will permanently remove this application from your list."
-                onConfirm={handleDelete}
-                onCancel={() => setShowDeleteConfirm(false)}
-            />
+				{showDeleteConfirm && createPortal(
+					<ConfirmationModal
+							message="This will permanently remove this application from your list."
+							onConfirm={handleDelete}
+							onCancel={() => setShowDeleteConfirm(false)}
+					/>,
+					document.body
         )}
     </div>
   );

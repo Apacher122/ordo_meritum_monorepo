@@ -59,7 +59,6 @@ func (h *Hub) Run() {
 				h.UserClients[client.UserID] = make(map[*Client]bool)
 			}
 			h.UserClients[client.UserID][client] = true
-			log.Printf("Client registered for user %s", client.UserID)
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
@@ -70,7 +69,6 @@ func (h *Hub) Run() {
 					}
 				}
 				close(client.Send)
-				log.Printf("Client unregistered for user %s", client.UserID)
 			}
 		}
 	}

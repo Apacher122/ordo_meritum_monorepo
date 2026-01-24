@@ -1,5 +1,6 @@
 import "@/assets/styles/Components/Layouts/CogitatorView.css";
 
+import { ApplicationStatus, statusOptions } from "../types";
 import React, { useEffect, useMemo, useState } from "react";
 import { useSetHeaderControls, useSetHeaderSubtitle, useSetHeaderTitle } from "@/components/Layouts/providers/HeaderProvider";
 
@@ -29,6 +30,7 @@ export const ApplicationListPage: React.FC = () => {
   const [inputValue, setInputValue] = useState("");
   const searchQuery = useDebounce(inputValue, 300);
   const [showMetrics, setShowMetrics] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "All">("All");
   
   const setHeaderTitle = useSetHeaderTitle();
   const setHeaderSubtitle = useSetHeaderSubtitle();
@@ -40,11 +42,22 @@ export const ApplicationListPage: React.FC = () => {
         value={inputValue} 
         onSearch={setInputValue} 
       />
+      <select 
+        value={statusFilter} 
+        onChange={(e) => setStatusFilter(e.target.value as any)}
+        className="status-filter-dropdown"
+        aria-label="Filter by status"
+      >
+        <option value="All">All Statuses</option>
+        {statusOptions.map(status => (
+          <option key={status} value={status}>{status}</option>
+        ))}
+      </select>
       <button onClick={() => setShowMetrics(true)} className="button">
         Show Metrics
       </button>      
     </>
-  ), [inputValue]);
+  ), [inputValue, statusFilter]);
   
   useEffect(() => {
     setHeaderTitle("My Applications");
@@ -59,13 +72,19 @@ export const ApplicationListPage: React.FC = () => {
   }, [setHeaderTitle, setHeaderSubtitle, setHeaderControls, headerControls]); 
 
   const filteredJobs = useMemo(() => {
-    if (!searchQuery) return jobs;
-    return jobs.filter(
-      (job) =>
-        job.CompanyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        job.JobTitle.toLowerCase().includes(searchQuery.toLowerCase())
-    );
-  }, [jobs, searchQuery]);
+    let filtered = jobs;
+    if (searchQuery) {
+      filtered = filtered.filter(
+        (job) =>
+          job.CompanyName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          job.JobTitle.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    if (statusFilter !== "All") {
+      filtered = filtered.filter((job) => job.ApplicationStatus === statusFilter);
+    }
+    return filtered;
+  }, [jobs, searchQuery, statusFilter]);
 
   if (loading) return <div>Loading applications...</div>;
   if (error) return <div className="error-message">{error}</div>;

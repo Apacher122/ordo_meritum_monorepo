@@ -3,29 +3,128 @@
 </identity>
 
 <task>
-    Your goal is to extract job and company information from the job description, the provided url, and/or web search tool that would be relevant for candidate matching, ranking, and filtering.
+    Your goal is to extract job and company information from the job description HTML, the provided url, and/or web search tool that would be relevant for candidate matching, ranking, and filtering.
 
-    You must extract the following categories:
+    You must extract the following items:
     <category1> Company Name </category1>
     <category2> Full Job Title </category2>
-    <category3> Years of Experience Required </category3>
-    <category4> Applicant Count </category4>
-    <category5> Education Level </category5>
-    <category6> Job Url </category6>
-    <category7> Skills - Required </category7>
-    <category8> Skills - Nice to Haves </category8>
-    <category9> Tools & Technologies </category9>
-    <category10> Programming Languages </category10>
-    <category11> Frameworks & Libraries </category11>
-    <category12> Databases </category12>
-    <category13> Cloud Technologies </category13>
-    <category14> Industry Keywords </category14>
-    <category15> Soft Skills </category15>
-    <category16> Certifications </category16>
-    <category17> Company Culture </category17>
-    <category18> Company Values </Category18>
-    <category19> Salary Range </category19>
-    <category20> Post Age </category20>
+    <category3> Full Job Description </category3>
+    <category4> Years of Experience Required </category4>
+    <category5> Applicant Count </category5>
+    <category6> Education Level </category6>
+    <category7> Job Url </category7>
+    <category8> Skills - Required </category8>
+    <category9> Skills - Nice to Haves </category9>
+    <category10> Tools & Technologies </category10>
+    <category11> Programming Languages </category11>
+    <category12> Frameworks & Libraries </category12>
+    <category13> Databases </category13>
+    <category14> Cloud Technologies </category14>
+    <category15> Industry Keywords </category15>
+    <category16> Soft Skills </category16>
+    <category17> Certifications </category17>
+    <category18> Company Culture </Category18>
+    <category19> Company Values </category19>
+    <category20> Salary Range </category20>
+    <category21> Post Age </category21>
+
+    You must output the extracted items in the following format:
+    {
+        "type": "object",
+        "properties": {
+            "job_title": {
+                "type": "string"
+            },
+            "company_name": {
+                "type": "string"
+            },
+            "full_job_description" : {
+                "type": "string"
+            },
+            "years_of_exp": {
+                "type": "string",
+                "default": "Not Specified"
+            },
+            "education_level": {
+                "type": "string",
+                "default": "Not Specified"
+            },
+            "website": {
+                "type": "string"
+            },
+            "applicant_count": {
+                "type": "integer",
+                "default": 0
+            },
+            "post_age": {
+                "type": "string",
+                "default": "Not Specified"
+            },
+            "skills_required": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "skills_nice_to_haves": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "tools_and_technologies": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "programming_languages": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "frameworks_and_libraries": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "databases": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "cloud_technologies": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "industry_keywords": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "soft_skills": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "certifications": {
+                "type": "array",
+                "items": { "type": "string" },
+                "default": []
+            },
+            "company_culture": {
+                "type": "string",
+                "default": ""
+            },
+            "company_values": {
+                "type": "string",
+                "default": ""
+            },
+            "salary_range": {
+                "type": "string",
+                "default": "Not Specified"
+            }
+    },
+        "required": ["job_title", "company_name", "website", "post_age", "salary_range"]
+    }
 </task>     
 
 <rules>

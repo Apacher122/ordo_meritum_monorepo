@@ -8,6 +8,9 @@
     "company_name": {
       "type": "string"
     },
+    "full_job_description": {
+      "type": "string"
+    },
     "years_of_exp": {
       "type": "string",
       "default": "Not Specified"
@@ -90,5 +93,5 @@
       "default": "Not Specified"
     }
   },
-  "required": ["job_title", "company_name", "website", "post_age", "salary_range"]
+  "required": ["job_title", "company_name", "website", "post_age", "salary_range", "full_job_description"]
 }

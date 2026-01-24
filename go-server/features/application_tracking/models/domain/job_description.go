@@ -10,6 +10,7 @@ import (
 type JobDescription struct {
 	JobTitle               string   `json:"job_title"`
 	CompanyName            string   `json:"company_name"`
+	FullJobDescription     string   `json:"full_job_description"`
 	YearsOfExp             string   `json:"years_of_exp"`
 	EducationLevel         string   `json:"education_level"`
 	Website                string   `json:"website"`
