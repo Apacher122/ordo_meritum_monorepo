@@ -73,11 +73,6 @@ func Decrypt(privateKey *rsa.PrivateKey) func(http.Handler) http.Handler {
 			}
 			apiKeyStr := string(apiKeyBytes)
 
-			log.Info().
-				Str("middleware", "decryption").
-				Str("apiKey", apiKeyStr).
-				Msg("Decryption Middleware: SUCCESS - Decrypted API key from header")
-
 			userCtx := &contexts.UserContext{}
 			userCtx.ApiKey = apiKeyStr
 			ctx := context.WithValue(r.Context(), contexts.UserContextKey, userCtx)

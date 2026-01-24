@@ -31,6 +31,7 @@ func (c *Controller) RegisterRoutes(secureRouter *mux.Router, authRouter *mux.Ro
 	secureRouter.HandleFunc("/apps/track", c.trackNewApplicationHandler).Methods("POST")
 	authRouter.HandleFunc("/apps/track/list", c.getApplicationListHandler).Methods("GET")
 	authRouter.HandleFunc("/apps/update", c.updateApplicationHandler).Methods("PATCH")
+	authRouter.HandleFunc("/apps/delete", c.deleteApplicationHandler).Methods("DELETE")
 	authRouter.HandleFunc("/track/{id:[0-9]+}", c.getApplicationByIDHandler).Methods("GET")
 }
 
@@ -154,4 +155,31 @@ func (c *Controller) updateApplicationHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Status updated successfully"})
+}
+
+func (c *Controller) deleteApplicationHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	_, ok := contexts.FromContext(r.Context())
+	if !ok {
+		middleware.JSON(w, http.StatusInternalServerError, nil)
+		return
+	}
+
+	requestBody := request.ApplicationUpdateRequest{}
+	if err := json.NewDecoder(r.Body).Decode(&requestBody); err != nil {
+		log.Error().
+			Err(err).
+			Str("service", "documents-controller").
+			Msg("Failed to decode request body")
+		middleware.JSON(w, http.StatusBadRequest, map[string]string{"error": "Invalid request body"})
+		return
+	}
+
+	err := c.service.DeleteApplicationByID(r.Context(), &requestBody)
+	if err != nil {
+		middleware.JSON(w, http.StatusInternalServerError, map[string]string{"error": "Failed to delete application"})
+		return
+	}
+	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Application deleted successfully"})
 }

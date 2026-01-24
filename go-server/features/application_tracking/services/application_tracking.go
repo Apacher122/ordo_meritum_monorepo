@@ -67,7 +67,7 @@ func (s *AppTrackerService) QueueApplicationTracking(
 
 	l.Info().Msg("Persisting full job posting to database...")
 	cn := formatters.ToSnakeCase(parsedJob.CompanyName)
-	res, err := s.jobRepo.InsertFullJobPosting(ctx, requestBody.JobDescription, parsedJob, cn, parsedJob.CompanyName)
+	res, err := s.jobRepo.InsertFullJobPosting(ctx, parsedJob.FullJobDescription, parsedJob, cn, parsedJob.CompanyName)
 	if err != nil {
 		lg.ErrorLoggerType{Service: &serviceName, ErrorCode: &error_messages.ERR_DB_FAILED_TO_INSERT, Error: err}.ErrorLog()
 		return 0, err
@@ -107,6 +107,13 @@ func (s *AppTrackerService) UpdateApplicationStatus(
 	return nil
 }
 
+func (s *AppTrackerService) DeleteApplicationByID(
+	ctx context.Context,
+	request *request.ApplicationUpdateRequest,
+) error {
+	return s.jobRepo.DeleteJobPostByID(ctx, request.Payload.JobID)
+}
+
 // ListTrackedApplications retrieves all job postings for a given user.
 // It will return an error if any errors occur.
 // If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
@@ -131,9 +138,8 @@ func (s *AppTrackerService) parseJobDescriptionWithLLM(
 		return nil, err
 	}
 
-	jobPost := request.FormatJobPostingRequest(r)
 	promptData := map[string]string{
-		"JobPost": jobPost,
+		"JobPost": r.RawHtml,
 	}
 	prompt, err := formatters.FormatTemplate(prompts.Prompts, "jobInfoExtraction.txt", promptData)
 
