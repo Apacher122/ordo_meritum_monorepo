@@ -127,9 +127,14 @@ export const useApplicationList = () => {
 
   const removeJob = useCallback(
     async (roleId: number) => {
+      if (!user) {
+        setError("User, Job ID, Settings, or Profile are not loaded.");
+        return;
+      }
+      const token = await user.getIdToken();
       setJobs((prev) => prev.filter((j) => j.RoleID !== roleId));
       try {
-        await api.deleteApplication(roleId);
+        await api.deleteApplication(token, roleId);
       } catch (err) {
         setError("Failed to delete application." + err);
       }
