@@ -1,10 +1,10 @@
 # Ordo Meritum - My Over-Engineered Job Application Co-pilot
 
-## Looking for a job? Me too, buddy.
+## Looking for a job? Me too, buddy
 
 This is a personal tool I'm developing for myself to get through unemployment purgatory, but feel free to look around the repo. What started as a simple backend has morphed into a full-blown monorepo.
 
-Long story short, it's an overglorified resume/cover letter proofreader that's also an application tracker and job match analyzer. Personally, I don't subscribe to the notion that there's really a way to quantize human aspects of workstyle personalities, but I do like cool graphs and numbers. The purpose of this whole platform is mostly to provide some extra insight on my alignment to a particular role before I fire my resume into the void. 
+Long story short, it's an overglorified resume/cover letter proofreader that's also an application tracker and job match analyzer. Personally, I don't subscribe to the notion that there's really a way to quantize human aspects of workstyle personalities, but I do like cool graphs and numbers. The purpose of this whole platform is mostly to provide some extra insight on my alignment to a particular role before I fire my resume into the void.
 
 I'm also really itching to just make stuff with code. Seriously. I spent like 2 days straight with no sleep teaching myself idiomatic Go because I saw a cool TikTok about it.
 
@@ -16,9 +16,6 @@ I'm also really itching to just make stuff with code. Seriously. I spent like 2 
 ![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot5.png "Documents Preview")
 ![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot2.png "User Profile Preview")
 ![alt text](https://github.com/Apacher122/ordo_meritum_monorepo/blob/main/previews/screenshot4.png "Settings Preview")
-
-
-
 
 ## Architecture - What is this?
 
@@ -40,22 +37,25 @@ The whole setup is a collection of services that talk to each other, all living 
 
 ### **Setting it up**
 
-1.  **Clone the repo.**
+1. **Clone the repo.**
 
-2.  **Environment Variables:** In the root directory, you'll need a `.env` file. Check out `docker-compose.yml` to see all the environment variables you need to set for the Go server and the documents service.
+2. **Environment Variables:** In the root directory, you'll need a `.env` file. Check out `docker-compose.yml` to see all the environment variables you need to set for the Go server and the documents service.
 
-3.  **Install Frontend Stuff:**
+3. **Install Frontend Stuff:**
+
     ```bash
     cd electron-frontend
     npm install
     cd ..
     ```
 
-4.  **Light the fires:**
+4. **Light the fires:**
     From the root of the project, run the magic command:
+
     ```bash
     docker compose up --build
     ```
+
     This will build the containers for the backend services and spin everything up.
 
 ## Additional Info
@@ -65,10 +65,10 @@ You can view the template here: <https://github.com/posquit0/Awesome-CV>
 
 ## TODO
 
-1.  ~~Add functionality to showcase relevant skills on resume.~~
-2.  ~~Add functionality to showcase relevant projects on resume.~~
-3.  ~~Rework backend.~~
-4.  ~~Add cool UI stuff.~~
-5.  Actually make the UI stuff cool.
-6.  Figure out the logistics of opening this up for public consumption.
-7.  Don't cry.
+1. ~~Add functionality to showcase relevant skills on resume.~~
+2. ~~Add functionality to showcase relevant projects on resume.~~
+3. ~~Rework backend.~~
+4. ~~Add cool UI stuff.~~
+5. Actually make the UI stuff cool.
+6. Figure out the logistics of opening this up for public consumption.
+7. Don't cry.
