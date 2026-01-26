@@ -2,12 +2,15 @@ import { AppliedJob } from "../types";
 import { apiRequest } from "@/shared/utils/requests";
 
 /**
- * Sends the user's Firebase UID to the backend to register or log in the user
- * in the application's own database.
- * @returns {Promise<void>} A promise that resolves when the request is complete.
+ * Fetches the list of job applications for the authenticated user.
+ * @param {string} token - The Bearer token for API requests.
+ * @returns {Promise<AppliedJob[]>} A promise that resolves to the list of jobs.
  */
-export const getApplications = (): Promise<AppliedJob[]> => {
+export const getApplications = (token: string): Promise<AppliedJob[]> => {
   return apiRequest<AppliedJob[]>("api/auth/apps/track/list", {
     method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
 };
