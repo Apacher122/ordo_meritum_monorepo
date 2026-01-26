@@ -23,13 +23,8 @@ export const updateApplication = (
   const body = {
     payload: payload,
   };
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
   return apiRequest(`api/auth/apps/update`, {
     method: "PATCH",
-    headers: headers,
     body: body,
   });
 };

@@ -5,19 +5,10 @@ import { apiRequest } from '@/shared/utils/requests';
  * @param jobId The ID of the job application to delete.
  */
 export const deleteApplication = async (
-  token: string,
   jobId: number
 ): Promise<void> => {
-  const headers: Record<string, string> = {
-    Authorization: `Bearer ${token}`,
-    "Content-Type": "application/json",
-  };
-  const params = new URLSearchParams({
-    jobId: String(jobId),
-  })
-  await apiRequest<void>(`api/auth/apps/delete?${params.toString()}`, {
+  await apiRequest<void>(`api/auth/apps/delete`, {
     method: 'DELETE',
-    headers: headers,
     body: {payload: {job_id: jobId}},
   });
 };
