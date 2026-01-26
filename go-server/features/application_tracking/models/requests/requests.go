@@ -1,7 +1,6 @@
 package request
 
 import (
-	"fmt"
 	"time"
 
 	db_models "github.com/ordo_meritum/database/models"
@@ -41,12 +40,10 @@ type ApplicationUpdatePayload struct {
 
 // JobPostingRequest defines the structure for submitting a job posting.
 type JobPostingRequest struct {
-	CompanyName    string `json:"company_name"`
-	JobTitle       string `json:"job_title"`
-	Link           string `json:"website"`
-	ApplicantCount string `json:"applicant_count"`
-	TimeAgo        string `json:"time_ago"`
-	JobDescription string `json:"job_description"`
+	RawHtml     string `json:"raw_html"`
+	CompanyName string `json:"company_name"`
+	JobTitle    string `json:"job_title"`
+	Link        string `json:"website"`
 }
 
 // JobPostingEvent represents the structured data extracted from a job posting,
@@ -74,24 +71,21 @@ type JobPostingEvent struct {
 	SalaryRange            string   `json:"salary_range"`
 }
 
-// FormatJobPostingRequest converts a JobPostingRequest into a plain text format,
-// likley intended for use in LLM prompts.
-func FormatJobPostingRequest(jp *JobPostingRequest) string {
-	return fmt.Sprintf(`
-Company: %s
-Position: %s
-URL: %s
-Number of Applicants: %s
-Post Age: %s
+// // FormatJobPostingRequest converts a JobPostingRequest into a plain text format,
+// // likley intended for use in LLM prompts.
+// func FormatJobPostingRequest(jp *JobPostingRequest) string {
+// 	return fmt.Sprintf(`
+// Company: %s
+// Position: %s
+// URL: %s
+// Number of Applicants: %s
+// Post Age: %s
 
-Job Description:
-%s
-	`,
-		jp.CompanyName,
-		jp.JobTitle,
-		jp.Link,
-		jp.ApplicantCount,
-		jp.TimeAgo,
-		jp.JobDescription,
-	)
-}
+// Job Description:
+// %s
+// 	`,
+// 		jp.CompanyName,
+// 		jp.JobTitle,
+// 		jp.Link,
+// 	)
+// }
