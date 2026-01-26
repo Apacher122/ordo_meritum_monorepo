@@ -8,6 +8,17 @@ export type ApplicationStatus =
   | "Ghosted"
   | "Interviewing";
 
+export const statusOptions: ApplicationStatus[] = [
+  "Rejected",
+  "Offered",
+  "Open",
+  "Closed",
+  "Moved",
+  "Not applied",
+  "Ghosted",
+  "Interviewing",
+];
+
   export type BackendApplicationStatus =
   | "REJECTED"
   | "OFFERED"
