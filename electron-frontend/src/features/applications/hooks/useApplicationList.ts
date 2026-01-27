@@ -120,14 +120,24 @@ export const useApplicationList = () => {
         setError("User, Job ID, Settings, or Profile are not loaded.");
         return;
       }
-      setJobs((prev) => prev.filter((j) => j.RoleID !== roleId));
+      
+      setJobs((prev) => {
+        const filtered = prev.filter((j) => j.RoleID !== roleId);
+        localStorage.setItem("jobs", JSON.stringify(filtered));
+        return filtered;
+      });
+
+      if (selectedId === roleId) {
+        setSelectedId(null);
+      }
+
       try {
         await api.deleteApplication(roleId);
       } catch (err) {
         setError("Failed to delete application." + err);
       }
     },
-    [user]
+    [user, selectedId, setSelectedId]
   );
 
   return {
