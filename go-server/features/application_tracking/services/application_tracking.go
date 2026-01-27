@@ -74,6 +74,7 @@ func (s *AppTrackerService) QueueApplicationTracking(
 	}
 
 	l.Info().Msg(fmt.Sprintf("Successfully created job posting with ID: %d and Company Name: %s", res.ID, parsedJob.CompanyName))
+	l.Info().Msg(fmt.Sprintf("Post Age: %s", parsedJob.PostAge))
 	return res.ID, nil
 }
 
@@ -107,6 +108,12 @@ func (s *AppTrackerService) UpdateApplicationStatus(
 	return nil
 }
 
+// DeleteApplicationByID deletes a job posting and its associated records in a transaction.
+// It takes in a request which contains the role ID.
+// It will return an error if any errors occur.
+// If the role ID cannot be found, it will return an error with ErrorCode set to ERR_DB_FAILED_TO_GET.
+// If the user context is not found, it will return an error with ErrorCode set to ERR_USER_NO_CONTEXT.
+// If the delete process fails, it will return an HTTP 500 status with an error message.
 func (s *AppTrackerService) DeleteApplicationByID(
 	ctx context.Context,
 	request *request.ApplicationUpdateRequest,
