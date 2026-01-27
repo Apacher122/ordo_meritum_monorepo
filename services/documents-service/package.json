@@ -4,9 +4,9 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "ts-node src/index.ts",
+    "start": "node dist/index.js",
+    "dev": "nodemon --watch src -e ts --exec ts-node src/index.ts",
     "build": "tsc",
-    "start": "tsx src/index.ts",
     "test": "node --experimental-vm-modules node_modules/.bin/jest",
     "find-unused": "ts-prune"
   },
