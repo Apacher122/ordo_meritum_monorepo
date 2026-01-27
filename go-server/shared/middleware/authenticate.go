@@ -2,7 +2,6 @@ package middleware
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -24,10 +23,6 @@ const VerifiedTokenKey tokenContextKey = "verifiedToken"
 // the request chain.
 func Authenticate(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		log.Info().
-			Str("middleware", "authentication").
-			Msg("--- Authenticate Middleware: Running ---")
-
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			log.Error().
@@ -57,10 +52,6 @@ func Authenticate(next http.Handler) http.Handler {
 			http.Error(w, "Invalid or expired ID token", http.StatusUnauthorized)
 			return
 		}
-
-		log.Info().
-			Str("middleware", "authentication").
-			Msg(fmt.Sprintf("Authenticate Middleware: SUCCESS - Verified token for UID: %s", token.UID))
 
 		userCtx, ok := r.Context().Value(contexts.UserContextKey).(*contexts.UserContext)
 		if !ok || userCtx == nil {
