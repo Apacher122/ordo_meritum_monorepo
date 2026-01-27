@@ -37,7 +37,7 @@ func (c *CohereClient) Generate(
 		case *cohere.JsonResponseFormatV2:
 			schemaMap = v
 			response = &cohere.ResponseFormatV2{
-				Type:       "josn_object",
+				Type:       "json_object",
 				JsonObject: schemaMap,
 			}
 		}
