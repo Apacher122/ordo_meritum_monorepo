@@ -1,8 +1,7 @@
-import '@/assets/styles/Components/Layouts/ApplicationListRow.css';
-
 import { ApplicationStatus, AppliedJob, statusOptions } from '../types';
-import React, { useEffect, useState } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 
+import { ConfirmationModal } from '@/components/UI/ConfirmationModal';
 import { createPortal } from 'react-dom';
 import { useApplication } from '@/app/appProviders';
 import { useDocumentManager } from '@/features/documents/hooks';
@@ -17,36 +16,9 @@ interface ApplicationListRowProps {
 }
 
 /**
- * A modal component that asks the user to confirm an action.
- *
- * @param {string} message The message to be displayed to the user.
- * @param {() => void} onConfirm The function to be called when the user confirms the action.
- * @param {() => void} onCancel The function to be called when the user cancels the action.
- * @returns {React.FC} A React component that displays a confirmation modal.
- */
-const ConfirmationModal: React.FC<{ message: string; onConfirm: () => void; onCancel: () => void }> = ({ message, onConfirm, onCancel }) => (
-    <div className="confirmation-modal-overlay">
-        <div className="confirmation-modal">
-            <h2>Are you sure?</h2>
-            <p>{message}</p>
-            <div className="confirmation-modal-buttons">
-                <button onClick={onCancel} className="cancel-button">Cancel</button>
-                <button onClick={onConfirm} className="confirm-button">Confirm</button>
-            </div>
-        </div>
-    </div>
-);
-
-/**
  * A component that displays a row of information about an application job.
- *
- * @param {AppliedJob} application The application job to be displayed.
- * @param {(roleId: number, newStatus: ApplicationStatus) => void} onStatusUpdate A function to be called when the user updates the status of the application.
- * @param {(roleId: number, newDate: Date) => void} onDateUpdate A function to be called when the user updates the date of the application.
- * @param {(roleId: number) => void} onDelete A function to be called when the user deletes the application.
- * @param {string} className An optional class name to be applied to the component.
  */
-export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ application, onStatusUpdate, onDateUpdate, onDelete, className }) => {
+export const ApplicationListRow: React.FC<ApplicationListRowProps> = memo(({ application, onStatusUpdate, onDateUpdate, onDelete, className }) => {
   const navigate = useNavigate()
 	const { setSelectedId } = useApplication();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -191,4 +163,6 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = ({ applicat
         )}
     </div>
   );
-};
+});
+
+ApplicationListRow.displayName = 'ApplicationListRow';

@@ -1,9 +1,10 @@
 import * as api from "../api";
 
 import { ApplicationStatus, AppliedJob } from "../types";
-import { denormalizeStatus, normalizeStatus } from "../utils/statusMappings";
 import { useCallback, useEffect, useState } from "react";
 
+import { denormalizeStatus } from "../utils/statusMappings";
+import { transformJobData } from "../utils/mappers";
 import { useAuth } from "@/app/appProviders";
 
 /**
@@ -17,18 +18,6 @@ export const useApplicationList = () => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-
-  const transformJobData = (job: AppliedJob): AppliedJob => {
-    const dateFromBackend = new Date(job.InitialApplicationDate);
-
-    const timezoneOffset = dateFromBackend.getTimezoneOffset() * 60000;
-    const correctedDate = new Date(dateFromBackend.getTime() + timezoneOffset);
-    return {
-      ...job,
-      ApplicationStatus: normalizeStatus(job.ApplicationStatus),
-      InitialApplicationDate: correctedDate,
-    };
-  };
 
   const fetchJobs = useCallback(async () => {
     setLoading(true);
@@ -131,15 +120,24 @@ export const useApplicationList = () => {
         setError("User, Job ID, Settings, or Profile are not loaded.");
         return;
       }
-      const token = await user.getIdToken();
-      setJobs((prev) => prev.filter((j) => j.RoleID !== roleId));
+      
+      setJobs((prev) => {
+        const filtered = prev.filter((j) => j.RoleID !== roleId);
+        localStorage.setItem("jobs", JSON.stringify(filtered));
+        return filtered;
+      });
+
+      if (selectedId === roleId) {
+        setSelectedId(null);
+      }
+
       try {
-        await api.deleteApplication(token, roleId);
+        await api.deleteApplication(roleId);
       } catch (err) {
         setError("Failed to delete application." + err);
       }
     },
-    [user]
+    [user, selectedId, setSelectedId]
   );
 
   return {

@@ -157,6 +157,13 @@ func (c *Controller) updateApplicationHandler(w http.ResponseWriter, r *http.Req
 	middleware.JSON(w, http.StatusOK, map[string]string{"message": "Status updated successfully"})
 }
 
+// deleteApplicationHandler is an HTTP handler that deletes a tracked job posting by ID.
+// It requires the user context to be present in the request context.
+// If the user context is not found, it will return an HTTP 500 status with an error message.
+// If the job posting cannot be found, it will return an HTTP 404 status with an error message.
+// It will log a message with the job posting and the status of the request.
+// If the deletion process fails, it will return an HTTP 500 status with an error message.
+// If the deletion process is successful, it will return an HTTP 200 status with a message indicating that the application was deleted successfully.
 func (c *Controller) deleteApplicationHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 

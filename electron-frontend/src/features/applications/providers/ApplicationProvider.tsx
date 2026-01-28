@@ -12,7 +12,7 @@ interface ApplicationContextType {
 jobs: AppliedJob[];
   selectedId: number | null;
   setSelectedId: (id: number | null) => void;
-  selectedJob: AppliedJob | null; // <-- This is correctly KEPT
+  selectedJob: AppliedJob | null;
   updateJobStatus: (roleId: number, newStatus: ApplicationStatus) => void;
   updateJobDate: (roleId: number, newDate: Date) => void;
   removeJob: (roleId: number) => void;

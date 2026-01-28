@@ -10,10 +10,10 @@ import {
 
 import { AppliedJob } from "@/features/applications/types";
 import { CircleProgress } from "@/components/UI/loaders/CircleProgress";
-import { DocumentType } from "../types";
-import { ViewChangesModal } from "../components/ViewChangesModal";
-import { useApplication } from "../../applications/providers/ApplicationProvider";
-import { useDocumentManager } from "../hooks/useDocumentManager";
+import { DocumentType } from "@/features/documents/types";
+import { ViewChangesModal } from "@/features/documents/components/ViewChangesModal";
+import { useApplication } from "@/features/applications/providers/ApplicationProvider";
+import { useDocumentManager } from "@/features/documents/hooks/useDocumentManager";
 
 /**
  * Renders the main page for viewing, generating, and managing documents (resumes and cover letters)
@@ -50,25 +50,31 @@ export const DocumentPage: React.FC = () => {
   const isGenerating = displayStatus === 'generating';
 
   useEffect(() => {
+    let isMounted = true;
+
     const sortJobs = async () => {
       const withDoc: AppliedJob[] = [];
       const withoutDoc: AppliedJob[] = [];
 
       for (const job of jobs) {
         const hasDoc = await doesFileExist(job.RoleID, docType, job.CompanyName, job.JobTitle);
-        if (hasDoc) {
+        if (hasDoc && isMounted) {
           withDoc.push(job);
-        } else {
+        } else if (isMounted) {
           withoutDoc.push(job);
         }
       }
-      setJobsWithDoc(withDoc);
-      setJobsWithoutDoc(withoutDoc);
+      
+      if (isMounted) {
+        setJobsWithDoc(withDoc);
+        setJobsWithoutDoc(withoutDoc);
+      }
     };
+    sortJobs();
 
-    if (jobs.length > 0) {
-      sortJobs();
-    }
+    return () => {
+      isMounted = false;
+    };
   }, [jobs, docType, doesFileExist]);
 
   const headerControls = useMemo(() => (
