@@ -104,3 +104,4 @@ coverage/
 *.tar.gz
 .npm
 .cache
+ignore_this.*
