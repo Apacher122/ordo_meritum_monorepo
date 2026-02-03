@@ -68,6 +68,8 @@ export const generateDocument = async (
     payload = {
       ...documentRequest.coverLetter,
       userInfo: documentRequest.userInfo,
+      educationInfo: documentRequest.education,
+      additionalInfo: documentRequest.aboutMe,
       writingSamples: documentRequest.writingSamples,
     };
   } else {

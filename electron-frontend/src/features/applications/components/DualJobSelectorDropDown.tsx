@@ -7,21 +7,25 @@ import { useApplication } from '../providers/ApplicationProvider';
 interface DualJobSelectorDropdownProps {
   jobsWithDoc: AppliedJob[];
   jobsWithoutDoc: AppliedJob[];
+  id?: string;
 }
 
+
 /**
- * A component that displays a dropdown selector
- * for the user to select a job. The dropdown selector is divided into two
- * groups: jobs with a document and jobs without a document.
- * 
- * @param {DualJobSelectorDropdownProps} props - The props object
- * @param {AppliedJob[]} props.jobsWithDoc - The list of jobs with a document
- * @param {AppliedJob[]} props.jobsWithoutDoc - The list of jobs without a document
- * @returns {React.ReactElement} - A React element representing the dropdown selector
+ * A dropdown selector component that displays two groups of job applications.
+ * The first group displays job applications that have a document associated with them.
+ * The second group displays job applications that do not have a document associated with them.
+ *
+ * @param {DualJobSelectorDropdownProps} props - The component props.
+ * @param {AppliedJob[]} props.jobsWithDoc - The array of job applications with documents.
+ * @param {AppliedJob[]} props.jobsWithoutDoc - The array of job applications without documents.
+ * @param {string} [props.id] - The id of the dropdown selector. Defaults to an empty string.
+ * @returns {React.ReactElement} - The rendered DualJobSelectorDropdown component.
  */
 export const DualJobSelectorDropdown: React.FC<DualJobSelectorDropdownProps> = ({
   jobsWithDoc,
   jobsWithoutDoc,
+  id,
 }) => {
   const { selectedId, setSelectedId } = useApplication();
 
@@ -33,6 +37,7 @@ export const DualJobSelectorDropdown: React.FC<DualJobSelectorDropdownProps> = (
   return (
     <div className="job-selector-container">
       <select
+        id={id}
         className="job-selector-dropdown"
         value={selectedId ?? ''}
         onChange={handleSelectionChange}
