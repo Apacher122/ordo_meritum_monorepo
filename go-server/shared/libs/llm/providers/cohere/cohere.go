@@ -32,7 +32,6 @@ func (c *CohereClient) Generate(
 	var response *cohere.ResponseFormatV2
 	if schema != nil {
 		var schemaMap *cohere.JsonResponseFormatV2
-		log.Printf("schema type: %s", schema)
 		switch v := schema.(type) {
 		case *cohere.JsonResponseFormatV2:
 			schemaMap = v
