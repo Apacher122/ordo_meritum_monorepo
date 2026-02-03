@@ -20,15 +20,14 @@
   flex-direction: column;
 }
 
-.company-name {
+.header-title {
   font-size: 1.25rem;
-  /* font-weight: bold; */
   color: #fff;
   margin: 0;
   margin-bottom: 0.25rem;
 }
 
-.job-position {
+.header-subtitle {
   font-size: 1rem;
   color: #ccc;
   margin: 0;
