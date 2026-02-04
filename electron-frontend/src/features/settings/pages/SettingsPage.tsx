@@ -277,7 +277,6 @@ export const SettingsPage: React.FC = () => {
 					})}
 					</div>
 				</div>
-
 				<button type="submit" className="submit-button" disabled={loading}>
 					{loading ? "Saving..." : "Save Settings"}
 				</button>
