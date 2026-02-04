@@ -5,7 +5,12 @@ export type AssignableFeature =
   | "resumeGeneration"
   | "coverLetterGeneration";
 
+export interface FeatureAssignment {
+  provider: LlmProvider | "None";
+  keyIndex: number;
+}
+
 export interface Settings {
-  apiKeys: Partial<Record<LlmProvider, string>>;
-  featureAssignments: Record<AssignableFeature, LlmProvider>;
+  apiKeys: Partial<Record<LlmProvider, string[]>>;
+  featureAssignments: Record<AssignableFeature, FeatureAssignment>;
 }

@@ -11,16 +11,15 @@ export interface QueueJobResponse {
 }
 
 /**
- * Generates a document of the specified type using an LLM.
+ * Generates a document based on the given document request.
  *
- * @param {DocumentType} docType The type of document to generate.
- * @param {DocumentRequestBody} documentRequest The request body containing user information, resume content, and other relevant data.
- * @param {number} jobId The job ID for the generated document.
- * @param {LlmProvider} llmProvider The LLM provider to use for generation.
- * @param {Settings} settings The application settings containing API keys for LLM providers.
- * @param {string} token The Bearer token for API requests.
+ * This function takes a document request object, the type of the document to be generated,
+ * the job ID, the LLM provider, the settings object, and the authentication token.
+ * It returns a promise that resolves to a QueueJobResponse object, which contains the job ID
+ * and the status of the document generation process.
  *
- * @returns {Promise<QueueJobResponse>} A promise resolving to a QueueJobResponse containing the job ID and status of the generated document.
+ * @throws {Error} If the API key for the specified LLM provider is not set.
+ * @throws {Error} If the document type is not supported for generation.
  */
 export const generateDocument = async (
   docType: DocumentType,
@@ -30,9 +29,13 @@ export const generateDocument = async (
   settings: Settings,
   token: string
 ): Promise<QueueJobResponse> => {
-  const apiKey = settings.apiKeys[llmProvider];
+  const featureKey = docType === "resume" ? "resumeGeneration" : "coverLetterGeneration";
+  const assignment = settings.featureAssignments[featureKey];
+  const providerKeys = settings.apiKeys[llmProvider] || [];
+  const apiKey = providerKeys[assignment.keyIndex];
+
   if (!apiKey) {
-    throw new Error(`API key for ${llmProvider} is not set.`);
+    throw new Error(`API key for ${llmProvider} (Index: ${assignment.keyIndex + 1}) is not set.`);
   }
 
   const encryptedKey = await encryptData(apiKey);
