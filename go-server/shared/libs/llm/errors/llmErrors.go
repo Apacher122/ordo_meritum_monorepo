@@ -4,6 +4,7 @@ import "fmt"
 
 type LLMError struct {
 	LLMProvider     string
+	ErrorCode       int
 	Err             error
 	ProviderMessage string
 }
@@ -21,24 +22,24 @@ func (e *LLMError) Unwrap() error {
 
 var (
 	/* -- Config/Init --*/
-	ErrInvalidAPIKey = fmt.Errorf("invalid API key")
-	ErrFailedToInit  = fmt.Errorf("failed to initialize llm provider")
+	ErrInvalidAPIKey = fmt.Errorf("invalid_API_key")
+	ErrFailedToInit  = fmt.Errorf("failed_to_init_llm_provider")
 
 	/* -- API Requests and Input --*/
-	ErrUnsupportedSchema = fmt.Errorf("unsupported schema type for llm generation")
-	ErrUnsupportedModel  = fmt.Errorf("unsupported model for llm generation")
-	ErrInvalidProvider   = fmt.Errorf("invalid llm provider. how did you do this???")
+	ErrUnsupportedSchema = fmt.Errorf("unsupported_schema_type")
+	ErrUnsupportedModel  = fmt.Errorf("unsupported_model")
+	ErrInvalidProvider   = fmt.Errorf("invalid_llm_provider")
 
 	/* -- API Responses and Network --*/
-	ErrAuthenticationFailed = fmt.Errorf("authentication failed with llm provider")
-	ErrRequestTimeout       = fmt.Errorf("request timed out")
-	ErrServiceUnavailable   = fmt.Errorf("service is unavailable")
-	ErrQuotaExceeded        = fmt.Errorf("quota exceeded")
-	ErrModelOverload        = fmt.Errorf("model is overloaded")
+	ErrAuthenticationFailed = fmt.Errorf("authentication_failed")
+	ErrRequestTimeout       = fmt.Errorf("request_timed_out")
+	ErrServiceUnavailable   = fmt.Errorf("service_unavailable")
+	ErrQuotaExceeded        = fmt.Errorf("quota_exceeded")
+	ErrModelOverload        = fmt.Errorf("model_overloaded")
 
 	/* -- Output/Content --*/
-	ErrNoContent         = fmt.Errorf("provider returned no content")
-	ErrContentBlocked    = fmt.Errorf("content was blocked by content safety filters")
-	ErrMalformedResponse = fmt.Errorf("malformed response from llm provider")
-	ErrResponseNotText   = fmt.Errorf("response part was not of expected type TextPart")
+	ErrNoContent         = fmt.Errorf("no_content")
+	ErrContentBlocked    = fmt.Errorf("content_blocked")
+	ErrMalformedResponse = fmt.Errorf("malformed_response")
+	ErrResponseNotText   = fmt.Errorf("response_part_not_text")
 )

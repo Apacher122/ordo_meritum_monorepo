@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"time"
 
 	"github.com/ordo_meritum/shared/contexts"
@@ -122,7 +121,6 @@ func (c *GeminiClient) callWithRetries(
 			genai.Text(prompt),
 			config,
 		)
-
 		if err == nil {
 			lg.InfoLoggerType{Service: &Service, Message: "Successfully generated content"}.InfoLog()
 			break
@@ -133,17 +131,11 @@ func (c *GeminiClient) callWithRetries(
 
 		var googleErr genai.APIError
 		if errors.As(err, &googleErr) {
-			if googleErr.Code == http.StatusTooManyRequests || googleErr.Code >= 500 {
-				delay := baseDelay * time.Duration(1<<i)
-				log.Printf("Retrying in %v...", delay)
-				time.Sleep(delay)
-				continue
+			return "", &llmErrors.LLMError{
+				LLMProvider:     "Gemini",
+				ErrorCode:       googleErr.Code,
+				ProviderMessage: googleErr.Error(),
 			}
-		}
-
-		return "", &llmErrors.LLMError{
-			LLMProvider: "Gemini",
-			Err:         llmErrors.ErrNoContent,
 		}
 	}
 

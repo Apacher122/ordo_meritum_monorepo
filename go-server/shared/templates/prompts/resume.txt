@@ -59,7 +59,7 @@ Refactor the candidate's data into an experience section, projects section, skil
 [SUMMARY_SECTION]
 - Style: Telegraphic. No "I am a..." phrases.
 - Sentences: 
-  1. Years of Experience. (Do not include internships if the company historically does not consider internships. If the candidate does not meet the years of experience required, substitute chronological duration with evidence of operational rigor, technical implementation depth, or full-lifecycle product ownership, prioritizing mission-critical discipline and systems-thinking over time-in-seat.) + Primary Stack + Domain
+  1. Years of Experience, current specialization according to candidate's history, and/or expertise. (Do not include internships if the company historically does not consider internships. If the candidate does not meet the years of experience required, substitute chronological duration with evidence of operational rigor, technical implementation depth, or full-lifecycle product ownership, prioritizing mission-critical discipline and systems-thinking over time-in-seat.) 
   2. Direct evidence of solving a problem mentioned in the JD.
   3. Specific architectural or methodology alignment (e.g., "Expertise in CI/CD pipeline optimization for high-uptime environments").
 - Limit: Max 3 sentences. Less than 421 characters.
