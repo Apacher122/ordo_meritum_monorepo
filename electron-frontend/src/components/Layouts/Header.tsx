@@ -12,11 +12,11 @@ export const Header: React.FC = () => {
   const { title, subtitle, controls } = useHeaderContext();
 
   return (
-    <header className="header-container">
+    <header className="header">
       <div className="header-content">
         <div className="job-title-section">
-          <h1 className="company-name">{title}</h1>
-          <p className="job-position">{subtitle}</p>
+          <h1 className="header-title">{title}</h1>
+          <p className="header-subtitle">{subtitle}</p>
         </div>
         <div className="header-controls">
           {controls}

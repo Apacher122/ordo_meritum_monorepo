@@ -16,6 +16,7 @@ type JobDescription struct {
 	Website                string   `json:"website"`
 	ApplicantCount         int      `json:"applicant_count"`
 	PostAge                string   `json:"post_age"`
+	ImportantKeywords      []string `json:"important_keywords"`
 	SkillsRequired         []string `json:"skills_required"`
 	SkillsNiceToHaves      []string `json:"skills_nice_to_haves"`
 	ToolsAndTechnologies   []string `json:"tools_and_technologies"`

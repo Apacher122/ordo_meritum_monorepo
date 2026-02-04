@@ -18,8 +18,9 @@ const initialState: FormState = {
 };
 
 /**
- * Custom hook to manage the state and submission logic for the new job information form.
- * @returns {UseJobInfoFormReturn} An object containing form state and handlers.
+ * A hook that provides state and functions for handling the job posting form.
+ * It handles form state, validation, and submission to the backend.
+ * @returns An object containing the form state, loading state, error message, success message, settings, change handler, and submit handler.
  */
 export const useJobInfoForm = () => {
   const [formState, setFormState] = useState<FormState>(initialState);
@@ -27,15 +28,23 @@ export const useJobInfoForm = () => {
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const { settings } = useSettings();
+  
   useEffect(() => {
     if (settings) {
       setFormState((prev) => ({
         ...prev,
-        llmProvider: settings.featureAssignments.matchSummary,
+        llmProvider: settings.featureAssignments.matchSummary.provider === "None" 
+          ? "Gemini" 
+          : settings.featureAssignments.matchSummary.provider,
       }));
     }
   }, [settings]);
 
+/**
+ * Handles form state changes.
+ * @param {React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>} e - The event containing the form element.
+ * @returns void
+ */
   const handleChange = (
     e: React.ChangeEvent<
       HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
@@ -48,6 +57,13 @@ export const useJobInfoForm = () => {
     }));
   };
 
+/**
+ * Handles form submission by validating the form state, encrypting the API key, and sending the job posting details to the backend.
+ * If the submission is successful, it resets the form state to its initial state and displays a success message.
+ * If an error occurs during submission, it displays the error message.
+ * @param {React.FormEvent} e - The event containing the form element.
+ * @returns {Promise<void>} - A promise that resolves when the submission is complete.
+ */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (
@@ -64,7 +80,10 @@ export const useJobInfoForm = () => {
     setSuccessMessage(null);
 
     try {
-      const apiKey = settings?.apiKeys[formState.llmProvider];
+      const providerKeys = settings?.apiKeys[formState.llmProvider] || [];
+      const assignment = settings?.featureAssignments.matchSummary;
+      const apiKey = providerKeys[assignment?.keyIndex ?? 0] || providerKeys[0];
+
       if (!apiKey) {
         throw new Error(
           `API key for ${formState.llmProvider} is not set in Settings.`

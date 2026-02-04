@@ -5,26 +5,29 @@ import { apiRequest } from "@/shared/utils/requests";
 import { encryptData } from "@/shared/lib/encryption";
 
 /**
- * Fetches a job match summary from the server for a given job ID.
- * It encrypts the user's API key for the specified LLM provider and includes it
- * in the request header for secure, server-side processing.
+ * Retrieves a match summary for a job.
  *
- * @param {number} jobId - The unique identifier for the job.
- * @param {LlmProvider} llmProvider - The LLM provider designated to generate the summary.
- * @param {Settings} settings - The application settings object containing API keys.
- * @param {string} token - The user's authentication token.
- * @returns {Promise<MatchSummaryResponse>} A promise that resolves to the match summary response.
- * @throws {Error} If the API key for the specified provider is not set.
+ * @param {number} jobId - The ID of the job to retrieve the match summary for.
+ * @param {LlmProvider} llmProvider - The LLM provider to use for generating the match summary.
+ * @param {Settings} settings - The application settings, containing the API keys and assignments.
+ * @param {string} token - The authentication token to use for the request.
+ * @returns {Promise<MatchSummaryResponse>} A promise resolving to the match summary response.
+ * @throws {Error} If the API key for the specified LLM provider is not set.
  */
 export const getMatchSummary = async (
   jobId: number,
   llmProvider: LlmProvider,
   settings: Settings,
-  token: string
+  token: string,
 ): Promise<MatchSummaryResponse> => {
-  const apiKey = settings.apiKeys[llmProvider];
+  const assignment = settings.featureAssignments.matchSummary;
+  const providerKeys = settings.apiKeys[llmProvider] || [];
+  const apiKey = providerKeys[assignment.keyIndex];
+
   if (!apiKey) {
-    throw new Error(`API key for ${llmProvider} is not set.`);
+    throw new Error(
+      `API key for ${llmProvider} (Index: ${assignment.keyIndex + 1}) is not set.`,
+    );
   }
 
   const body = {

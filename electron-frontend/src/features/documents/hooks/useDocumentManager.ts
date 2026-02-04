@@ -8,21 +8,36 @@ import { useDocumentStatus } from "../providers/DocumentStatusProvider";
 import { useSettings } from "../../settings/hooks/useSettings";
 import { useUserInfo } from "@/features/user/hooks/useUserInfo";
 
+/**
+ * Returns a filename that is safe to use on most file systems.
+ * The filename is constructed from the given parameters by replacing
+ * spaces, periods, and underscores with hyphens and converting to
+ * lowercase.
+ * @param {number} jobId - The ID of the job.
+ * @param {DocumentType} docType - The type of the document.
+ * @param {string} company - The name of the company.
+ * @param {string} title - The title of the job.
+ * @returns {string} - A safe filename.
+ */
 const getSafeFilename = (
   jobId: number,
   docType: DocumentType,
   company: string,
-  title: string
+  title: string,
 ): string => {
+  /**
+   * Sanitizes a string by converting to lowercase, replacing spaces,
+   * periods, and underscores with hyphens, and removing duplicate hyphens.
+   * @param {string} input - The string to sanitize.
+   * @returns {string} - The sanitized string.
+   */
   const sanitizePart = (input: string): string => {
-    return (
-      input
-        .toLowerCase()
-        .replaceAll(/[.,]/g, "")
-        .replaceAll(/[/\s\\]+/g, '_')
-        .replaceAll(/_+/g, "_")
-        .replaceAll(/[\s/\\.]+/g, '_')
-    );
+    return input
+      .toLowerCase()
+      .replaceAll(/[.,]/g, "")
+      .replaceAll(/[/\s\\]+/g, "_")
+      .replaceAll(/_+/g, "_")
+      .replaceAll(/[\s/\\.]+/g, "_");
   };
 
   const safeCompany = sanitizePart(company);
@@ -33,25 +48,29 @@ const getSafeFilename = (
   return `${baseName}_${docType}`;
 };
 
+
 /**
- * Hook that provides document management functionality.
+ * Hook that manages the state of a document.
+ * It checks if a document is present locally, downloads and saves the
+ * document if it is not present, and updates the document status.
  * @param {number | null} jobId - The ID of the job.
  * @param {string} companyName - The name of the company.
  * @param {string} jobTitle - The title of the job.
  * @param {DocumentType} docType - The type of the document.
- * @returns {object} An object containing the following properties:
- *   - displayStatus: The status of the document ("checking", "pending", "failed", "present", or "idle").
- *   - localPdfPath: The path to the locally saved PDF document if it exists.
- *   - localJsonData: The locally saved JSON data of the document if it exists.
- *   - generate: A function that generates the document using the API.
- *   - error: An error message if the document generation failed.
- *   - doesFileExist: A function that checks if a document with the given parameters exists.
+ * @returns {{
+ *   displayStatus: string,
+ *   localPdfPath: string | null,
+ *   localJsonData: ResumeChanges | null,
+ *   generate: () => Promise<void>,
+ *   error: string | null,
+ *   doesFileExist: (checkJobId: number, checkDocType: DocumentType, checkCompanyName: string, checkJobTitle: string) => Promise<boolean>,
+ * }}
  */
 export const useDocumentManager = (
   jobId: number | null,
   companyName: string,
   jobTitle: string,
-  docType: DocumentType
+  docType: DocumentType,
 ) => {
   const { user } = useAuth();
   const { settings } = useSettings();
@@ -61,7 +80,7 @@ export const useDocumentManager = (
   const [fileExists, setFileExists] = useState(false);
   const [localPdfPath, setLocalPdfPath] = useState<string | null>(null);
   const [localJsonData, setLocalJsonData] = useState<ResumeChanges | null>(
-    null
+    null,
   );
   const [isCheckingFile, setIsCheckingFile] = useState(true);
   const [apiError, setApiError] = useState<string | null>(null);
@@ -69,7 +88,7 @@ export const useDocumentManager = (
   const serverStatus = useMemo(
     () =>
       jobId ? documentStatuses.get(String(jobId))?.get(docType) : undefined,
-    [documentStatuses, jobId, docType]
+    [documentStatuses, jobId, docType],
   );
 
   const checkFile = useCallback(async () => {
@@ -106,7 +125,7 @@ export const useDocumentManager = (
   }, [checkFile]);
 
   useEffect(() => {
-    if (!serverStatus || serverStatus.status !== "COMPLETED") return;
+    if (serverStatus?.status !== "COMPLETED") return;
     if (!serverStatus.downloadUrl || !serverStatus.changesUrl) return;
     if (!jobId) return;
     const downloadAndSave = async () => {
@@ -115,7 +134,7 @@ export const useDocumentManager = (
         const response = await downloadDocument(
           serverStatus.downloadUrl,
           serverStatus.changesUrl,
-          token
+          token,
         );
         const pdfBlob = response.pdf;
         const jsonData = response.jsonData;
@@ -142,13 +161,20 @@ export const useDocumentManager = (
     }
 
     setApiError(null);
-    addPendingDocument(String(jobId), docType);
 
     try {
       const token = await user.getIdToken();
       const feature =
         docType === "resume" ? "resumeGeneration" : "coverLetterGeneration";
-      const llmProvider = settings.featureAssignments[feature];
+      const assignment = settings.featureAssignments[feature];
+      const llmProvider = assignment.provider;
+
+      if (llmProvider === "None") {
+        setApiError(`No LLM provider assigned for ${docType} generation.`);
+        return;
+      }
+
+      addPendingDocument(String(jobId), docType);
 
       await generateDocumentApi(
         docType,
@@ -156,14 +182,14 @@ export const useDocumentManager = (
         jobId,
         llmProvider,
         settings,
-        token
+        token,
       );
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "An unknown error occurred.";
       console.error(
         `Failed to start ${docType} generation for job ${jobId}:`,
-        errorMessage
+        errorMessage,
       );
       setApiError(`API Error: ${errorMessage}`);
     }
@@ -175,21 +201,21 @@ export const useDocumentManager = (
     if (serverStatus?.status === "FAILED" || apiError) return "failed";
     if (fileExists) return "present";
     return "idle";
-  }, [isCheckingFile, serverStatus, fileExists]);
+  }, [isCheckingFile, serverStatus, fileExists, apiError]);
 
   const doesFileExist = useCallback(
     async (
       checkJobId: number,
       checkDocType: DocumentType,
       checkCompanyName: string,
-      checkJobTitle: string
+      checkJobTitle: string,
     ): Promise<boolean> => {
       const pdfPath =
         getSafeFilename(
           checkJobId,
           checkDocType,
           checkCompanyName,
-          checkJobTitle
+          checkJobTitle,
         ) + ".pdf";
       try {
         const exists = await window.appAPI.files.checkFileExists(pdfPath);
@@ -199,7 +225,7 @@ export const useDocumentManager = (
         return false;
       }
     },
-    []
+    [],
   );
 
   return {

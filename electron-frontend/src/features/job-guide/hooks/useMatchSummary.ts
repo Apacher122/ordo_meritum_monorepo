@@ -7,17 +7,20 @@ import { useAuth } from "@/features/auth/providers/AuthProvider";
 import { useSettings } from "@/features/settings/hooks/useSettings";
 
 /**
- * Custom hook to manage fetching and caching for a job match summary.
- * It first attempts to load a summary from the local file system. If not found,
- * it provides a function to fetch a new summary from the API and save it locally.
- * @returns {UseMatchSummaryReturn} An object containing the match summary state and management functions.
+ * A hook that retrieves a match summary for a job.
+ *
+ * It first checks if a user is authenticated and if not, it returns an error.
+ * Then, it attempts to retrieve the match summary from the local file system and if that fails, it returns an error.
+ * If the match summary is successfully retrieved, it returns the match summary, whether it's loading, and whether there's an error.
+ *
+ * @returns {{ matchSummary: MatchSummaryResponse | null, loading: boolean, error: string | null, getMatchSummary: (jobId: number) => Promise<void>, hasLocalSummary: boolean }}
  */
 export const useMatchSummary = () => {
   const { selectedId, selectedJob } = useApplication();
   const { settings } = useSettings();
   const { user } = useAuth();
   const [matchSummary, setMatchSummary] = useState<MatchSummaryResponse | null>(
-    null
+    null,
   );
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -27,7 +30,7 @@ export const useMatchSummary = () => {
     if (!selectedJob) return null;
     return `match-summary/${selectedJob.CompanyProperName.toLowerCase().replaceAll(
       " ",
-      "_"
+      "_",
     )}_${selectedJob.JobTitle.toLowerCase().replaceAll(" ", "_")}_${
       selectedJob.RoleID
     }_match_summary.json`;
@@ -68,12 +71,20 @@ export const useMatchSummary = () => {
 
     try {
       const token = await user.getIdToken();
-      const llmProvider = settings.featureAssignments.matchSummary;
+      const assignment = settings.featureAssignments.matchSummary;
+      const llmProvider = assignment.provider;
+
+      if (llmProvider === "None") {
+        throw new Error(
+          "No LLM provider assigned for Match Summary in settings.",
+        );
+      }
+
       const summary = await getMatchSummaryApi(
         selectedId,
         llmProvider,
         settings,
-        token
+        token,
       );
       setMatchSummary(summary);
       const fileName = getFileName();

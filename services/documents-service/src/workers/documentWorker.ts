@@ -23,14 +23,12 @@ export async function startDocumentWorker() {
       if (!message.value) return;
 
       let request;
+      const payload = JSON.parse(message.value.toString());
       try {
-        request = CompilationRequestSchema.parse(
-          JSON.parse(message.value.toString())
-        );
+        request = CompilationRequestSchema.parse(payload);
         logger.info(`Received compilation request from user: ${request.userID}`);
       } catch (err) {
         logger.error("Invalid Kafka message:", err);
-        console.log(JSON.stringify(request));
         await kafka.producer.send({
           topic: kafka.Topics.LATEX_COMPILATION_RESULT,
           messages: [
@@ -38,10 +36,10 @@ export async function startDocumentWorker() {
               key: "error",
               value: JSON.stringify({ 
                 error: "Invalid Kafka message",
-                user_id: request?.userID ?? "",
-                job_id: request?.jobID ?? "",
+                user_id: payload?.userID ?? "",
+                job_id: payload?.jobID ?? 0,
                 success: false,
-                document_type: request?.docType ?? "",
+                document_type: payload?.docType ?? "",
               }),
             },
           ],

@@ -28,6 +28,7 @@ export const DocumentPage: React.FC = () => {
   const [docType, setDocType] = useState<DocumentType>("resume");
   const [jobsWithDoc, setJobsWithDoc] = useState<AppliedJob[]>([]);
   const [jobsWithoutDoc, setJobsWithoutDoc] = useState<AppliedJob[]>([]);
+  const [jobsNotAppliedNoDoc, setJobsNotAppliedNoDoc] = useState<AppliedJob[]>([]);
 
   const setHeaderTitle = useSetHeaderTitle();
   const setHeaderSubtitle = useSetHeaderSubtitle();
@@ -55,6 +56,7 @@ export const DocumentPage: React.FC = () => {
     const sortJobs = async () => {
       const withDoc: AppliedJob[] = [];
       const withoutDoc: AppliedJob[] = [];
+      const notAppliedNoDoc: AppliedJob[] = [];
 
       for (const job of jobs) {
         const hasDoc = await doesFileExist(job.RoleID, docType, job.CompanyName, job.JobTitle);
@@ -62,12 +64,16 @@ export const DocumentPage: React.FC = () => {
           withDoc.push(job);
         } else if (isMounted) {
           withoutDoc.push(job);
+          if (job.ApplicationStatus === "Not applied") {
+            notAppliedNoDoc.push(job);
+          }
         }
       }
       
       if (isMounted) {
         setJobsWithDoc(withDoc);
         setJobsWithoutDoc(withoutDoc);
+        setJobsNotAppliedNoDoc(notAppliedNoDoc);
       }
     };
     sortJobs();
@@ -78,7 +84,6 @@ export const DocumentPage: React.FC = () => {
   }, [jobs, docType, doesFileExist]);
 
   const headerControls = useMemo(() => (
-
     <DocumentHeaderControls
       selectedDocType={docType}
       onDocTypeChange={setDocType}
@@ -90,8 +95,18 @@ export const DocumentPage: React.FC = () => {
       onViewChanges={() => setIsChangesModalOpen(true)}
       jobsWithDoc={jobsWithDoc}
       jobsWithoutDoc={jobsWithoutDoc}
+      jobsNotAppliedNoDoc={jobsNotAppliedNoDoc}
     />
-  ), [docType, selectedJob, generate, isGenerating, displayStatus, jobsWithDoc, jobsWithoutDoc]);
+  ), [
+    docType,
+    selectedJob,
+    generate,
+    isGenerating,
+    displayStatus,
+    jobsWithDoc,
+    jobsWithoutDoc,
+    jobsNotAppliedNoDoc
+  ]);
 
   useEffect(() => {
     if (selectedJob) {

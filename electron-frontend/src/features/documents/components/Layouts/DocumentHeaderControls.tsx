@@ -17,22 +17,26 @@ interface DocumentHeaderControlsProps {
   isCreateDisabled: boolean;
   jobsWithDoc: AppliedJob[];
   jobsWithoutDoc: AppliedJob[];
+  jobsNotAppliedNoDoc: AppliedJob[];
 }
 
+
 /**
- * DocumentHeaderControls is a component that displays a header for the document page
- * 
- * @param {DocumentHeaderControlsProps} props - The props object
- * @param {DocumentType} props.selectedDocType - The selected document type
- * @param {(docType: DocumentType) => void} props.onDocTypeChange - The callback function when the document type changes
- * @param {boolean} props.isJobSelected - Whether a job is selected or not
- * @param {() => void} props.onCreate - The callback function when the user clicks on the create button
- * @param {() => void} props.onViewChanges - The callback function when the user clicks on the view changes button
- * @param {boolean} props.showViewChangesButton - Whether to show the view changes button or not
- * @param {boolean} props.isGenerating - Whether the document is being generated or not
- * @param {boolean} props.isCreateDisabled - Whether the create button is disabled or not
- * @param {AppliedJob[]} props.jobsWithDoc - The list of jobs with a document
- * @param {AppliedJob[]} props.jobsWithoutDoc - The list of jobs without a document
+ * A component that displays the header controls for the document viewer.
+ * It includes dropdown selectors for all applications and ready to analyze applications.
+ * It also includes buttons for regenerating the document and viewing changes.
+ * @param {DocumentHeaderControlsProps} props - The component props.
+ * @param {DocumentType} selectedDocType - The selected document type (resume or cover-letter).
+ * @param {(docType: DocumentType) => void} onDocTypeChange - The function to call when the document type changes.
+ * @param {boolean} isJobSelected - Whether a job is selected or not.
+ * @param {() => void} onCreate - The function to call when the create button is clicked.
+ * @param {() => void} onViewChanges - The function to call when the view changes button is clicked.
+ * @param {boolean} showViewChangesButton - Whether to show the view changes button or not.
+ * @param {boolean} isGenerating - Whether the document is generating or not.
+ * @param {boolean} isCreateDisabled - Whether the create button is disabled or not.
+ * @param {AppliedJob[]} jobsWithDoc - The array of job applications with documents.
+ * @param {AppliedJob[]} jobsWithoutDoc - The array of job applications without documents.
+ * @param {AppliedJob[]} jobsNotAppliedNoDoc - The array of job applications that are not applied and do not have a document.
  */
 export const DocumentHeaderControls: React.FC<DocumentHeaderControlsProps> = ({
   selectedDocType,
@@ -45,13 +49,30 @@ export const DocumentHeaderControls: React.FC<DocumentHeaderControlsProps> = ({
   isCreateDisabled,
   jobsWithDoc,
   jobsWithoutDoc,
+  jobsNotAppliedNoDoc,
 }) => {
   return (
     <div className="document-header-controls">
-      <DualJobSelectorDropdown
-        jobsWithDoc={jobsWithDoc}
-        jobsWithoutDoc={jobsWithoutDoc}
-      />
+      <div className="dropdowns-row">
+        <div className="dropdown-field">
+          <label htmlFor="all-jobs-selector" className="dropdown-label">All Applications</label>
+          <DualJobSelectorDropdown
+            id="all-jobs-selector"
+            jobsWithDoc={jobsWithDoc}
+            jobsWithoutDoc={jobsWithoutDoc}
+          />
+        </div>
+
+        <div className="dropdown-field">
+          <label htmlFor="not-applied-selector" className="dropdown-label">Ready to Analyze</label>
+          <DualJobSelectorDropdown
+            id="not-applied-selector"
+            jobsWithDoc={[]}
+            jobsWithoutDoc={jobsNotAppliedNoDoc}
+          />
+        </div>
+      </div>
+
       {isJobSelected && (
         <>
           <div className="doc-type-tabs">

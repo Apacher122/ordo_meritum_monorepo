@@ -98,6 +98,7 @@ func (s *DocumentService) QueueDocumentGeneration(
 			JobID:     &requestBody.Options.JobID,
 			Uid:       &userCtx.UID,
 		}.ErrorLog()
+		return 0, err
 	}
 
 	if err := s.sendKafkaMessage(ctx, kafkaRequest); err != nil {

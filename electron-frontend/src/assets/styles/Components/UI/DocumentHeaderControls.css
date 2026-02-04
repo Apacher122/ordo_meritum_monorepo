@@ -1,78 +1,98 @@
 .document-header-controls {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 0.5rem 0;
+    background-color: transparent;
+    width: 100%;
+    flex-wrap: nowrap;
+}
+
+.dropdowns-row {
+    display: flex;
+    flex-direction: row;
+    gap: 0.5rem;
+    align-items: flex-end;
+    flex-shrink: 0;
+}
+
+.dropdown-field {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    flex-shrink: 0;
+}
+
+
+.dropdown-field .job-selector-container,
+.dropdown-field .job-selector-dropdown {
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.dropdown-label {
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    font-weight: 600;
+    white-space: nowrap;
 }
 
 .doc-type-tabs {
-  margin-left: auto;
-}
-
-.doc-type-tabs,
-.header-action-buttons {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+    display: flex;
+    background-color: var(--bg-tertiary);
+    padding: 2px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-color);
+    flex-shrink: 0;
 }
 
 .tab-button {
-  background-color: transparent;
-  border: 1px solid var(--border-color);
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  color: var(--text-secondary-color);
-  font-weight: 500;
-  border-radius: 6px;
-  transition: background-color 0.2s ease, color 0.2s ease,
-    border-color 0.2s ease;
-  white-space: nowrap;
-}
-
-.tab-button:hover {
-  background-color: var(--hover-background-color);
-  border-color: var(--primary-accent-color);
+    padding: 6px 12px;
+    border: none;
+    background: none;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    cursor: pointer;
+    border-radius: var(--radius-xs);
+    transition: all 0.2s ease;
+    white-space: nowrap;
 }
 
 .tab-button.active {
-  background-color: var(--primary-accent-color);
-  color: #fff;
-  font-weight: bold;
-  border-color: var(--primary-accent-color);
+    background-color: var(--accent-primary);
+    color: white;
+}
+
+.header-action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-left: auto;
+    flex-shrink: 0;
 }
 
 .button {
-  background-color: var(--primary-accent-color);
-  color: white;
-  border: none;
-  padding: 0.6rem 1.2rem;
-  font-size: 0.9rem;
-  font-weight: bold;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out, transform 0.1s ease;
-}
-
-.button:hover:not(:disabled) {
-  background-color: var(--primary-accent-hover-color);
-}
-
-.button:active:not(:disabled) {
-  transform: translateY(1px);
-}
-
-.button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+    padding: 8px 16px;
+    border-radius: var(--radius-sm);
+    border: none;
+    background-color: var(--accent-primary);
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
 .button.secondary {
-  background-color: var(--secondary-button-background);
-  color: var(--text-primary-color);
-  border: 1px solid var(--border-color);
-}
-
-.button.secondary:hover:not(:disabled) {
-  background-color: var(--hover-background-color);
-  border-color: var(--primary-accent-color);
+    background-color: var(--bg-tertiary);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
 }
