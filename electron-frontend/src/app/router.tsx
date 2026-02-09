@@ -20,6 +20,7 @@ export const AppRoutes = () => {
           
           <Route path="info" element={<pages.InfoPage />} />
           <Route path="applications" element={<pages.ApplicationListPage />} />
+          <Route path="applications/:id" element={<pages.JobDetailsPage />} />
           <Route path="user-info" element={<pages.UserInfoPage />} />
           <Route path="match-summary" element={<pages.MatchSummaryPage />} />
           <Route path="documents" element={<pages.DocumentPage />} />

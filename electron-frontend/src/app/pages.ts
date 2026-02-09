@@ -1,4 +1,5 @@
 export * from '@/features/applications/pages/ApplicationListPage';
+export * from '@/features/applications/pages/JobDetailsPage';
 export * from '@/features/documents/pages/DocumentPage';
 export * from '@/features/user/pages/UserInfoPage';
 export * from '@/features/settings/pages/SettingsPage';
