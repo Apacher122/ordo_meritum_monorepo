@@ -10,7 +10,7 @@ interface IpcResponse<T = any> {
   path?: string;
 }
 
-const basePublicDir = path.join(__dirname, "..", "..", "public");
+const basePublicDir = path.join(__dirname, "..",  "public");
 const paths = {
   pdfs: path.join(basePublicDir, "pdfs"),
   json: path.join(basePublicDir, "json"),
