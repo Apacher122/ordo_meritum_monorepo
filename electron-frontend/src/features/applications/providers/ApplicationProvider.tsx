@@ -2,14 +2,17 @@ import { ApplicationStatus, AppliedJob } from "../types";
 import React, {
   ReactNode,
   createContext,
+  useCallback,
   useContext,
   useMemo,
+  useState,
 } from "react";
 
+import { getApplicationById } from "../api/getApplications";
 import { useApplicationList } from "../hooks/useApplicationList";
 
 interface ApplicationContextType {
-jobs: AppliedJob[];
+  jobs: AppliedJob[];
   selectedId: number | null;
   setSelectedId: (id: number | null) => void;
   selectedJob: AppliedJob | null;
@@ -18,19 +21,18 @@ jobs: AppliedJob[];
   removeJob: (roleId: number) => void;
   loading: boolean;
   error: string | null;
+  fetchJobDetails: (id: number) => Promise<void>;
 }
 const ApplicationContext = createContext<ApplicationContextType | undefined>(undefined);
 
 /**
- * Provides application-related state and actions to its children components.
- * This context centralizes the management of job application data.
- * @param {object} props - The component props.
- * @param {ReactNode} props.children - The child components to render.
- * @returns {JSX.Element}
+ * A React Context Provider that manages the state and operations for the user's list of job applications.
+ * @param {children: ReactNode} The children elements to be rendered within the context provider.
+ * @returns {React.Context<ApplicationContextType>} A React context containing the application list state and management functions.
  */
 export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
   const {
-    jobs,
+    jobs: rawJobs,
     selectedId,
     setSelectedId,
     updateJobStatus,
@@ -39,6 +41,35 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
     loading,
     error,
   } = useApplicationList();
+
+  const [detailedCache, setDetailedCache] = useState<Record<number, Partial<AppliedJob>>>({});
+
+  const jobs = useMemo(() => {
+    return rawJobs.map((job) => ({
+      ...job,
+      ...detailedCache[job.RoleID],
+    }));
+  }, [rawJobs, detailedCache]);
+
+  const fetchJobDetails = useCallback(async (id: number) => {
+    const jobInState = jobs.find(j => j.RoleID === id);
+    
+    if (jobInState?.Description) {
+      return;
+    }
+
+    try {
+      const response = await getApplicationById(id);
+      
+      setDetailedCache((prev) => ({
+        ...prev,
+        [id]: response,
+      }));
+    } catch (err: any) {
+      console.error("Error fetching job details:", err);
+      throw err;
+    }
+  }, [jobs]);
 
   const selectedJob = useMemo(() => {
     return jobs.find((job) => job.RoleID === selectedId) || null;
@@ -54,6 +85,7 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
     removeJob,
     loading,
     error,
+    fetchJobDetails,
   }), [
     jobs,
     selectedId,
@@ -63,7 +95,8 @@ export const ApplicationProvider = ({ children }: { children: ReactNode }) => {
     updateJobDate,
     removeJob,
     loading,
-    error
+    error,
+    fetchJobDetails
   ]);
 
   return (

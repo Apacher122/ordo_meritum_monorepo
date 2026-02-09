@@ -15,26 +15,23 @@ interface ApplicationListRowProps {
   className?: string;
 }
 
-/**
- * A component that displays a row of information about an application job.
- */
 export const ApplicationListRow: React.FC<ApplicationListRowProps> = memo(({ application, onStatusUpdate, onDateUpdate, onDelete, className }) => {
   const navigate = useNavigate()
-	const { setSelectedId } = useApplication();
+  const { setSelectedId } = useApplication();
   const [isUpdating, setIsUpdating] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
-	const [hasResume, setHasResume] = useState(false);
+  const [hasResume, setHasResume] = useState(false);
   const [hasCoverLetter, setHasCoverLetter] = useState(false);
 
-	const { doesFileExist } = useDocumentManager(
+  const { doesFileExist } = useDocumentManager(
     application.RoleID,
     application.CompanyName,
     application.JobTitle,
     "resume"
   );
 
-	useEffect(() => {
+  useEffect(() => {
     const checkDocs = async () => {
       const resumeExists = await doesFileExist(application.RoleID, "resume", application.CompanyName, application.JobTitle);
       const clExists = await doesFileExist(application.RoleID, "cover-letter", application.CompanyName, application.JobTitle);
@@ -43,7 +40,7 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = memo(({ app
     };
     checkDocs();
   }, [application, doesFileExist]);
-	
+  
   const handleStatusChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newFrontendStatus = event.target.value as ApplicationStatus;
     setIsUpdating(true);
@@ -54,6 +51,11 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = memo(({ app
 	const handleOpenDocument = (docType: 'resume' | 'cover-letter') => {
     setSelectedId(application.RoleID);
     navigate('/documents', { state: { initialDocType: docType } });
+  };
+
+  const handleRowClick = () => {
+    setSelectedId(application.RoleID);
+    navigate(`/applications/${application.RoleID}`);
   };
   
   const handleDelete = () => {
@@ -83,84 +85,84 @@ export const ApplicationListRow: React.FC<ApplicationListRowProps> = memo(({ app
 
   return (
     <div className={rowClasses}>
-        <div className="application-content">
-            <div className="application-info">
-                <div className="company-position">
-                    <span>{application.CompanyProperName},</span>
-                    <span className="position">{application.JobTitle}</span>
-                </div>
-                 <div className="status-selector">
-                    <label htmlFor={`status-${application.RoleID}`}>Status:</label>
-                    <select
-                        id={`status-${application.RoleID}`}
-                        value={application.ApplicationStatus}
-                        onChange={handleStatusChange}
-                        disabled={isUpdating}
-                        className="status-dropdown"
-                    >
-                        {statusOptions.map(status => (
-                            <option key={status} value={status}>{status}</option>
-                        ))}
-                    </select>
-										{hasResume && (
-                        <button 
-                            className="doc-shortcut-button" 
-                            onClick={() => handleOpenDocument('resume')}
-                            title="View Resume"
-                        >
-                            Resume
-                        </button>
-                    )}
-                    {hasCoverLetter && (
-                        <button 
-                            className="doc-shortcut-button" 
-                            onClick={() => handleOpenDocument('cover-letter')}
-                            title="View Cover Letter"
-                        >
-                            Cover Letter
-                        </button>
-                    )}
-                </div>
-            </div>
+			<div className="application-content" onClick={handleRowClick} style={{ cursor: 'pointer' }}>
+				<div className="application-info">
+					<div className="company-position">
+						<span>{application.CompanyProperName},</span>
+						<span className="position">{application.JobTitle}</span>
+					</div>
+					<div className="status-selector" onClick={(e) => e.stopPropagation()}>
+						<label htmlFor={`status-${application.RoleID}`}>Status:</label>
+						<select
+							id={`status-${application.RoleID}`}
+								value={application.ApplicationStatus}
+								onChange={handleStatusChange}
+								disabled={isUpdating}
+								className="status-dropdown"
+						>
+							{statusOptions.map(status => (
+									<option key={status} value={status}>{status}</option>
+							))}
+						</select>
+						{hasResume && (
+							<button 
+								className="doc-shortcut-button" 
+								onClick={(e) => { e.stopPropagation(); handleOpenDocument('resume'); }}
+								title="View Resume"
+							>
+								Resume
+							</button>
+						)}
+						{hasCoverLetter && (
+							<button 
+								className="doc-shortcut-button" 
+								onClick={(e) => { e.stopPropagation(); handleOpenDocument('cover-letter'); }}
+								title="View Cover Letter"
+							>
+								Cover Letter
+							</button>
+						)}
+					</div>
+				</div>
 
-            <div className="application-actions">
-                <div className="applied-date-container">
-                    {isEditingDate ? (
-                        <input 
-                            type="date"
-                            defaultValue={formatDateForInput(application.InitialApplicationDate)}
-                            onBlur={handleDateChange} 
-                            autoFocus
-                            className="date-input"
-                        />
-                    ) : (
-                        <button
-                            className="applied-date editable text-button"
-                            onClick={() => setIsEditingDate(true)}
-                            title="Click to edit date"
->
-                            <i>Applied On: {formatDate(application.InitialApplicationDate)}</i>
-                        </button>
-                    )}
-                </div>
-                <button 
-                    onClick={() => setShowDeleteConfirm(true)}
-                    className="remove-button"
-                    title="Remove Application"
-                >
-                    🗑️
-                </button>
-            </div>
-        </div>
+				<div className="application-actions" onClick={(e) => e.stopPropagation()}>
+					<div className="applied-date-container">
+						{isEditingDate ? (
+								<input 
+									type="date"
+										defaultValue={formatDateForInput(application.InitialApplicationDate)}
+										onBlur={handleDateChange} 
+										autoFocus
+										className="date-input"
+								/>
+						) : (
+							<button
+								className="applied-date editable text-button"
+								onClick={() => setIsEditingDate(true)}
+								title="Click to edit date"
+							>
+								<i>Applied On: {formatDate(application.InitialApplicationDate)}</i>
+							</button>
+						)}
+					</div>
+					<button 
+						onClick={() => setShowDeleteConfirm(true)}
+						className="remove-button"
+						title="Remove Application"
+					>
+						🗑️
+					</button>
+				</div>
+			</div>
 
-				{showDeleteConfirm && createPortal(
-					<ConfirmationModal
-							message="This will permanently remove this application from your list."
-							onConfirm={handleDelete}
-							onCancel={() => setShowDeleteConfirm(false)}
-					/>,
-					document.body
-        )}
+			{showDeleteConfirm && createPortal(
+				<ConfirmationModal
+					message="This will permanently remove this application from your list."
+					onConfirm={handleDelete}
+					onCancel={() => setShowDeleteConfirm(false)}
+				/>,
+				document.body
+			)}
     </div>
   );
 });
