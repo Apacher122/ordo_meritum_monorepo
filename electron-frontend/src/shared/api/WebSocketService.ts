@@ -1,81 +1,85 @@
-/**
- * @class WebSocketService
- * Manages a persistent WebSocket connection, including automatic reconnection logic.
- * This service is designed to be a singleton.
- */
 class WebSocketService {
-  private ws: WebSocket | null = null;
   private onMessageCallback: ((data: any) => void) | null = null;
-  private readonly reconnectInterval: number = 5000;
-  private userId: string | null = null;
-  private token: string | null = null;
+
 
   /**
-   * Establishes a WebSocket connection to the server. If an existing connection is active,
-   * it will be closed before the new one is established. The connection will automatically
-   * attempt to reconnect on close.
-   * @param {string} userId The user's unique identifier.
-   * @param {string} token The authentication token for the user.
+   * Registers a callback function to be called whenever a message is received
+   * from the WebSocket bridge.
+   *
+   * The callback function will be called with the processed message data as an
+   * argument. The message data will be processed to convert it into a
+   * usable format. For example, if the message data is a Uint8Array,
+   * it will be decoded into a string using a TextDecoder.
+   *
+   * @param callback - The callback function to be called whenever a message is received.
+   * @returns A function to unsubscribe from the message event.
+   */
+  onMessage(callback: (data: any) => void): () => void {
+    this.onMessageCallback = callback;
+
+    if ((window as any).appAPI?.websocket) {
+      const wrappedCallback = (rawData: any) => {
+        try {
+          let processedData = JSON.parse(rawData);
+
+          if (processedData?.type === 'Buffer' && Array.isArray(processedData.data)) {
+            const decoder = new TextDecoder();
+            processedData = decoder.decode(new Uint8Array(processedData.data));
+          }
+
+          if (processedData instanceof Uint8Array) {
+            const decoder = new TextDecoder();
+            processedData = decoder.decode(processedData);
+          }
+
+          if (typeof processedData === 'string') {
+            try {
+              processedData = JSON.parse(processedData);
+            } catch (e) {}
+          }
+
+          if (this.onMessageCallback) {
+            this.onMessageCallback(processedData);
+          }
+        } catch (error) {
+          console.error("Error processing WebSocket message data:", error);
+        }
+      };
+
+      const unsubscribe = (window as any).appAPI.websocket.onMessage(wrappedCallback);
+      return typeof unsubscribe === 'function' ? unsubscribe : () => {};
+    }
+    
+    console.warn("WebSocket Bridge not available");
+    return () => {};
+  }
+
+  /**
+   * Establishes a WebSocket connection to the server using the provided user ID and token.
+   * This method will only work if the WebSocket Bridge is available.
+   *
+   * @param userId - The user ID to use for the WebSocket connection.
+   * @param token - The token to use for the WebSocket connection.
    */
   connect(userId: string, token: string) {
-    if (this.ws) {
-      this.ws.close();
+    if ((window as any).appAPI?.websocket) {
+      const baseUrl = (window as any).env?.SERVER_URL || "http://localhost:8080";
+      const wsUrl = baseUrl.replace(/^http/, "ws");
+      const url = `${wsUrl}/wss?user_id=${userId}&token=${encodeURIComponent(token)}`;
+      
+      console.log("Connecting to WebSocket via bridge...");
+      (window as any).appAPI.websocket.connect(url);
     }
-
-    this.userId = userId;
-    this.token = token;
-
-    const wsUrl = window.env.SERVER_URL.replace(/^http/, "ws");
-    const url = `${wsUrl}/ws?user_id=${this.userId}&token=${this.token}`;
-
-    this.ws = new WebSocket(url);
-
-    this.ws.onopen = () => {
-      console.log("WebSocket connection established.");
-    };
-
-    this.ws.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (this.onMessageCallback) {
-          this.onMessageCallback(data);
-        }
-      } catch (error) {
-        console.error("Failed to parse WebSocket message:", error);
-      }
-    };
-
-    this.ws.onclose = () => {
-      console.log("WebSocket connection closed. Attempting to reconnect...");
-      setTimeout(
-        () => this.connect(this.userId!, this.token!),
-        this.reconnectInterval
-      );
-    };
-
-    this.ws.onerror = (error) => {
-      console.error("WebSocket error:", error);
-      this.ws?.close();
-    };
   }
 
-  /**
-   * Registers a callback function to be executed when a message is received
-   * from the WebSocket server.
-   * @param {(data: any) => void} callback The function to execute on message receipt.
-   */
-  onMessage(callback: (data: any) => void) {
-    this.onMessageCallback = callback;
-  }
 
-  /**
-   * Closes the WebSocket connection and prevents automatic reconnection.
-   */
+/**
+ * Disconnects from the WebSocket server if the WebSocket Bridge is available.
+ * This method will do nothing if the WebSocket Bridge is not available.
+ */
   disconnect() {
-    if (this.ws) {
-      this.ws.onclose = null;
-      this.ws.close();
-      this.ws = null;
+    if ((window as any).appAPI?.websocket) {
+      (window as any).appAPI.websocket.disconnect();
       console.log("WebSocket disconnected.");
     }
   }

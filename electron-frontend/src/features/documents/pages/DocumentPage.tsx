@@ -148,11 +148,12 @@ export const DocumentPage: React.FC = () => {
         );
 
       case 'present':
+        { const temp = `file:///${localPdfPath}`;
         return (
           <div className="pdf-container">
-            <PDFView file={localPdfPath} />
+            <PDFView file={temp} />
           </div>
-        );
+        ); }
 
       case 'failed':
         return (
