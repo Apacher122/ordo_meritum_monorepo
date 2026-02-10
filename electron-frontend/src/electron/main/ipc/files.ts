@@ -1,5 +1,6 @@
+import { app, ipcMain } from "electron";
+
 import fs from "fs";
-import { ipcMain } from "electron";
 import path from "path";
 import sanitize from "sanitize-filename";
 
@@ -10,7 +11,7 @@ interface IpcResponse<T = any> {
   path?: string;
 }
 
-const basePublicDir = path.join(__dirname, "..",  "public");
+const basePublicDir = path.join(__dirname, "..", "public");
 const paths = {
   pdfs: path.join(basePublicDir, "pdfs"),
   json: path.join(basePublicDir, "json"),
@@ -49,6 +50,21 @@ for (const dirPath of Object.values(paths)) {
   ensureDir(dirPath);
 }
 
+ipcMain.handle("read-pdf-bytes", async (_event, relativePath: string) => {
+  try {
+    const cleanPath = relativePath.replace("static://", "");
+    const absolutePath = path.isAbsolute(cleanPath)
+      ? cleanPath
+      : path.join(app.getAppPath(), cleanPath);
+
+    const buffer = await fs.readFileSync(absolutePath);
+    return new Uint8Array(buffer);
+  } catch (error) {
+    console.error("IPC: Failed to read PDF file:", error);
+    throw error;
+  }
+});
+
 ipcMain.handle("check-file-exists", (event, relativePath: string): boolean => {
   const absPath = getSafePath(paths.pdfs, relativePath);
   return fs.existsSync(absPath);
@@ -66,7 +82,7 @@ ipcMain.handle(
       console.error(`Failed to save file (${relativePath}):`, error);
       return { success: false, error: "Failed to save file." };
     }
-  }
+  },
 );
 
 ipcMain.handle(
@@ -80,7 +96,7 @@ ipcMain.handle(
       console.error(`Failed to save JSON file (${relativePath}):`, error);
       return { success: false, error: "Failed to save JSON file." };
     }
-  }
+  },
 );
 
 ipcMain.handle(
@@ -97,5 +113,5 @@ ipcMain.handle(
       console.error(`Failed to read JSON file (${relativePath}):`, error);
       return { success: false, error: "Failed to read or parse JSON file." };
     }
-  }
+  },
 );
