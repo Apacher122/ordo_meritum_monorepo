@@ -1,6 +1,6 @@
 import "@/assets/styles/pages/DocumentPage.css";
 
-import { DocumentHeaderControls, PDFView } from "../components";
+import { DocumentHeaderControls, LazyPDFView } from "../components";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   useSetHeaderControls,
@@ -14,18 +14,28 @@ import { DocumentType } from "@/features/documents/types";
 import { ViewChangesModal } from "@/features/documents/components/ViewChangesModal";
 import { useApplication } from "@/features/applications/providers/ApplicationProvider";
 import { useDocumentManager } from "@/features/documents/hooks/useDocumentManager";
+import { useLocation } from "react-router-dom";
 
 /**
- * Renders the main page for viewing, generating, and managing documents (resumes and cover letters)
- * associated with a selected job application. It handles different display states like loading,
- * generating, displaying the document, or showing an error.
- * @returns {React.FC} The DocumentPage component.
+ * A page that displays the document viewer for a job application.
+ * It takes the job ID, company name, job title, and document type as parameters.
+ * It fetches the document data from the server and displays the document in a PDF viewer.
+ * It also provides a button to generate the document and a button to view changes.
+ * If the document does not exist, it displays a message indicating that the document can be created.
+ * If the document is being generated, it displays a loading indicator.
+ * If the document generation fails, it displays an error message.
+ * If the document exists, it displays the document in a PDF viewer.
  */
 export const DocumentPage: React.FC = () => {
   const { jobs, selectedJob, loading: appLoading } = useApplication();
+  const location = useLocation();
 
   const [isChangesModalOpen, setIsChangesModalOpen] = useState(false);
-  const [docType, setDocType] = useState<DocumentType>("resume");
+  
+  const [docType, setDocType] = useState<DocumentType>(
+    (location.state?.initialDocType as DocumentType) || "resume"
+  );
+  
   const [jobsWithDoc, setJobsWithDoc] = useState<AppliedJob[]>([]);
   const [jobsWithoutDoc, setJobsWithoutDoc] = useState<AppliedJob[]>([]);
   const [jobsNotAppliedNoDoc, setJobsNotAppliedNoDoc] = useState<AppliedJob[]>([]);
@@ -148,10 +158,10 @@ export const DocumentPage: React.FC = () => {
         );
 
       case 'present':
-        { const temp = `file:///${localPdfPath}`;
+        { const temp = `static://${localPdfPath}`;
         return (
           <div className="pdf-container">
-            <PDFView file={temp} />
+            <LazyPDFView file={temp} />
           </div>
         ); }
 

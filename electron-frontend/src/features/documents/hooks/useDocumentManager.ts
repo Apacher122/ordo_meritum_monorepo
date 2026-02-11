@@ -106,7 +106,7 @@ export const useDocumentManager = (
       const exists = await window.appAPI.files.checkFileExists(pdfPath);
       setFileExists(exists);
       if (exists) {
-        setLocalPdfPath(`../../public/pdfs/${pdfPath}`);
+        setLocalPdfPath(`public/pdfs/${pdfPath}`);
         const jsonResult = await window.appAPI.files.readJsonFile(jsonPath);
         setLocalJsonData(jsonResult.data);
       } else {
