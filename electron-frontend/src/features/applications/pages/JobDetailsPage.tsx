@@ -67,7 +67,7 @@ export const JobDetailsPage: React.FC = () => {
   if (!job) return <div style={{ padding: '20px' }}>Job application not found.</div>;
 
   return (
-    <div className="job-details-page cogitator-view" style={{ padding: '20px', color: 'var(--text-main)' }}>
+    <div className="job-details-page" style={{ padding: '20px', color: 'var(--text-main)' }}>
       <section className="details-section">
         <div className="info-grid">
           <p><strong>Salary Range:</strong> {job.SalaryRange || "N/A"}</p>
