@@ -45,6 +45,9 @@ export interface IElectronAPI {
     readJsonFile: (
       relativePath: string,
     ) => Promise<{ success: boolean; data?: any; error?: string }>;
+    readPdfBytes: (
+      relativePath: string,
+    ) => Promise<Uint8Array>;
   };
   writingSamples: {
     upload: () => Promise<{
@@ -99,6 +102,8 @@ contextBridge.exposeInMainWorld("appAPI", {
       ipcRenderer.invoke("save-json-file", relativePath, data),
     readJsonFile: (relativePath: string) =>
       ipcRenderer.invoke("read-json-file", relativePath),
+    readPdfBytes: (relativePath: string) =>
+      ipcRenderer.invoke("read-pdf-bytes", relativePath),
   },
 
   writingSamples: {
