@@ -6,3 +6,4 @@ export * from '@/features/settings/pages/SettingsPage';
 export * from '@/features/auth/components/LoginView';
 export * from '@/features/applications/pages/InfoPage';
 export * from '@/features/job-guide/pages/MatchSummaryPage';
+export * from '@/features/applications/pages/ApplicantDataPage';
