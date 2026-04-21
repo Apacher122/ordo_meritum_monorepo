@@ -36,4 +36,8 @@ export interface ApplicationData {
   isVeteran: boolean;
   isDisabled: boolean;
   raceMentioned: boolean;
+  isEasyApply: boolean;
+  timeSubmitted: Date;
+  interviewed: boolean;
+  codeAssessmentRequested: boolean;
 }

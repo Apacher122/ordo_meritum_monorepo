@@ -1,30 +1,32 @@
 import "@/assets/styles/Components/UI/SearchHeaderControls.css";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
+
+import { useDebounce } from "../hooks/useDebounce";
 
 interface SearchHeaderControlsProps {
   onSearch: (query: string) => void;
-  value: string;
 }
 
-/**
- * A component for searching job applications by company or title.
- * @param {SearchHeaderControlsProps} props - The props for the SearchHeaderControls component.
- * @param {function} props.onSearch - A callback function that is called when the user submits the search query.
- * @param {string} props.value - The current value of the search input field.
- * @returns {React.ReactElement} - A React element representing the SearchHeaderControls component.
- */
-export const SearchHeaderControls: React.FC<SearchHeaderControlsProps> = ({
-  onSearch,
-  value,
-}) => {
+export const SearchHeaderControls: React.FC<SearchHeaderControlsProps> = ({ onSearch }) => {
+  const [localValue, setLocalValue] = useState("");
+  const debouncedSearchTerm = useDebounce(localValue, 300);
+
+  useEffect(() => {
+    onSearch(debouncedSearchTerm);
+  }, [debouncedSearchTerm, onSearch]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setLocalValue(e.target.value);
+  };
+
   return (
     <div className="search-controls-container">
       <input
         type="search"
         placeholder="Search by company or title..."
-        onChange={(e) => onSearch(e.target.value)}
-        value={value}
+        onChange={handleChange}
+        value={localValue}
         className="search-input"
         aria-label="Search job applications"
       />

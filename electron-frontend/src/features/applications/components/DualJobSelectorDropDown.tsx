@@ -47,7 +47,7 @@ export const DualJobSelectorDropdown: React.FC<DualJobSelectorDropdownProps> = (
           <optgroup label="Jobs with Document">
             {jobsWithDoc.map(job => (
               <option key={job.RoleID} value={job.RoleID}>
-                {job.CompanyProperName} - {job.JobTitle}
+                {job.ApplicationStatus === "Not applied" ? `[${job.ApplicationStatus}]: ` : ''}{job.CompanyProperName} - {job.JobTitle}
               </option>
             ))}
           </optgroup>

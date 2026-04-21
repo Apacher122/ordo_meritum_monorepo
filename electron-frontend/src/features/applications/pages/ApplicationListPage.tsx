@@ -8,7 +8,7 @@ import { ApplicationListView } from "../components/ApplicationListView";
 import { ApplicationMetrics } from "../components/ApplicationMetrics";
 import { SearchHeaderControls } from "../components/SearchHeaderControls";
 import { useApplication } from "../providers/ApplicationProvider";
-import { useDebounce } from "../hooks/useDebounce";
+import { useNavigate } from "react-router-dom";
 
 /**
  * Renders the main page for viewing and managing tracked job applications.
@@ -26,22 +26,28 @@ import { useDebounce } from "../hooks/useDebounce";
  * @returns {React.ReactElement} The rendered ApplicationListPage component.
  */
 export const ApplicationListPage: React.FC = () => {
-  const { jobs, loading, error, updateJobStatus, updateJobDate, removeJob } = useApplication();
-  const [inputValue, setInputValue] = useState("");
-  const searchQuery = useDebounce(inputValue, 300);
+const { jobs, loading, error, updateJobStatus, updateJobDate, removeJob } = useApplication();  
+  const [searchQuery, setSearchQuery] = useState(""); 
+  
   const [showMetrics, setShowMetrics] = useState(false);
   const [statusFilter, setStatusFilter] = useState<ApplicationStatus | "All">("All");
   
   const setHeaderTitle = useSetHeaderTitle();
   const setHeaderSubtitle = useSetHeaderSubtitle();
   const setHeaderControls = useSetHeaderControls();
+  const navigate = useNavigate();
   
   const headerControls = useMemo(() => (
     <>
-      <SearchHeaderControls 
-        value={inputValue} 
-        onSearch={setInputValue} 
-      />
+      <button 
+        onClick={() => navigate("/applicant-data")} 
+        className="button primary-button"
+      >
+        View Applicant Data
+      </button>
+      
+      <SearchHeaderControls onSearch={setSearchQuery} />
+      
       <select 
         value={statusFilter} 
         onChange={(e) => setStatusFilter(e.target.value as any)}
@@ -57,7 +63,7 @@ export const ApplicationListPage: React.FC = () => {
         Show Metrics
       </button>      
     </>
-  ), [inputValue, statusFilter]);
+  ), [statusFilter, navigate]);
   
   useEffect(() => {
     setHeaderTitle("My Applications");
