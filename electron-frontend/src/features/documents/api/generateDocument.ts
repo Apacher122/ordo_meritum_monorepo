@@ -1,7 +1,6 @@
 import { DocumentRequestBody, DocumentType } from "../types";
 
 import { LlmProvider } from "@/shared/types";
-import { Settings } from "@/features/settings/types/types";
 import { apiRequest } from "@/shared/utils/requests";
 import { encryptData } from "@/shared/lib/encryption";
 
@@ -26,16 +25,11 @@ export const generateDocument = async (
   documentRequest: DocumentRequestBody,
   jobId: number,
   llmProvider: LlmProvider,
-  settings: Settings,
-  token: string
+  apiKey: string,
+  token: string,
 ): Promise<QueueJobResponse> => {
-  const featureKey = docType === "resume" ? "resumeGeneration" : "coverLetterGeneration";
-  const assignment = settings.featureAssignments[featureKey];
-  const providerKeys = settings.apiKeys[llmProvider] || [];
-  const apiKey = providerKeys[assignment.keyIndex];
-
   if (!apiKey) {
-    throw new Error(`API key for ${llmProvider} (Index: ${assignment.keyIndex + 1}) is not set.`);
+    throw new Error(`No valid API key provided for ${llmProvider}.`);
   }
 
   const encryptedKey = await encryptData(apiKey);

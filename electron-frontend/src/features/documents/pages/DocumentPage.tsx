@@ -1,6 +1,6 @@
 import "@/assets/styles/pages/DocumentPage.css";
 
-import { DocumentHeaderControls, LazyPDFView } from "../components";
+import { DocumentHeaderControls, JobDetailsSidebar, LazyPDFView } from "../components";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   useSetHeaderControls,
@@ -162,6 +162,9 @@ export const DocumentPage: React.FC = () => {
         return (
           <div className="pdf-container">
             <LazyPDFView file={temp} />
+            {selectedJob && (
+                <JobDetailsSidebar roleId={selectedJob.RoleID} />
+            )}
           </div>
         ); }
 

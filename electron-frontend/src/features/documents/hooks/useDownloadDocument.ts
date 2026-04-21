@@ -24,7 +24,7 @@ export const useDocumentDownload = (
   companyName: string,
   jobTitle: string,
   checkFile: () => Promise<void>,
-  user: any
+  user: any,
 ) => {
   const downloadedJobsRef = useRef<Set<string>>(new Set());
 
@@ -59,7 +59,7 @@ export const useDocumentDownload = (
         const response = await downloadDocument(
           serverStatus.downloadUrl,
           serverStatus.changesUrl,
-          token
+          token,
         );
 
         const pdfArrayBuffer = await response.pdf.arrayBuffer();

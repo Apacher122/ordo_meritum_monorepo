@@ -72,24 +72,13 @@ export const PDFView: React.FC<PDFViewProps> = ({ file }) => {
   const goToPrevPage = () => setPageNumber(prev => Math.max(prev - 1, 1));
   const goToNextPage = () => setPageNumber(prev => Math.min(prev + 1, numPages));
   const zoomIn = () => setScale(prev => Math.min(prev + 0.1, 2));
-  const zoomOut = () => setScale(prev => Math.max(prev - 1, 0.5));
+  const zoomOut = () => setScale(prev => Math.max(prev - 0.1, 0.5));
 
   if (!file) return <div className="centered-feedback">No document to display.</div>;
 
   return (
     <div className="pdf-view-container">
-      <div className="pdf-toolbar">
-        <div className="pagination-controls">
-          <button onClick={goToPrevPage} disabled={pageNumber <= 1}>Prev</button>
-          <span>Page {pageNumber} of {numPages}</span>
-          <button onClick={goToNextPage} disabled={pageNumber >= numPages}>Next</button>
-        </div>
-        <div className="zoom-controls">
-          <button onClick={zoomOut} disabled={scale <= 0.5}>-</button>
-          <span className="zoom-level">{Math.round(scale * 100)}%</span>
-          <button onClick={zoomIn} disabled={scale >= 2}>+</button>
-        </div>
-      </div>
+
 
       <div className="pdf-document-container">
         <Document
@@ -111,6 +100,18 @@ export const PDFView: React.FC<PDFViewProps> = ({ file }) => {
             </div>
           )}
         </Document>
+      </div>
+            <div className="pdf-toolbar">
+        <div className="pagination-controls">
+          <button onClick={goToPrevPage} disabled={pageNumber <= 1}>Prev</button>
+          <span>Page {pageNumber} of {numPages}</span>
+          <button onClick={goToNextPage} disabled={pageNumber >= numPages}>Next</button>
+        </div>
+        <div className="zoom-controls">
+          <button onClick={zoomOut} disabled={scale <= 0.5}>-</button>
+          <span className="zoom-level">{Math.round(scale * 100)}%</span>
+          <button onClick={zoomIn} disabled={scale >= 2}>+</button>
+        </div>
       </div>
     </div>
   );
