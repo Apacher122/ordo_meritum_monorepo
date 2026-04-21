@@ -1,37 +1,17 @@
-import { app, ipcMain } from "electron";
+import { loadJsonFile, saveJsonFile } from "@/shared/utils/fileManager";
 
-import fs from "fs";
-import path from "path";
+import { ipcMain } from "electron";
 
-const userInfoFilePath = path.join(app.getPath("userData"), "userInfo.json");
+const FILE_NAME = "userInfo.json";
 
 /**
  * Handles the "save-user-info" IPC event. Saves the user's profile data
  * to a local JSON file.
  */
-ipcMain.handle("save-user-info", (event, userInfo) => {
-  try {
-    fs.writeFileSync(userInfoFilePath, JSON.stringify(userInfo, null, 2));
-    return { success: true };
-  } catch (error) {
-    console.error("Failed to save user info:", error);
-    return { success: false, error: "Failed to save data." };
-  }
-});
+ipcMain.handle("save-user-info", (event, userInfo) => saveJsonFile(FILE_NAME, userInfo));
 
 /**
  * Handles the "load-user-info" IPC event. Loads the user's profile data
  * from a local JSON file.
  */
-ipcMain.handle("load-user-info", () => {
-  try {
-    if (fs.existsSync(userInfoFilePath)) {
-      const data = fs.readFileSync(userInfoFilePath, "utf-8");
-      return { success: true, data: JSON.parse(data) };
-    }
-    return { success: true, data: null };
-  } catch (error) {
-    console.error("Failed to load user info:", error);
-    return { success: false, error: "Failed to load data." };
-  }
-});
+ipcMain.handle("load-user-info", () => loadJsonFile(FILE_NAME));

@@ -1,9 +1,10 @@
 import { app, ipcMain, safeStorage, session } from "electron";
+import { loadJsonFile, saveJsonFile } from "@/shared/utils/fileManager";
 
-import fs from "fs";
 import path from "path";
 
 const settingsFilePath = path.join(app.getPath("userData"), "settings.json");
+const FILE_NAME = "settings.json";
 
 /**
  * Encrypts all string values in the provided apiKeys object
@@ -15,11 +16,11 @@ const settingsFilePath = path.join(app.getPath("userData"), "settings.json");
  *   object, this function does nothing.
  */
 const encryptApiKeys = (apiKeys: Record<string, any> | undefined) => {
-  if (!apiKeys || typeof apiKeys !== 'object') return;
+  if (!apiKeys || typeof apiKeys !== "object") return;
 
   for (const key in apiKeys) {
     const val = apiKeys[key];
-    if (typeof val === 'string' && val.trim().length > 0) {
+    if (typeof val === "string" && val.trim().length > 0) {
       try {
         apiKeys[key] = safeStorage.encryptString(val).toString("base64");
       } catch (e) {
@@ -37,7 +38,7 @@ const encryptApiKeys = (apiKeys: Record<string, any> | undefined) => {
  *   string to set. If not a string, the default User Agent is used.
  */
 const updateSessionUserAgent = (userAgent: unknown) => {
-  if (session.defaultSession && typeof userAgent === 'string') {
+  if (session.defaultSession && typeof userAgent === "string") {
     session.defaultSession.setUserAgent(userAgent);
   }
 };
@@ -45,28 +46,35 @@ const updateSessionUserAgent = (userAgent: unknown) => {
 ipcMain.handle("save-settings", (_event, settings: any) => {
   try {
     const encrypted = structuredClone(settings);
-
     encryptApiKeys(encrypted.apiKeys);
-    fs.writeFileSync(settingsFilePath, JSON.stringify(encrypted, null, 2));
-    updateSessionUserAgent(settings.userAgent);
 
-    return { success: true };
+    const result = saveJsonFile(FILE_NAME, encrypted);
+
+    if (result.success) {
+      updateSessionUserAgent(settings.userAgent);
+    }
+
+    return result;
   } catch (error) {
     console.error("Failed to save settings:", error);
-    return { 
-      success: false, 
-      error: error instanceof Error ? error.message : "Failed to save settings." 
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to save settings.",
     };
   }
 });
 
 ipcMain.handle("load-settings", () => {
-  try {
-    if (!fs.existsSync(settingsFilePath)) return { success: true, data: null };
-    
-    const rawData = fs.readFileSync(settingsFilePath, "utf-8");
-    const data = JSON.parse(rawData);
+  const result = loadJsonFile(FILE_NAME);
+  
+  if (!result.success || !result.data) {
+    return result;
+  }
 
+  const data = result.data;
+
+  try {
     if (data.apiKeys && typeof data.apiKeys === 'object') {
       for (const key in data.apiKeys) {
         const enc = data.apiKeys[key];
@@ -85,7 +93,7 @@ ipcMain.handle("load-settings", () => {
     
     return { success: true, data };
   } catch (error) {
-    console.error("Failed to load settings:", error);
+    console.error("Failed to process loaded settings:", error);
     return { success: false, error: "Failed to load settings." };
   }
 });
