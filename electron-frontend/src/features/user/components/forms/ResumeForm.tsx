@@ -1,12 +1,7 @@
-import { Experience, Project, UserProfile } from "../../types";
+import { Experience, FormProps, Project } from "../../types";
 
 import { BulletPointInput } from "../BulletPointInput";
 import React from "react";
-
-interface FormProps {
-  profile: UserProfile;
-  setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
-}
 
 /**
  * A form for editing the core components of a resume, including skills,

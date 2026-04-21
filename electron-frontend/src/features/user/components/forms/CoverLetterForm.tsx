@@ -1,10 +1,5 @@
+import { FormProps } from "../../types";
 import React from "react";
-import { UserProfile } from "../../types";
-
-interface FormProps {
-  profile: UserProfile;
-  setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
-}
 
 /**
  * A form component for editing the distinct sections of a generic cover letter.
