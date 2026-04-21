@@ -17,7 +17,7 @@ import { useSettings } from "@/features/settings/hooks/useSettings";
  */
 export const useMatchSummary = () => {
   const { selectedId, selectedJob } = useApplication();
-  const { settings } = useSettings();
+  const { settings, getValidApiKey } = useSettings();
   const { user } = useAuth();
   const [matchSummary, setMatchSummary] = useState<MatchSummaryResponse | null>(
     null,
@@ -80,10 +80,18 @@ export const useMatchSummary = () => {
         );
       }
 
+      const apiKey = await getValidApiKey(llmProvider);
+
+      if (!apiKey) {
+        throw new Error(
+          `Rate limit reached or no keys available for ${llmProvider}.`,
+        );
+      }
+
       const summary = await getMatchSummaryApi(
         selectedId,
         llmProvider,
-        settings,
+        apiKey,
         token,
       );
       setMatchSummary(summary);
@@ -97,7 +105,7 @@ export const useMatchSummary = () => {
     } finally {
       setLoading(false);
     }
-  }, [selectedId, settings, user, getFileName]);
+  }, [selectedId, settings, user, getFileName, getValidApiKey]);
 
   return { matchSummary, loading, error, getMatchSummary, hasLocalSummary };
 };
