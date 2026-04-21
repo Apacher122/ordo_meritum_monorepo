@@ -1,21 +1,16 @@
-import "@/assets/styles/components/UI/TabHeaderControls.css";
+import "@/assets/styles/Components/UI/TabHeaderControls.css";
 
 import React from "react";
 
-export type ProfileTab =
-  | "User Info"
-  | "Education"
-  | "Resume"
-  | "Cover Letter"
-  | "About Me";
-
-const TABS: ProfileTab[] = [
+export const TABS = [
   "User Info",
   "Education",
   "Resume",
   "Cover Letter",
   "About Me",
-];
+] as const;
+
+export type ProfileTab = typeof TABS[number];
 
 interface TabHeaderControlsProps {
   activeTab: ProfileTab;

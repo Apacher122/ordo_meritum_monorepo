@@ -65,3 +65,8 @@ export interface UserProfile {
   aboutMe: AboutMeData;
   writingSamples?: WritingSample[];
 }
+
+export interface FormProps {
+  profile: UserProfile;
+  setProfile: React.Dispatch<React.SetStateAction<UserProfile | null>>;
+}

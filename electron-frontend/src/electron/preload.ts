@@ -16,7 +16,7 @@ export interface WritingSample {
 export interface IElectronAPI {
   user: {
     saveUserInfo: (
-      userInfo: UserProfile
+      userInfo: UserProfile,
     ) => Promise<{ success: boolean; error?: string }>;
     loadUserInfo: () => Promise<{
       success: boolean;
@@ -24,7 +24,7 @@ export interface IElectronAPI {
       error?: string;
     }>;
     saveSettings: (
-      settings: Settings
+      settings: Settings,
     ) => Promise<{ success: boolean; error?: string }>;
     loadSettings: () => Promise<{
       success: boolean;
@@ -36,15 +36,18 @@ export interface IElectronAPI {
     checkFileExists: (relativePath: string) => Promise<boolean>;
     saveFile: (
       relativePath: string,
-      data: ArrayBuffer | string
+      data: ArrayBuffer | string,
     ) => Promise<{ success: boolean; path?: string; error?: string }>;
     saveJsonFile: (
       relativePath: string,
-      data: any
+      data: any,
     ) => Promise<{ success: boolean; error?: string }>;
     readJsonFile: (
-      relativePath: string
+      relativePath: string,
     ) => Promise<{ success: boolean; data?: any; error?: string }>;
+    readPdfBytes: (
+      relativePath: string,
+    ) => Promise<Uint8Array>;
   };
   writingSamples: {
     upload: () => Promise<{
@@ -54,7 +57,7 @@ export interface IElectronAPI {
       reason?: string;
     }>;
     save: (
-      samples: WritingSample[]
+      samples: WritingSample[],
     ) => Promise<{ success: boolean; error?: string }>;
     load: () => Promise<{
       success: boolean;
@@ -66,6 +69,14 @@ export interface IElectronAPI {
     start: () => void;
     stop: () => void;
     onUpdate: (callback: (jobs: AppliedJob[]) => void) => void;
+  };
+  websocket: {
+    connect: (url: string) => void;
+    send: (msg: string) => void;
+    disconnect: () => void;
+    onMessage: (callback: (data: string) => void) => () => void;
+    onStatus: (callback: (status: string) => void) => () => void;
+    onError: (callback: (err: string) => void) => () => void;
   };
 }
 
@@ -91,6 +102,8 @@ contextBridge.exposeInMainWorld("appAPI", {
       ipcRenderer.invoke("save-json-file", relativePath, data),
     readJsonFile: (relativePath: string) =>
       ipcRenderer.invoke("read-json-file", relativePath),
+    readPdfBytes: (relativePath: string) =>
+      ipcRenderer.invoke("read-pdf-bytes", relativePath),
   },
 
   writingSamples: {
@@ -105,6 +118,27 @@ contextBridge.exposeInMainWorld("appAPI", {
     stop: () => ipcRenderer.send("stop-polling"),
     onUpdate: (callback: (jobs: AppliedJob[]) => void) =>
       ipcRenderer.on("jobs-updated", (_event, value) => callback(value)),
+  },
+
+  websocket: {
+    connect: (url: string) => ipcRenderer.send("ws-connect", { url }),
+    send: (msg: string) => ipcRenderer.send("ws-send", msg),
+    disconnect: () => ipcRenderer.send("ws-disconnect"),
+    onMessage: (callback: (data: string) => void) => {
+      const subscription = (_event: any, data: string) => callback(data);
+      ipcRenderer.on("ws-message", subscription);
+      return () => ipcRenderer.removeListener("ws-message", subscription);
+    },
+    onStatus: (callback: (status: string) => void) => {
+      const subscription = (_event: any, status: string) => callback(status);
+      ipcRenderer.on("ws-status", subscription);
+      return () => ipcRenderer.removeListener("ws-status", subscription);
+    },
+    onError: (callback: (err: string) => void) => {
+      const subscription = (_event: any, err: string) => callback(err);
+      ipcRenderer.on("ws-error", subscription);
+      return () => ipcRenderer.removeListener("ws-error", subscription);
+    },
   },
 });
 

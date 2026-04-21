@@ -10,7 +10,21 @@ export interface FeatureAssignment {
   keyIndex: number;
 }
 
+export interface RateLimitConfig {
+  callsPerDay: number;
+  callsPerMinute: number;
+  currentDayCount: number;
+  currentMinuteCount: number;
+  lastDayReset: number;
+  lastMinuteReset: number;
+}
+
+export interface ApiKeyConfig {
+  key: string;
+  rateLimit: RateLimitConfig;
+}
+
 export interface Settings {
-  apiKeys: Partial<Record<LlmProvider, string[]>>;
+  apiKeys: Partial<Record<LlmProvider, ApiKeyConfig[]>>;
   featureAssignments: Record<AssignableFeature, FeatureAssignment>;
 }

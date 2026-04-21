@@ -90,7 +90,7 @@ export const useJobInfoForm = () => {
         );
       }
 
-      const encryptedApiKey = await encryptData(apiKey);
+      const encryptedApiKey = await encryptData(apiKey.key);
       const { llmProvider, ...jobPayload } = formState;
 
       const message = await sendJobInfo(jobPayload, {

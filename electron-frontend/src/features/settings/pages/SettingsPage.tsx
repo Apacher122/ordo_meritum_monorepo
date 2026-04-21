@@ -1,6 +1,6 @@
 import "@/assets/styles/pages/SettingsPage.css";
 
-import { AssignableFeature, Settings } from "../types/types";
+import { ApiKeyConfig, AssignableFeature, RateLimitConfig, Settings } from "../types/types";
 import React, { useEffect, useState } from "react";
 import { useSetHeaderControls, useSetHeaderSubtitle, useSetHeaderTitle } from "@/components/Layouts/providers/HeaderProvider";
 
@@ -13,7 +13,6 @@ const assignableFeatures: { key: AssignableFeature, label: string }[] = [
     { key: 'resumeGeneration', label: 'Resume Generation' },
     { key: 'coverLetterGeneration', label: 'Cover Letter Generation' },
 ];
-
 
 /**
  * A settings page for managing API keys and feature configurations.
@@ -39,18 +38,25 @@ export const SettingsPage: React.FC = () => {
     };
   }, [setHeaderTitle, setHeaderSubtitle, setHeaderControls]); 
 
+  const getDefaultRateLimit = (): RateLimitConfig => ({
+    callsPerDay: 1000,
+    callsPerMinute: 60,
+    currentDayCount: 0,
+    currentMinuteCount: 0,
+    lastDayReset: Date.now(),
+    lastMinuteReset: Date.now(),
+  });
+
   useEffect(() => {
     if (settings) {
-      const sanitizedApiKeys: Partial<Record<LlmProvider, string[]>> = {};
+      const sanitizedApiKeys: Partial<Record<LlmProvider, ApiKeyConfig[]>> = {};
       
       llmProviderOptions.forEach(provider => {
         const value = settings.apiKeys[provider];
         if (Array.isArray(value)) {
           sanitizedApiKeys[provider] = value;
-        } else if (typeof value === 'string' && value) {
-          sanitizedApiKeys[provider] = [value];
         } else {
-          sanitizedApiKeys[provider] = [""]; 
+          sanitizedApiKeys[provider] = [{ key: "", rateLimit: getDefaultRateLimit() }]; 
         }
       });
 
@@ -67,12 +73,30 @@ export const SettingsPage: React.FC = () => {
  * @param {number} index - The index of the API key being changed.
  * @param {string} value - The new value of the API key.
  */
-  const handleApiKeyChange = (provider: LlmProvider, index: number, value: string) => {
+  const handleApiKeyChange = (provider: LlmProvider, index: number, field: 'key' | keyof RateLimitConfig, value: any) => {
     setFormState(prev => {
         if (!prev) return null;
         const rawKeys = prev.apiKeys[provider];
-        const currentKeys = Array.isArray(rawKeys) ? [...rawKeys] : [rawKeys ?? ""];
-        currentKeys[index] = value;
+        const currentKeys = Array.isArray(rawKeys) ? [...rawKeys] : [{ key: "", rateLimit: getDefaultRateLimit() }];
+        
+        if (!currentKeys[index]) {
+            currentKeys[index] = { key: "", rateLimit: getDefaultRateLimit() };
+        }
+
+        if (field === 'key') {
+            currentKeys[index] = { ...currentKeys[index], key: value };
+        } else {
+             const limitField = field;
+             const numValue = Number.parseInt(value, 10) || 0;
+             currentKeys[index] = {
+                 ...currentKeys[index],
+                 rateLimit: {
+                     ...currentKeys[index].rateLimit,
+                     [limitField]: numValue
+                 }
+             };
+        }
+
         return {
             ...prev,
             apiKeys: { ...prev.apiKeys, [provider]: currentKeys }
@@ -80,20 +104,17 @@ export const SettingsPage: React.FC = () => {
     });
   };
 
-/**
- * Adds a new API key to the given LLM provider in the form state.
- * If the provider's API keys are currently represented as a string, it will be
- * converted to an array containing the original string and the new key.
- * @param {LlmProvider} provider - The LLM provider to which the new key is being added.
- */
   const handleAddNewKey = (provider: LlmProvider) => {
     setFormState(prev => {
         if (!prev) return null;
         const rawKeys = prev.apiKeys[provider];
-        const currentKeys = Array.isArray(rawKeys) ? [...rawKeys] : [rawKeys ?? ""];
+        const currentKeys = Array.isArray(rawKeys) ? [...rawKeys] : [];
         return {
             ...prev,
-            apiKeys: { ...prev.apiKeys, [provider]: [...currentKeys, ""] }
+            apiKeys: { 
+                ...prev.apiKeys, 
+                [provider]: [...currentKeys, { key: "", rateLimit: getDefaultRateLimit() }] 
+            }
         };
     });
   };
@@ -113,10 +134,6 @@ export const SettingsPage: React.FC = () => {
                 ...prev.featureAssignments, 
                 [feature]: { 
                     ...prev.featureAssignments[feature], 
-                    /**
-                     * CRITICAL: Ensures keyIndex is always a serializable integer.
-                     * IPC conversion fails if NaN is passed.
-                     */
                     [field]: field === 'keyIndex' ? (Number.parseInt(value, 10) || 0) : value 
                 } 
             }
@@ -124,12 +141,6 @@ export const SettingsPage: React.FC = () => {
     });
   };
 
-/**
- * Handles form submission by saving the settings to the application's settings file.
- * If the submission is successful, it displays a success message.
- * If an error occurs during submission, it displays the error message.
- * @param {React.FormEvent} e - The event containing the form element.
- */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (formState) {
@@ -139,10 +150,6 @@ export const SettingsPage: React.FC = () => {
     }
   };
 
-/**
- * Resets all settings by removing all API keys and setting the selected provider to "None".
- * This function will display a confirmation dialog to the user before resetting the settings.
- */
   const handleReset = async () => {
     if (window.confirm("Are you sure you want to reset all settings? All keys will be removed.")) {
         await resetSettings();
@@ -196,18 +203,41 @@ export const SettingsPage: React.FC = () => {
 						<div className="provider-keys-section" style={{ borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
 							<div className="settings-grid">
 								{(Array.isArray(formState.apiKeys[selectedProvider]) 
-									? formState.apiKeys[selectedProvider] 
-									: [""]
-								).map((key, index) => (
-									<div key={`${selectedProvider}-key-${index}`}>
+									? formState.apiKeys[selectedProvider]
+									: []
+								).map((keyConfig, index) => (
+									<div key={`${selectedProvider}-key-${index}`} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem', borderBottom: '1px dashed #444', paddingBottom: '1rem' }}>
 										<label>Key {index + 1}</label>
 										<input
 											type="password"
-											value={key}
-											onChange={(e) => handleApiKeyChange(selectedProvider, index, e.target.value)}
+											value={keyConfig.key}
+											onChange={(e) => handleApiKeyChange(selectedProvider, index, 'key', e.target.value)}
 											placeholder={`Enter ${selectedProvider} Key ${index + 1}`}
 											className="input"
-									/>
+                    />
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '0.8rem' }}>Daily Limit</label>
+                            <input
+                                type="number"
+                                value={keyConfig.rateLimit.callsPerDay}
+                                onChange={(e) => handleApiKeyChange(selectedProvider, index, 'callsPerDay', e.target.value)}
+                                className="input"
+                            />
+                        </div>
+                        <div style={{ flex: 1 }}>
+                            <label style={{ fontSize: '0.8rem' }}>Minute Limit</label>
+                            <input
+                                type="number"
+                                value={keyConfig.rateLimit.callsPerMinute}
+                                onChange={(e) => handleApiKeyChange(selectedProvider, index, 'callsPerMinute', e.target.value)}
+                                className="input"
+                            />
+                        </div>
+                    </div>
+                    <div style={{ fontSize: '0.75rem', color: '#888' }}>
+                        Usage: {keyConfig.rateLimit.currentDayCount} today / {keyConfig.rateLimit.currentMinuteCount} this minute
+                    </div>
 									</div>
 								))}
 							</div>
@@ -234,7 +264,7 @@ export const SettingsPage: React.FC = () => {
 							: (formState.apiKeys[assignment.provider] || []);
 						
 						const fallbackKeys = rawKeys && !Array.isArray(rawKeys) ? [rawKeys] : [];
-						const availableKeys = Array.isArray(rawKeys) ? rawKeys : fallbackKeys;
+						const availableKeys = (Array.isArray(rawKeys) ? rawKeys : fallbackKeys);
 
 						return (
 							<div key={feature.key}>

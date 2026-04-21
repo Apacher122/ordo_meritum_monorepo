@@ -8,29 +8,12 @@ import { useDocumentStatus } from "../providers/DocumentStatusProvider";
 import { useSettings } from "../../settings/hooks/useSettings";
 import { useUserInfo } from "@/features/user/hooks/useUserInfo";
 
-/**
- * Returns a filename that is safe to use on most file systems.
- * The filename is constructed from the given parameters by replacing
- * spaces, periods, and underscores with hyphens and converting to
- * lowercase.
- * @param {number} jobId - The ID of the job.
- * @param {DocumentType} docType - The type of the document.
- * @param {string} company - The name of the company.
- * @param {string} title - The title of the job.
- * @returns {string} - A safe filename.
- */
 const getSafeFilename = (
   jobId: number,
   docType: DocumentType,
   company: string,
   title: string,
 ): string => {
-  /**
-   * Sanitizes a string by converting to lowercase, replacing spaces,
-   * periods, and underscores with hyphens, and removing duplicate hyphens.
-   * @param {string} input - The string to sanitize.
-   * @returns {string} - The sanitized string.
-   */
   const sanitizePart = (input: string): string => {
     return input
       .toLowerCase()
@@ -48,7 +31,6 @@ const getSafeFilename = (
   return `${baseName}_${docType}`;
 };
 
-
 /**
  * Hook that manages the state of a document.
  * It checks if a document is present locally, downloads and saves the
@@ -58,12 +40,12 @@ const getSafeFilename = (
  * @param {string} jobTitle - The title of the job.
  * @param {DocumentType} docType - The type of the document.
  * @returns {{
- *   displayStatus: string,
- *   localPdfPath: string | null,
- *   localJsonData: ResumeChanges | null,
- *   generate: () => Promise<void>,
- *   error: string | null,
- *   doesFileExist: (checkJobId: number, checkDocType: DocumentType, checkCompanyName: string, checkJobTitle: string) => Promise<boolean>,
+ * displayStatus: string,
+ * localPdfPath: string | null,
+ * localJsonData: ResumeChanges | null,
+ * generate: () => Promise<void>,
+ * error: string | null,
+ * doesFileExist: (checkJobId: number, checkDocType: DocumentType, checkCompanyName: string, checkJobTitle: string) => Promise<boolean>,
  * }}
  */
 export const useDocumentManager = (
@@ -73,7 +55,7 @@ export const useDocumentManager = (
   docType: DocumentType,
 ) => {
   const { user } = useAuth();
-  const { settings } = useSettings();
+  const { settings, getValidApiKey } = useSettings();
   const { documentStatuses, addPendingDocument } = useDocumentStatus();
   const { userProfile } = useUserInfo();
 
@@ -106,7 +88,7 @@ export const useDocumentManager = (
       const exists = await window.appAPI.files.checkFileExists(pdfPath);
       setFileExists(exists);
       if (exists) {
-        setLocalPdfPath(`../../public/pdfs/${pdfPath}`);
+        setLocalPdfPath(`public/pdfs/${pdfPath}`);
         const jsonResult = await window.appAPI.files.readJsonFile(jsonPath);
         setLocalJsonData(jsonResult.data);
       } else {
@@ -174,6 +156,14 @@ export const useDocumentManager = (
         return;
       }
 
+      const apiKey = await getValidApiKey(llmProvider);
+
+      if (!apiKey) {
+        throw new Error(
+          `Rate limit reached or no keys available for ${llmProvider}.`,
+        );
+      }
+
       addPendingDocument(String(jobId), docType);
 
       await generateDocumentApi(
@@ -181,7 +171,7 @@ export const useDocumentManager = (
         userProfile,
         jobId,
         llmProvider,
-        settings,
+        apiKey,
         token,
       );
     } catch (err) {
@@ -193,7 +183,15 @@ export const useDocumentManager = (
       );
       setApiError(`API Error: ${errorMessage}`);
     }
-  }, [jobId, docType, user, settings, addPendingDocument, userProfile]);
+  }, [
+    jobId,
+    docType,
+    user,
+    settings,
+    addPendingDocument,
+    userProfile,
+    getValidApiKey,
+  ]);
 
   const displayStatus = useMemo(() => {
     if (isCheckingFile) return "checking";

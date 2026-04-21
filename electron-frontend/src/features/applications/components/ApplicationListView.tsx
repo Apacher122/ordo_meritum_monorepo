@@ -1,5 +1,5 @@
 import { ApplicationStatus, AppliedJob } from '../types';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 
 import { ApplicationListRow } from './ApplicationListRow';
 
@@ -16,34 +16,6 @@ interface CachedRow {
   height: number;
 }
 
-/**
- * Renders a virtualized list of job applications with scroll-based animations.
- *
- * This component displays a list of `ApplicationListRow` items and applies a 3D
- * rotation, scale, and opacity effect to rows as they approach the top or bottom
- * edge of the viewport during scrolling.
- *
- * @performance
- * To achieve smooth scrolling performance and avoid layout thrashing, this
- * component implements a caching strategy:
- * 1.  It queries the DOM for row elements and caches their layout data
- * (`offsetTop`, `offsetHeight`) in a `useRef` (`rowsCache`).
- * 2.  This cache is built/rebuilt only when the `jobs` list changes or when the
- * container is resized.
- * 3.  The `onScroll` handler (`applyScrollAnimations`) runs on every scroll tick
- * but only performs fast calculations using the cached data. It *only*
- * writes to the DOM (updating `transform` and `opacity`), avoiding
- * expensive DOM reads in the scroll loop.
- *
- * @param {ApplicationListViewProps} props The component props.
- * @param {AppliedJob[]} props.jobs The array of job applications to display.
- * @param {(roleId: number, newStatus: ApplicationStatus) => void} props.onStatusUpdate
- * Callback function to update a job's status.
- * @param {(roleId: number, newDate: Date) => void} props.onDateUpdate
- * Callback function to update a job's application date.
- * @param {(roleId: number) => void} props.onDelete Callback function to delete a job.
- * @returns {React.ReactElement} The rendered ApplicationListView component.
- */
 export const ApplicationListView: React.FC<ApplicationListViewProps> = ({ 
     jobs, 
     onStatusUpdate,
@@ -52,6 +24,9 @@ export const ApplicationListView: React.FC<ApplicationListViewProps> = ({
 }) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const rowsCache = useRef<CachedRow[]>([]);
+  const [visibleCount, setVisibleCount] = useState(50);
+
+  const visibleJobs = jobs.slice(0, visibleCount);
 
   const applyScrollAnimations = () => {
     const container = scrollContainerRef.current;
@@ -62,7 +37,7 @@ export const ApplicationListView: React.FC<ApplicationListViewProps> = ({
 
     if (rows.length === 0) return;
 
-for (const row of rows) {
+    for (const row of rows) {
       const { element, top, height } = row;
       const rowTop = top - scrollTop;
 
@@ -87,7 +62,6 @@ for (const row of rows) {
       element.style.opacity = `${Math.max(0, opacity)}`;
     }
   };
-
 
   const buildAnimationCacheAndAnimate = () => {
     const container = scrollContainerRef.current;
@@ -136,11 +110,12 @@ for (const row of rows) {
     }, 0);
 
     return () => clearTimeout(timer);
-  }, [jobs]);
+  }, [visibleJobs]);
+
   return (
     <div ref={scrollContainerRef} className="application-list-view">
-      {jobs.length > 0 ? (
-        jobs.map((app) => (
+      {visibleJobs.length > 0 ? (
+        visibleJobs.map((app) => (
           <ApplicationListRow
             key={app.RoleID}
             application={app}
@@ -152,6 +127,16 @@ for (const row of rows) {
         ))
       ) : (
         <p>No matching applications found.</p>
+      )}
+      
+      {jobs.length > visibleCount && (
+        <button 
+           onClick={() => setVisibleCount(prev => prev + 50)}
+           className="button"
+           style={{ margin: '20px auto', display: 'block' }}
+        >
+          Load More
+        </button>
       )}
     </div>
   );

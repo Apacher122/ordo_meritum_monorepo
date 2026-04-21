@@ -32,34 +32,15 @@ const cleanLoadedBulletPoints = (bulletPoints: any[] | undefined) => {
     .filter((bp) => bp !== null) as { text: string; id?: string }[];
 };
 
-const cleanLoadedExperiences = (
-  experiences: Experience[] | undefined
-): Experience[] => {
-  if (!experiences) return initialProfileState.resume.experiences || [];
-
-  return experiences.map((exp) => {
-    const cleanedExp = { ...exp };
-    if (cleanedExp.bulletPoints) {
-      cleanedExp.bulletPoints = cleanLoadedBulletPoints(
-        cleanedExp.bulletPoints
-      );
-    }
-    return cleanedExp;
-  }) as Experience[];
-};
-
-const cleanLoadedProjects = (projects: Project[] | undefined): Project[] => {
-  if (!projects) return initialProfileState.resume.projects || [];
-
-  return projects.map((proj) => {
-    const cleanedProj = { ...proj };
-    if (cleanedProj.bulletPoints) {
-      cleanedProj.bulletPoints = cleanLoadedBulletPoints(
-        cleanedProj.bulletPoints
-      );
-    }
-    return cleanedProj;
-  }) as Project[];
+const cleanResumeItems = <T extends Experience | Project>(
+  items: T[] | undefined,
+  fallback: T[]
+): T[] => {
+  if (!items) return fallback;
+  return items.map((item) => ({
+    ...item,
+    bulletPoints: item.bulletPoints ? cleanLoadedBulletPoints(item.bulletPoints) : []
+  })) as T[];
 };
 
 const wasDataCleaned = (
@@ -67,18 +48,10 @@ const wasDataCleaned = (
   cleanedArray: Experience[] | Project[]
 ): boolean => {
   if (!originalArray) return false;
-
-  const countBulletPoints = (items: Experience[] | Project[]) => {
-    return items.reduce(
-      (acc, item) => acc + (item.bulletPoints?.length || 0),
-      0
-    );
-  };
-
-  const originalBulletPointCount = countBulletPoints(originalArray);
-  const cleanedBulletPointCount = countBulletPoints(cleanedArray);
-
-  return originalBulletPointCount !== cleanedBulletPointCount;
+  const countBulletPoints = (items: Experience[] | Project[]) => 
+    items.reduce((acc, item) => acc + (item.bulletPoints?.length || 0), 0);
+    
+  return countBulletPoints(originalArray) !== countBulletPoints(cleanedArray);
 };
 
 /**
@@ -105,73 +78,51 @@ export const useUserInfo = () => {
         ]);
 
         if (!profileResult.success || !samplesResult.success) {
-          throw new Error(
-            profileResult.error || samplesResult.error || "Failed to load data."
-          );
+          throw new Error(profileResult.error || samplesResult.error || "Failed to load data.");
         }
 
         const loadedProfile = profileResult.data;
         const loadedSamples = samplesResult.data || [];
 
         if (loadedProfile) {
-          const cleanedExperiences = cleanLoadedExperiences(
-            loadedProfile.resume?.experiences
+          const cleanedExperiences = cleanResumeItems(
+            loadedProfile.resume?.experiences, 
+            initialProfileState.resume.experiences || []
           );
-          const cleanedProjects = cleanLoadedProjects(
-            loadedProfile.resume?.projects
+          const cleanedProjects = cleanResumeItems(
+            loadedProfile.resume?.projects,
+            initialProfileState.resume.projects || []
           );
-
-          const originalExperiences = loadedProfile.resume?.experiences;
-          const originalProjects = loadedProfile.resume?.projects;
 
           if (
-            wasDataCleaned(originalExperiences, cleanedExperiences) ||
-            wasDataCleaned(originalProjects, cleanedProjects)
+            wasDataCleaned(loadedProfile.resume?.experiences, cleanedExperiences) ||
+            wasDataCleaned(loadedProfile.resume?.projects, cleanedProjects)
           ) {
             cleanedData = true;
           }
 
           const mergedProfile: UserProfile = {
-            userInfo: {
-              ...initialProfileState.userInfo,
-              ...loadedProfile.userInfo,
-            },
-            education: {
-              ...initialProfileState.education,
-              ...loadedProfile.education,
-            },
+            userInfo: { ...initialProfileState.userInfo, ...loadedProfile.userInfo },
+            education: { ...initialProfileState.education, ...loadedProfile.education },
             resume: {
               ...initialProfileState.resume,
               experiences: cleanedExperiences,
               projects: cleanedProjects,
-              skills:
-                loadedProfile.resume?.skills ||
-                initialProfileState.resume.skills,
+              skills: loadedProfile.resume?.skills || initialProfileState.resume.skills,
             },
-            coverLetter: {
-              ...initialProfileState.coverLetter,
-              ...loadedProfile.coverLetter,
-            },
-            aboutMe: {
-              ...initialProfileState.aboutMe,
-              ...loadedProfile.aboutMe,
-            },
+            coverLetter: { ...initialProfileState.coverLetter, ...loadedProfile.coverLetter },
+            aboutMe: { ...initialProfileState.aboutMe, ...loadedProfile.aboutMe },
             writingSamples: loadedSamples,
           };
 
           setUserProfile(mergedProfile);
 
           if (cleanedData) {
-            console.warn(
-              "Corrupted profile data found and cleaned during load. Resaving clean file."
-            );
+            console.warn("Corrupted profile data found and cleaned during load. Resaving clean file.");
             await window.appAPI.user.saveUserInfo(mergedProfile);
           }
         } else {
-          setUserProfile({
-            ...initialProfileState,
-            writingSamples: loadedSamples,
-          });
+          setUserProfile({ ...initialProfileState, writingSamples: loadedSamples });
         }
       } catch (err: any) {
         setError(err.message ?? "An unknown error occurred.");
@@ -185,7 +136,6 @@ export const useUserInfo = () => {
   const saveUserProfile = useCallback(
     async (newProfile: UserProfile) => {
       const previousProfile = userProfile;
-
       setUserProfile(newProfile);
       setError(null);
 
@@ -199,10 +149,7 @@ export const useUserInfo = () => {
         }
       } catch (err: any) {
         setUserProfile(previousProfile);
-        setError(
-          err.message ?? "An unexpected error occurred during profile save."
-        );
-        console.error("Error saving user profile:", err);
+        setError(err.message ?? "An unexpected error occurred during profile save.");
       }
     },
     [userProfile]

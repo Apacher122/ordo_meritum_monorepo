@@ -43,61 +43,61 @@ func FormatAboutForLLMWithXML(jsonData []byte) (string, error) {
 
 func FormatJobPostForLLM(job jobs.FullJobPosting) string {
 	return fmt.Sprintf(`
-Job Title: %s
-Company: %s
-Salary Range: %s
-Years of Experience: %s
-Education Level: %s
+<job_title> %s </job_title>
+<company_name> %s </company_name>
+<salary_range> %s </salary_range>
+<applicant_count> %d </applicant_count>
 
-Description:
+<job_requirements_overview>
+<skills_required> %s </skills_required>
+<skills_nice_to_have> %s </skills_nice_to_have>
+</job_requirements_overview>
+
+<job_requirement_by_category>
+<years_of_experience> %s </years_of_experience>
+<education_level> %s </education_level>
+<tools> %s </tools>
+<programming_languages> %s </programming_languages>
+<frameworks_and_libraries> %s </frameworks_and_libraries>
+<databases> %s </databases>
+<cloud_technologies> %s </cloud_technologies>
+<soft_skills> %s </soft_skills>
+<certifications> %s </certifications>
+</job_requirement_by_category>
+
+<full_job_description>
 %s
+</full_job_description>
 
-Company Culture:
-%s
-
-Company Values:
-%s
-
-Required Tools: %s
-Programming Languages: %s
-Frameworks & Libraries: %s
-Databases: %s
-Cloud Technologies: %s
-Industry Keywords: %s
-Soft Skills: %s
-Certifications: %s
-
-Requirements:
-%s
-
-Nice to Have:
-%s
-
-Applicant Count: %d
+<company_info>
+<company_culture> %s </company_culture>
+<company_values> %s </company_values>
+<industry_keywords> %s </industry_keywords>
+</company_info>
 	`,
 		job.JobTitle,
 		job.CompanyName,
 		PtrString(job.SalaryRange, "Not specified"),
+		PtrInt(job.ApplicantCount, 0),
+
+		FormatArray(job.Requirements),
+		FormatArray(job.NiceToHaves),
+
 		PtrString(job.YearsOfExp, "Not specified"),
 		PtrString(job.EducationLevel, "Not specified"),
-
-		PtrString(job.Description, "No description provided"),
-		PtrString(job.CompanyCulture, "Not specified"),
-		PtrString(job.CompanyValues, "Not specified"),
-
 		FormatArray(job.Tools),
 		FormatArray(job.ProgrammingLanguages),
 		FormatArray(job.FrameworksAndLibraries),
 		FormatArray(job.Databases),
 		FormatArray(job.CloudTechnologies),
-		FormatArray(job.IndustryKeywords),
 		FormatArray(job.SoftSkills),
 		FormatArray(job.Certifications),
 
-		FormatArray(job.Requirements),
-		FormatArray(job.NiceToHaves),
+		PtrString(job.Description, "No description provided"),
 
-		PtrInt(job.ApplicantCount, 0),
+		PtrString(job.CompanyCulture, "Not specified"),
+		PtrString(job.CompanyValues, "Not specified"),
+		FormatArray(job.IndustryKeywords),
 	)
 }
 

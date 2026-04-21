@@ -58,7 +58,7 @@ export const DocumentStatusProvider = ({ children }: { children: React.ReactNode
       setupWebSocket();
 
       webSocketService.onMessage((data: DocumentStatusUpdateMessage) => {
-        console.log('Received document status update:', data);
+        console.log('Received document status update:', data.success);
         setDocumentStatuses((prev) => {
           const newStatuses = new Map(prev);
           const currentJob = new Map(newStatuses.get(String(data.job_id)) ?? []);

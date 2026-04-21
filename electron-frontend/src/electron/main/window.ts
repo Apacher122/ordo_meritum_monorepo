@@ -12,11 +12,15 @@ export const createWindow = () => {
     height: 800,
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
+      sandbox: false,
+      webSecurity: false,
     },
   });
 
   if (process.env.NODE_ENV === "development") {
-    const hostUrl = process.env.SERVER_URL ? process.env.SERVER_URL : "http://localhost:8080";
+    const hostUrl = process.env.SERVER_URL
+      ? process.env.SERVER_URL
+      : "http://localhost:8080";
     mainWindow.loadURL(hostUrl);
     mainWindow.webContents.openDevTools();
   } else {
@@ -24,6 +28,8 @@ export const createWindow = () => {
   }
 
   mainWindow.on("closed", () => (mainWindow = null));
+
+  return mainWindow;
 };
 
 /**
@@ -31,5 +37,5 @@ export const createWindow = () => {
  * @returns {BrowserWindow | null} The main window instance, or null if it has been closed.
  */
 export const getMainWindow = (): BrowserWindow | null => {
-    return mainWindow;
-}
+  return mainWindow;
+};
